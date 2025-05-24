@@ -10,37 +10,34 @@
 <body>
   <div class="container">
     <h1>Seu Cartão</h1>
+
     <div id="cartao" class="cartao">
       <h3 id="nome"></h3>
       <p id="data"></p>
       <p id="mensagem"></p>
-      <img id="foto" style="display: none; max-width: 100%; border-radius: 8px;" />
-      <iframe id="spotify" width="100%" height="80" frameborder="0" allowtransparency="true" 
-              allow="encrypted-media" style="display: none; border-radius: 8px;"></iframe>
-      <audio id="mp3" controls style="display: none; width: 100%; margin-top: 10px;">
+
+      <img id="foto" style="display: none;" alt="Imagem do cartão" />
+
+      <iframe 
+        id="spotify" 
+        width="100%" 
+        height="80" 
+        frameborder="0" 
+        allowtransparency="true" 
+        allow="encrypted-media" 
+        style="display: none;">
+      </iframe>
+
+      <audio 
+        id="mp3" 
+        controls 
+        style="display: none; width: 100%; margin-top: 10px;">
         <source src="" type="audio/mpeg" />
         Seu navegador não suporta áudio.
       </audio>
     </div>
   </div>
 
-  <script>
-// Busca os dados do cartão
-async function loadCard() {
-  const id = new URLSearchParams(window.location.search).get('id');
-  if (!id) return showError('ID não especificado');
-
-  try {
-    const response = await fetch(`http://localhost:3001/api/cards/${id}`);
-    if (!response.ok) throw new Error('Cartão não encontrado');
-    
-    const card = await response.json();
-    // Preenche os dados na página...
-    
-  } catch (error) {
-    showError(error.message);
-  }
-}
-</script>
+  <script src="card.js"></script>
 </body>
 </html>

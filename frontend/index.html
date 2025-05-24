@@ -5,105 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Messagelove</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM8b+z4xj5c5e5e5e5e5e5e5e5e5e5e5e5e5" crossorigin="anonymous" />
   <link rel="icon" href="/assets/coracao.png" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/assets/coracao.png" />
- 
 </head>
 <body>
   <div class="container">
-    <h1>Criar Cartão Especial</h1>
-    
-    <div class="form-container">
-      <form id="cardForm">
-        <div class="form-group">
-          <label for="nome">Nome do Destinatário:</label>
-          <input type="text" id="nome" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="data">Data Especial (opcional):</label>
-          <input type="date" id="data">
-        </div>
-        
-        <div class="form-group">
-          <label for="mensagem">Mensagem:</label>
-          <textarea id="mensagem" required></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label for="fotoUpload">Foto (opcional):</label>
-          <input type="file" id="fotoUpload" accept="image/*">
-          <img id="fotoPreview" class="preview" alt="Pré-visualização da foto">
-        </div>
-        
-        <div class="form-group">
-          <label for="audioUpload">Música (MP3, opcional):</label>
-          <input type="file" id="audioUpload" accept="audio/*">
-          <audio id="audioPreview" class="preview" controls></audio>
-        </div>
-        
-        <div class="form-group">
-          <label for="spotify">Link do Spotify (opcional):</label>
-          <input type="text" id="spotify" placeholder="Cole o link ou ID da música do Spotify">
-        </div>
-        
-        <button type="submit">Criar Cartão</button>
-      </form>
-    </div>
+    <h1>Crie um Cartão Especial</h1>
+
+    <form id="cardForm">
+      <div class="form-group">
+        <label for="nome">Nome do Destinatário:</label>
+        <input type="text" id="nome" required />
+      </div>
+
+      <div class="form-group">
+        <label for="data">Data Especial (opcional):</label>
+        <input type="date" id="data" />
+      </div>
+
+      <div class="form-group">
+        <label for="mensagem">Mensagem:</label>
+        <textarea id="mensagem" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="fotoUpload">Foto (opcional):</label>
+        <input type="file" id="fotoUpload" accept="image/*" />
+        <img id="fotoPreview" class="preview" alt="Pré-visualização" />
+      </div>
+
+      <div class="form-group">
+        <label for="audioUpload">Música (MP3, opcional):</label>
+        <input type="file" id="audioUpload" accept="audio/*" />
+        <audio id="audioPreview" class="preview" controls></audio>
+      </div>
+
+      <div class="form-group">
+        <label for="spotify">Link ou ID da Música no Spotify (opcional):</label>
+        <input type="text" id="spotify" placeholder="Cole o link ou ID da música" />
+      </div>
+
+      <button type="submit">Criar Cartão</button>
+    </form>
   </div>
 
   <script>
-    // Preview das imagens
-    document.getElementById('fotoUpload').addEventListener('change', function(e) {
-      const file = this.files[0];
+    const fotoInput = document.getElementById('fotoUpload');
+    const audioInput = document.getElementById('audioUpload');
+    const fotoPreview = document.getElementById('fotoPreview');
+    const audioPreview = document.getElementById('audioPreview');
+
+    fotoInput.addEventListener('change', () => {
+      const file = fotoInput.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          const preview = document.getElementById('fotoPreview');
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-        }
+        reader.onload = e => {
+          fotoPreview.src = e.target.result;
+          fotoPreview.style.display = 'block';
+        };
         reader.readAsDataURL(file);
       }
     });
 
-    // Preview do áudio
-    document.getElementById('audioUpload').addEventListener('change', function(e) {
-      const file = this.files[0];
+    audioInput.addEventListener('change', () => {
+      const file = audioInput.files[0];
       if (file) {
-        const preview = document.getElementById('audioPreview');
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = 'block';
+        audioPreview.src = URL.createObjectURL(file);
+        audioPreview.style.display = 'block';
       }
     });
 
-    // Envio do formulário
-    document.getElementById('cardForm').addEventListener('submit', async function(e) {
+    document.getElementById('cardForm').addEventListener('submit', async e => {
       e.preventDefault();
-      
+
       const formData = new FormData();
-      formData.append('nome', document.getElementById('nome').value);
-      formData.append('mensagem', document.getElementById('mensagem').value);
-      formData.append('data', document.getElementById('data').value);
-      
-      // Adiciona arquivos se existirem
-      const fotoFile = document.getElementById('fotoUpload').files[0];
-      const audioFile = document.getElementById('audioUpload').files[0];
-      
+      const nome = document.getElementById('nome').value.trim();
+      const data = document.getElementById('data').value.trim();
+      const mensagem = document.getElementById('mensagem').value.trim();
+      const spotifyInput = document.getElementById('spotify').value.trim();
+
+      formData.append('nome', nome);
+      formData.append('data', data);
+      formData.append('mensagem', mensagem);
+
+      const fotoFile = fotoInput.files[0];
+      const audioFile = audioInput.files[0];
+
       if (fotoFile) formData.append('foto', fotoFile);
       if (audioFile) formData.append('audio', audioFile);
-      
-      // Spotify (extrai o ID da URL se for um link)
-      const spotifyInput = document.getElementById('spotify').value;
+
+      // Spotify - extrair ID da URL se necessário
       if (spotifyInput) {
-        let spotifyId = spotifyInput;
-        // Se for uma URL, extrai o ID
-        const spotifyRegex = /spotify:track:([a-zA-Z0-9]+)|open\.spotify\.com\/track\/([a-zA-Z0-9]+)/;
-        const match = spotifyInput.match(spotifyRegex);
-        if (match) {
-          spotifyId = match[1] || match[2];
-        }
+        const regex = /(?:spotify:track:|open\.spotify\.com\/track\/)([a-zA-Z0-9]+)/;
+        const match = spotifyInput.match(regex);
+        const spotifyId = match ? match[1] : spotifyInput;
         formData.append('spotify', spotifyId);
       }
 
@@ -112,7 +107,7 @@
           method: 'POST',
           body: formData
         });
-        
+
         const result = await response.json();
         if (result.success && result.viewLink) {
           window.location.href = result.viewLink;
@@ -121,7 +116,7 @@
         }
       } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao enviar dados para o servidor');
+        alert('Erro ao enviar os dados para o servidor.');
       }
     });
   </script>
