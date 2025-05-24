@@ -9,7 +9,6 @@ function gerarCartao() {
   const preview = document.getElementById('preview');
   preview.innerHTML = '';
 
-  // Exibe pré-visualização local
   const title = document.createElement('h3');
   title.innerText = nome;
   preview.appendChild(title);
@@ -47,25 +46,30 @@ function gerarCartao() {
     preview.appendChild(audio);
   }
 
-  // Envia para o backend
   const cardData = {
     nome,
     data,
     mensagem,
     spotify,
-    fotoUrl: fotoFile ? URL.createObjectURL(fotoFile) : '', // Temporário, será na nuvem
-    mp3Url: mp3File ? URL.createObjectURL(mp3File) : ''    // Temporário, será na nuvem
+    fotoUrl: fotoFile ? URL.createObjectURL(fotoFile) : '',
+    mp3Url: mp3File ? URL.createObjectURL(mp3File) : ''
   };
 
-  fetch('http://localhost:3000/api/cards', {
+  fetch('http://localhost:3001/api/cards', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(cardData)
   })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
     .then(data => {
+      console.log('Link gerado:', data.link); // Para depuração
       alert(`Cartão criado! Acesse: ${data.link}`);
-      window.location.href = data.link; // Redireciona para o cartão
+      window.location.href = data.link;
     })
     .catch(error => {
       console.error('Erro ao criar cartão:', error);
