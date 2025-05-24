@@ -9,61 +9,75 @@
   <link rel="icon" href="assets/coracao.png" type="image/x-icon" />
   <link rel="apple-touch-icon" href="assets/coracao.png" />
 </head>
+
 <body>
   <header class="card-header">
     <div class="container">
       <h1>Seu Cartão Especial</h1>
-      <p class="subtitle">Criado com ❤️ pelo Messagelove</p>
+      <p class="subtitle">Criado com ❤️ pelo <strong>Messagelove</strong></p>
     </div>
   </header>
 
   <main class="card-main">
     <div class="container">
-      <div id="cartao" class="cartao">
+      <article id="cartao" class="cartao">
         <div class="card-content">
-          <h2 id="nome" class="card-title"></h2>
-          
+          <h2 id="nome" class="card-title">Nome da Pessoa</h2>
+
           <div class="card-meta">
-            <p id="data" class="card-date"></p>
-          </div>
-          
-          <div class="card-message">
-            <p id="mensagem" class="message-text"></p>
+            <p id="data" class="card-date">00/00/0000</p>
           </div>
 
-          <div class="card-media">
-            <img id="foto" class="card-image" alt="Imagem especial do cartão" />
-            
+          <section class="card-message">
+            <p id="mensagem" class="message-text">
+              Sua mensagem especial aparece aqui. 💌
+            </p>
+          </section>
+
+          <section class="card-media">
+            <img 
+              id="foto" 
+              class="card-image" 
+              src="assets/placeholder.png" 
+              alt="Imagem especial do cartão" 
+              title="Imagem do cartão"
+            />
+
             <div id="spotify-container" class="music-player">
               <iframe 
                 id="spotify" 
                 width="100%" 
                 height="80" 
                 frameborder="0" 
-                allowtransparency="true" 
-                allow="encrypted-media">
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+                title="Player do Spotify">
               </iframe>
             </div>
-            
+
             <div id="audio-container" class="music-player">
               <audio id="mp3" controls>
                 <source src="" type="audio/mpeg" />
                 Seu navegador não suporta áudio.
               </audio>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </article>
     </div>
   </main>
 
   <footer class="card-footer">
     <div class="container">
       <p>Messagelove &copy; <span id="currentYear"></span></p>
-      <p class="share-text">Compartilhe esse cartão especial com quem você ama!</p>
+      <p class="share-text">💌 Compartilhe esse cartão especial com quem você ama!</p>
     </div>
   </footer>
 
+  <script>
+    // Atualiza o ano atual no rodapé
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
   <script src="card.js"></script>
 </body>
 </html>

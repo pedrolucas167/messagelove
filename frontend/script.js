@@ -9,6 +9,27 @@ document.addEventListener('DOMContentLoaded', function() {
   const removeAudioBtn = document.getElementById('removeAudio');
   const submitBtn = document.getElementById('submitBtn');
   const currentYear = document.getElementById('currentYear');
+  
+  // Configuração do Spotify
+  const spotifySection = document.createElement('div');
+  spotifySection.innerHTML = `
+    <div class="form-group">
+      <label>Adicionar música do Spotify</label>
+      <div class="spotify-search-container">
+        <input type="text" id="spotifySearch" placeholder="Pesquisar música no Spotify..." class="spotify-search-input" />
+        <button type="button" id="searchSpotifyBtn" class="spotify-search-btn">Buscar</button>
+      </div>
+      <div id="spotifyResults" class="spotify-results"></div>
+      <input type="hidden" id="selectedSpotifyTrack" name="spotify" />
+      <small class="field-hint">Busque e selecione uma música diretamente do Spotify</small>
+    </div>
+  `;
+  
+  // Inserir a seção do Spotify antes do botão de submit
+  const submitButton = form.querySelector('button[type="submit"]');
+  form.querySelector('fieldset.form-section').appendChild(spotifySection);
+
+  // Elementos do Spotify
   const spotifySearchInput = document.getElementById('spotifySearch');
   const searchSpotifyBtn = document.getElementById('searchSpotifyBtn');
   const spotifyResults = document.getElementById('spotifyResults');
@@ -37,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearFotoUpload();
         return;
       }
+
       const reader = new FileReader();
       reader.onload = e => {
         fotoPreview.src = e.target.result;
@@ -65,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearAudioUpload();
         return;
       }
+
       audioPreview.src = URL.createObjectURL(file);
       audioPreview.style.display = 'block';
       removeAudioBtn.style.display = 'block';
@@ -97,26 +120,22 @@ document.addEventListener('DOMContentLoaded', function() {
       const response = await fetch(`http://localhost:3001/api/spotify/search?q=${encodeURIComponent(query)}`);
       
       if (!response.ok) {
-        throw new Error(`Erro ${response.status}: Falha ao buscar no Spotify`);
+        throw new Error('Erro ao buscar no Spotify');
       }
 
       const tracks = await response.json();
       
-      if (!Array.isArray(tracks) || tracks.length === 0) {
+      if (tracks.length === 0) {
         spotifyResults.innerHTML = '<div class="no-results">Nenhuma música encontrada. Tente outro termo.</div>';
         return;
       }
 
       spotifyResults.innerHTML = '';
       tracks.forEach(track => {
-        if (!track.id || !track.name || !track.artists || !track.albumName) {
-          console.warn('Track incompleta:', track);
-          return;
-        }
         const trackElement = document.createElement('div');
         trackElement.className = 'spotify-track';
         trackElement.innerHTML = `
-          <img src="${track.albumImage || 'placeholder.jpg'}" alt="${track.albumName}" class="track-image" />
+          <img src="${track.albumImage}" alt="${track.albumName}" class="track-image" />
           <div class="track-info">
             <h4 class="track-name">${track.name}</h4>
             <p class="track-artist">${track.artists.join(', ')}</p>
@@ -144,22 +163,18 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function selectSpotifyTrack(trackId, clickedBtn) {
-    // Limpar seleção anterior
     document.querySelectorAll('.spotify-track').forEach(track => {
       track.classList.remove('selected');
       track.querySelector('.select-track-btn').textContent = 'Selecionar';
     });
-    document.querySelectorAll('.selected-track-info').forEach(info => info.remove());
 
-    // Marcar nova seleção
-    const trackElement = clickedBtn.closest('.spotify-track');
-    trackElement.classList.add('selected');
+    clickedBtn.closest('.spotify-track').classList.add('selected');
     clickedBtn.textContent = 'Selecionado ✓';
     selectedSpotifyTrack.value = trackId;
-
-    // Feedback visual
-    const trackName = trackElement.querySelector('.track-name').textContent;
-    const artistName = trackElement.querySelector('.track-artist').textContent;
+    
+    const trackName = clickedBtn.closest('.spotify-track').querySelector('.track-name').textContent;
+    const artistName = clickedBtn.closest('.spotify-track').querySelector('.track-artist').textContent;
+    
     spotifyResults.insertAdjacentHTML('afterbegin', 
       `<div class="selected-track-info">
         Música selecionada: <strong>${trackName}</strong> - ${artistName}
@@ -173,23 +188,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const nome = document.getElementById('nome').value.trim();
     const mensagem = document.getElementById('mensagem').value.trim();
-    const spotifyTrack = selectedSpotifyTrack.value;
-    const fotoFile = fotoInput.files[0];
-    const audioFile = audioInput.files[0];
-
-    // Validações
+    
     if (!nome) {
       alert('Por favor, preencha o nome do destinatário.');
       document.getElementById('nome').focus();
       return;
     }
+    
     if (!mensagem) {
       alert('Por favor, escreva uma mensagem.');
       document.getElementById('mensagem').focus();
-      return;
-    }
-    if (!spotifyTrack && !fotoFile && !audioFile) {
-      alert('Por favor, adicione pelo menos uma mídia (foto, áudio ou música do Spotify).');
       return;
     }
 
@@ -203,9 +211,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const data = document.getElementById('data').value.trim();
       if (data) formData.append('data', data);
+
+      const fotoFile = fotoInput.files[0];
       if (fotoFile) formData.append('foto', fotoFile);
+
+      const audioFile = audioInput.files[0];
       if (audioFile) formData.append('audio', audioFile);
-      if (spotifyTrack) formData.append('spotify', spotifyTrack);
+
+      if (selectedSpotifyTrack.value) {
+        formData.append('spotify', selectedSpotifyTrack.value);
+      }
 
       const response = await fetch('http://localhost:3001/api/cards', {
         method: 'POST',
@@ -214,18 +229,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Erro ${response.status}: Falha ao criar cartão`);
+        throw new Error(errorData.message || 'Erro ao criar cartão');
       }
 
       const result = await response.json();
+      
       if (result.viewLink) {
         window.location.href = result.viewLink;
       } else {
         throw new Error('Link de visualização não recebido');
       }
+      
     } catch (error) {
-      console.error('Erro ao criar cartão:', error);
-      alert(`Erro ao criar cartão: ${error.message}`);
+      console.error('Erro:', error);
+      alert('Erro ao criar cartão: ' + error.message);
     } finally {
       submitBtn.disabled = false;
       submitBtn.classList.remove('loading');

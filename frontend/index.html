@@ -19,68 +19,123 @@
 
   <main class="main-content">
     <div class="container">
-      <form id="cardForm" class="card-form">
+      <form id="cardForm" class="card-form" novalidate>
         <fieldset class="form-section">
           <legend class="section-title">Informações Básicas</legend>
-          
+
           <div class="form-group">
             <label for="nome" class="required-field">Nome do Destinatário</label>
-            <input type="text" id="nome" required aria-required="true" placeholder="Para quem é este cartão?" />
+            <input 
+              type="text" 
+              id="nome" 
+              name="nome" 
+              required 
+              aria-required="true" 
+              placeholder="Para quem é este cartão?" 
+            />
             <small class="field-hint">Obrigatório</small>
           </div>
 
           <div class="form-group">
             <label for="data">Data Especial</label>
-            <input type="date" id="data" aria-describedby="dataHelp" />
+            <input 
+              type="date" 
+              id="data" 
+              name="data" 
+              aria-describedby="dataHelp" 
+            />
             <small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
           </div>
 
           <div class="form-group">
             <label for="mensagem" class="required-field">Sua Mensagem</label>
-            <textarea id="mensagem" required aria-required="true" placeholder="Escreva sua mensagem especial..."></textarea>
+            <textarea 
+              id="mensagem" 
+              name="mensagem" 
+              required 
+              aria-required="true" 
+              placeholder="Escreva sua mensagem especial...">
+            </textarea>
             <small class="field-hint">Obrigatório</small>
           </div>
         </fieldset>
 
         <fieldset class="form-section">
           <legend class="section-title">Mídias</legend>
-          
+
           <div class="form-group file-upload">
             <label for="fotoUpload">Adicionar Foto</label>
-            <input type="file" id="fotoUpload" accept="image/*" aria-describedby="fotoHelp" />
+            <input 
+              type="file" 
+              id="fotoUpload" 
+              name="fotoUpload" 
+              accept="image/*" 
+              aria-describedby="fotoHelp" 
+            />
             <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG (max 5MB)</small>
             <div class="preview-container">
-              <img id="fotoPreview" class="preview" alt="Pré-visualização da foto" />
-              <button type="button" class="btn-remove" id="removeFoto" aria-label="Remover foto">×</button>
+              <img 
+                id="fotoPreview" 
+                class="preview" 
+                alt="" 
+                aria-hidden="true" 
+              />
+              <button 
+                type="button" 
+                class="btn-remove" 
+                id="removeFoto" 
+                aria-label="Remover foto"
+              >×</button>
             </div>
           </div>
 
           <div class="form-group file-upload">
             <label for="audioUpload">Adicionar Música (MP3)</label>
-            <input type="file" id="audioUpload" accept="audio/*" aria-describedby="audioHelp" />
+            <input 
+              type="file" 
+              id="audioUpload" 
+              name="audioUpload" 
+              accept="audio/mpeg" 
+              aria-describedby="audioHelp" 
+            />
             <small id="audioHelp" class="field-hint">Formatos: MP3 (max 10MB)</small>
             <div class="preview-container">
               <audio id="audioPreview" class="preview" controls></audio>
-              <button type="button" class="btn-remove" id="removeAudio" aria-label="Remover áudio">×</button>
+              <button 
+                type="button" 
+                class="btn-remove" 
+                id="removeAudio" 
+                aria-label="Remover áudio"
+              >×</button>
             </div>
           </div>
 
           <div class="form-group spotify-integration">
-            <label>Adicionar música do Spotify</label>
+            <label for="spotifySearch">Adicionar música do Spotify</label>
             <div class="spotify-search-container">
-              <input type="text" id="spotifySearch" placeholder="Pesquisar música no Spotify..." class="spotify-search-input" />
-              <button type="button" id="searchSpotifyBtn" class="spotify-search-btn">Buscar</button>
+              <input 
+                type="text" 
+                id="spotifySearch" 
+                placeholder="Pesquisar música no Spotify..." 
+                class="spotify-search-input" 
+                aria-describedby="spotifyHelp"
+              />
+              <button 
+                type="button" 
+                id="searchSpotifyBtn" 
+                class="spotify-search-btn"
+              >Buscar</button>
             </div>
-            <div id="spotifyResults" class="spotify-results"></div>
+            <div id="spotifyResults" class="spotify-results" role="listbox" aria-label="Resultados da busca no Spotify"></div>
             <input type="hidden" id="selectedSpotifyTrack" name="spotify" />
-            <small class="field-hint">Busque e selecione uma música diretamente do Spotify</small>
+            <small id="spotifyHelp" class="field-hint">Busque e selecione uma música diretamente do Spotify</small>
           </div>
         </fieldset>
 
         <div class="form-actions">
-          <button type="submit" class="btn-submit" id="submitBtn">
+          <button type="submit" class="btn-submit" id="submitBtn" aria-live="polite" aria-busy="false">
             <span class="btn-text">Criar Cartão</span>
-            <span class="btn-loading" aria-hidden="true">Processando...</span>
+            <span class="btn-loading" aria-hidden="true" style="display:none;">Processando...</span>
           </button>
           <small class="form-note">Seu cartão será gerado e você receberá um link para compartilhar</small>
         </div>
@@ -94,6 +149,10 @@
     </div>
   </footer>
 
+  <script>
+    // Atualiza o ano no rodapé
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
   <script src="script.js"></script>
 </body>
 </html>
