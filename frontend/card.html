@@ -3,40 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seu Cartão Especial</title>
+  <meta name="description" content="Cartão especial criado com Messagelove">
+  <title>Cartão Especial | Messagelove</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="assets/coracao.png" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="assets/coracao.png" />
 </head>
 <body>
-  <div class="container">
-    <h1>Seu Cartão</h1>
-
-    <div id="cartao" class="cartao">
-      <h3 id="nome"></h3>
-      <p id="data"></p>
-      <p id="mensagem"></p>
-
-      <img id="foto" style="display: none;" alt="Imagem do cartão" />
-
-      <iframe 
-        id="spotify" 
-        width="100%" 
-        height="80" 
-        frameborder="0" 
-        allowtransparency="true" 
-        allow="encrypted-media" 
-        style="display: none;">
-      </iframe>
-
-      <audio 
-        id="mp3" 
-        controls 
-        style="display: none; width: 100%; margin-top: 10px;">
-        <source src="" type="audio/mpeg" />
-        Seu navegador não suporta áudio.
-      </audio>
+  <header class="card-header">
+    <div class="container">
+      <h1>Seu Cartão Especial</h1>
+      <p class="subtitle">Criado com ❤️ pelo Messagelove</p>
     </div>
-  </div>
+  </header>
+
+  <main class="card-main">
+    <div class="container">
+      <div id="cartao" class="cartao">
+        <div class="card-content">
+          <h2 id="nome" class="card-title"></h2>
+          
+          <div class="card-meta">
+            <p id="data" class="card-date"></p>
+          </div>
+          
+          <div class="card-message">
+            <p id="mensagem" class="message-text"></p>
+          </div>
+
+          <div class="card-media">
+            <img id="foto" class="card-image" alt="Imagem especial do cartão" />
+            
+            <div id="spotify-container" class="music-player">
+              <iframe 
+                id="spotify" 
+                width="100%" 
+                height="80" 
+                frameborder="0" 
+                allowtransparency="true" 
+                allow="encrypted-media">
+              </iframe>
+            </div>
+            
+            <div id="audio-container" class="music-player">
+              <audio id="mp3" controls>
+                <source src="" type="audio/mpeg" />
+                Seu navegador não suporta áudio.
+              </audio>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="card-footer">
+    <div class="container">
+      <p>Messagelove &copy; <span id="currentYear"></span></p>
+      <p class="share-text">Compartilhe esse cartão especial com quem você ama!</p>
+    </div>
+  </footer>
 
   <script src="card.js"></script>
 </body>
