@@ -21,6 +21,7 @@ app.use(cors({
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Accept']
 }));
+console.log('CORS configurado para:', frontendUrl || 'https://messagelove-frontend.vercel.app');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -62,6 +63,7 @@ let tokenExpiry = null;
 async function getSpotifyToken() {
   const now = Date.now();
   if (spotifyToken && tokenExpiry && now < tokenExpiry) {
+    console.log('Usando token armazenado, válido até:', new Date(tokenExpiry).toISOString());
     return spotifyToken;
   }
   try {
@@ -69,7 +71,7 @@ async function getSpotifyToken() {
     spotifyToken = data.body['access_token'];
     tokenExpiry = now + (data.body.expires_in * 1000) - 60000; // Renova 1 minuto antes
     spotifyApi.setAccessToken(spotifyToken);
-    console.log('Token obtido com sucesso:', spotifyToken);
+    console.log('Token obtido com sucesso:', spotifyToken, 'válido até:', new Date(tokenExpiry).toISOString());
     return spotifyToken;
   } catch (error) {
     console.error('Erro ao obter token do Spotify:', error.message);
@@ -80,9 +82,10 @@ async function getSpotifyToken() {
 async function fetchPreviewUrlFromTrackEndpoint(trackId) {
   try {
     const response = await spotifyApi.getTrack(trackId);
+    console.log('Resposta do /tracks para', trackId, ':', response.body);
     return response.body.preview_url || null;
   } catch (error) {
-    console.error('Erro ao buscar preview_url do endpoint /tracks:', error.message);
+    console.error('Erro ao buscar preview_url do endpoint /tracks para', trackId, ':', error.message, error.statusCode);
     return null;
   }
 }
@@ -115,7 +118,9 @@ app.get('/api/spotify/search', async (req, res) => {
         const previewUrl = await fetchPreviewUrlFromTrackEndpoint(track.id);
         if (previewUrl) {
           track.previewUrl = previewUrl;
-          console.log(`Preview_url encontrada para ${track.name}: ${track.previewUrl}`);
+          console.log(`Preview_url encontrada para ${track.name}: ${previewUrl}`);
+        } else {
+          console.log(`Nenhuma preview_url encontrada para ${track.name} após /tracks.`);
         }
       }
       return track;
@@ -123,7 +128,7 @@ app.get('/api/spotify/search', async (req, res) => {
     console.log('Faixas encontradas:', tracks.length);
     res.json(tracks);
   } catch (error) {
-    console.error('Erro na busca do Spotify:', error.message);
+    console.error('Erro na busca do Spotify:', error.message, error.stack);
     res.status(500).json({ message: error.message || 'Erro ao buscar músicas' });
   }
 });
