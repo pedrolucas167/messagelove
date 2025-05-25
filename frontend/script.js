@@ -1,100 +1,171 @@
+// script.js
+// Data: 25/05/2025, 05:50 PM -03
+
+// Módulo para gerenciar elementos DOM
 const DOM = {
-  form: document.getElementById('cardForm'),
-  nomeInput: document.getElementById('nome'),
-  dataInput: document.getElementById('data'),
-  mensagemInput: document.getElementById('mensagem'),
-  fotoInput: document.getElementById('fotoUpload'),
-  fotoPreview: document.getElementById('fotoPreview'),
-  removeFotoBtn: document.getElementById('removeFoto'),
-  submitBtn: document.getElementById('submitBtn'),
-  currentYear: document.getElementById('currentYear'),
-  fieldset: document.querySelector('fieldset'),
-  previewContainer: document.querySelector('[data-js="preview-container"]'),
-  spotifySection: document.querySelector('[data-js="spotify-section"]')
+  elements: {
+    form: document.getElementById('cardForm'),
+    nomeInput: document.getElementById('nome'),
+    dataInput: document.getElementById('data'),
+    mensagemInput: document.getElementById('mensagem'),
+    fotoInput: document.getElementById('fotoUpload'),
+    fotoPreview: document.getElementById('fotoPreview'),
+    removeFotoBtn: document.getElementById('removeFoto'),
+    submitBtn: document.getElementById('submitBtn'),
+    currentYear: document.getElementById('currentYear'),
+    fieldset: document.querySelector('fieldset'),
+    previewContainer: document.querySelector('[data-js="preview-container"]'),
+    spotifySection: document.querySelector('[data-js="spotify-section"]')
+  },
+
+  validateElements(requiredElements) {
+    const missingElements = Object.entries(requiredElements)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+    if (missingElements.length) {
+      console.error('Elementos DOM ausentes:', missingElements.join(', '));
+      return false;
+    }
+    return true;
+  },
+
+  getElement(key) {
+    return this.elements[key];
+  }
 };
 
-const PhotoManager = {
-  init() {
-    if (!DOM.fotoInput || !DOM.fotoPreview || !DOM.removeFotoBtn || !DOM.previewContainer) {
-      console.error('Elementos de upload de foto não encontrados:', {
-        fotoInput: !!DOM.fotoInput,
-        fotoPreview: !!DOM.fotoPreview,
-        removeFotoBtn: !!DOM.removeFotoBtn,
-        previewContainer: !!DOM.previewContainer
+// Módulo para gerenciar o áudio player (reutilizável)
+const AudioPlayer = {
+  initialize(audioElement, playPauseBtn, playIcon, pauseIcon, progressBar, durationElement, errorElement, trackName) {
+    audioElement.addEventListener('loadedmetadata', () => {
+      durationElement.textContent = `0:00 / ${this.formatTime(audioElement.duration)}`;
+    });
+
+    audioElement.addEventListener('timeupdate', () => {
+      const currentTime = audioElement.currentTime;
+      const duration = audioElement.duration || 30;
+      const progressPercent = (currentTime / duration) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+      durationElement.textContent = `${this.formatTime(currentTime)} / ${this.formatTime(duration)}`;
+    });
+
+    audioElement.addEventListener('ended', () => {
+      playPauseBtn.setAttribute('aria-label', `Tocar prévia${trackName ? ` de ${trackName}` : ''}`);
+      playIcon.style.display = 'inline';
+      pauseIcon.style.display = 'none';
+      audioElement.currentTime = 0;
+      progressBar.style.width = '0%';
+    });
+
+    audioElement.addEventListener('play', () => {
+      document.querySelectorAll('.track-preview, .card-audio-preview').forEach(otherAudio => {
+        if (otherAudio !== audioElement) {
+          otherAudio.pause();
+          otherAudio.currentTime = 0;
+          const otherBtn = otherAudio.closest('.audio-player').querySelector('.play-pause-btn');
+          otherBtn.querySelector('.play-icon').style.display = 'inline';
+          otherBtn.querySelector('.pause-icon').style.display = 'none';
+          otherBtn.setAttribute('aria-label', `Tocar prévia${otherAudio.closest('.spotify-track') ? ` de ${otherAudio.closest('.spotify-track').querySelector('.track-name').textContent}` : ''}`);
+        }
       });
-      return;
-    }
+    });
+
+    audioElement.addEventListener('error', () => {
+      console.error(`Erro ao reproduzir áudio${trackName ? ` para ${trackName}` : ''}:`, audioElement.error);
+      errorElement.style.display = 'block';
+      audioElement.closest('.audio-player').style.display = 'none';
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      if (audioElement.paused) {
+        audioElement.play();
+        playPauseBtn.setAttribute('aria-label', `Pausar prévia${trackName ? ` de ${trackName}` : ''}`);
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'inline';
+      } else {
+        audioElement.pause();
+        playPauseBtn.setAttribute('aria-label', `Tocar prévia${trackName ? ` de ${trackName}` : ''}`);
+        playIcon.style.display = 'inline';
+        pauseIcon.style.display = 'none';
+      }
+    });
+  },
+
+  formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+};
+
+// Módulo para gerenciar upload de fotos
+const PhotoManager = {
+  requiredElements: {
+    fotoInput: DOM.getElement('fotoInput'),
+    fotoPreview: DOM.getElement('fotoPreview'),
+    removeFotoBtn: DOM.getElement('removeFotoBtn'),
+    previewContainer: DOM.getElement('previewContainer')
+  },
+
+  init() {
+    if (!DOM.validateElements(this.requiredElements)) return;
     this.setupEventListeners();
   },
 
   setupEventListeners() {
-    DOM.fotoInput.addEventListener('change', () => this.handleFileSelect());
-    DOM.removeFotoBtn.addEventListener('click', () => this.removePhoto());
+    DOM.getElement('fotoInput').addEventListener('change', () => this.handleFileSelect());
+    DOM.getElement('removeFotoBtn').addEventListener('click', () => this.removePhoto());
   },
 
   handleFileSelect() {
-    const file = DOM.fotoInput.files[0];
+    const file = DOM.getElement('fotoInput').files[0];
     if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/png'];
     if (!validTypes.includes(file.type)) {
       alert('Por favor, selecione uma imagem JPG ou PNG.');
-      DOM.fotoInput.value = '';
+      DOM.getElement('fotoInput').value = '';
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
       alert('A imagem deve ter no máximo 5MB.');
-      DOM.fotoInput.value = '';
+      DOM.getElement('fotoInput').value = '';
       return;
     }
 
     const reader = new FileReader();
     reader.onload = () => {
-      DOM.fotoPreview.src = reader.result;
-      DOM.fotoPreview.style.display = 'block';
-      DOM.removeFotoBtn.style.display = 'flex';
-      DOM.previewContainer.hidden = false;
+      DOM.getElement('fotoPreview').src = reader.result;
+      DOM.getElement('fotoPreview').style.display = 'block';
+      DOM.getElement('removeFotoBtn').style.display = 'flex';
+      DOM.getElement('previewContainer').hidden = false;
     };
     reader.readAsDataURL(file);
   },
 
   removePhoto() {
-    DOM.fotoInput.value = '';
-    DOM.fotoPreview.src = '';
-    DOM.fotoPreview.style.display = 'none';
-    DOM.removeFotoBtn.style.display = 'none';
-    DOM.previewContainer.hidden = true;
+    DOM.getElement('fotoInput').value = '';
+    DOM.getElement('fotoPreview').src = '';
+    DOM.getElement('fotoPreview').style.display = 'none';
+    DOM.getElement('removeFotoBtn').style.display = 'none';
+    DOM.getElement('previewContainer').hidden = true;
   }
 };
 
+// Módulo para integração com o Spotify
 const Spotify = {
+  elements: {},
+
   init() {
-    this.section = this.createSection();
-    this.insertSection();
-    
-    this.searchInput = document.getElementById('spotifySearch');
-    this.searchBtn = document.getElementById('searchSpotifyBtn');
-    this.resultsContainer = document.getElementById('spotifyResults');
-    this.selectedTrackInput = document.getElementById('selectedSpotifyTrack');
-    this.previewUrlInput = document.getElementById('previewUrl');
-    
-    if (!this.searchInput || !this.searchBtn || !this.resultsContainer || !this.selectedTrackInput || !this.previewUrlInput) {
-      console.error('Elementos do Spotify não encontrados:', {
-        searchInput: !!this.searchInput,
-        searchBtn: !!this.searchBtn,
-        resultsContainer: !!this.resultsContainer,
-        selectedTrackInput: !!this.selectedTrackInput,
-        previewUrlInput: !!this.previewUrlInput
-      });
-      return;
-    }
-    
+    this.createAndInsertSection();
+    this.setupElements();
+    if (!this.validateElements()) return;
     console.log('Spotify inicializado com sucesso');
     this.setupEventListeners();
   },
 
-  createSection() {
+  createAndInsertSection() {
     const container = document.createElement('div');
     container.innerHTML = `
       <div class="form-group">
@@ -112,30 +183,40 @@ const Spotify = {
         <small class="field-hint">Busque e selecione uma música. Nem todas as músicas possuem prévia de 30 segundos.</small>
       </div>
     `;
-    return container;
-  },
-
-  insertSection() {
-    DOM.fieldset.insertBefore(this.section, DOM.submitBtn.closest('.form-group'));
+    DOM.getElement('fieldset').insertBefore(container, DOM.getElement('submitBtn').closest('.form-group'));
     console.log('Seção do Spotify inserida no DOM');
   },
 
+  setupElements() {
+    this.elements = {
+      searchInput: document.getElementById('spotifySearch'),
+      searchBtn: document.getElementById('searchSpotifyBtn'),
+      resultsContainer: document.getElementById('spotifyResults'),
+      selectedTrackInput: document.getElementById('selectedSpotifyTrack'),
+      previewUrlInput: document.getElementById('previewUrl')
+    };
+  },
+
+  validateElements() {
+    return DOM.validateElements(this.elements);
+  },
+
   setupEventListeners() {
-    this.searchBtn.addEventListener('click', () => {
+    this.elements.searchBtn.addEventListener('click', () => {
       console.log('Botão de busca clicado');
       this.search();
     });
+
     let timeout;
-    this.searchInput.addEventListener('input', () => {
-      console.log('Input detectado:', this.searchInput.value);
+    this.elements.searchInput.addEventListener('input', () => {
+      console.log('Input detectado:', this.elements.searchInput.value);
       clearTimeout(timeout);
       timeout = setTimeout(() => this.search(), 500);
     });
   },
 
   async search() {
-    const query = this.searchInput.value.trim();
-    
+    const query = this.elements.searchInput.value.trim();
     if (!query) {
       this.showFeedback('Digite o nome da música ou artista', 'error');
       return;
@@ -145,39 +226,30 @@ const Spotify = {
       this.toggleLoading(true);
       console.log('Iniciando busca com query:', query);
 
-      const response = await fetch(`https://messagelove-backend.onrender.com/api/spotify/search?q=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/spotify/search?q=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       });
-      
-      console.log('Resposta do backend:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url
-      });
-      
+
+      console.log('Resposta do backend:', { status: response.status, url: response.url });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Erro na resposta:', errorData);
         throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`);
       }
 
       const tracks = await response.json();
-      console.log('Faixas recebidas:', tracks);
-      
-      if (!Array.isArray(tracks)) {
-        throw new Error('Resposta inválida do servidor: não é um array');
-      }
-      
+      if (!Array.isArray(tracks)) throw new Error('Resposta inválida do servidor: não é um array');
+
       this.displayResults(tracks);
     } catch (error) {
       console.error('Erro na busca:', error);
       let errorMessage = error.message;
       if (error.message.includes('Failed to fetch')) {
-        errorMessage = 'Não foi possível conectar ao servidor em https://messagelove-backend.onrender.com/api/spotify/search. Verifique se: 1) O backend está rodando com HTTPS na porta 3001; 2) O CORS está configurado para http://127.0.0.1:5500; 3) Não há bloqueios devido a HTTP/HTTPS misto; 4) Os certificados SSL estão válidos.';
+        errorMessage = 'Não foi possível conectar ao servidor em https://messagelove-backend.onrender.com/api/spotify/search. Verifique se: 1) O backend está rodando; 2) O CORS está configurado para https://messagelove-frontend.vercel.app; 3) A conexão está estável.';
       }
       this.showFeedback(errorMessage, 'error');
     } finally {
@@ -186,22 +258,17 @@ const Spotify = {
   },
 
   displayResults(tracks) {
-    this.resultsContainer.innerHTML = '';
+    this.elements.resultsContainer.innerHTML = '';
     console.log('Exibindo resultados:', tracks.length);
-    
+
     if (!tracks.length) {
       this.showFeedback('Nenhuma música encontrada. Tente outro termo.', 'info');
       return;
     }
 
     const fragment = document.createDocumentFragment();
-    
-    tracks.forEach(track => {
-      const trackElement = this.createTrackElement(track);
-      fragment.appendChild(trackElement);
-    });
-    
-    this.resultsContainer.appendChild(fragment);
+    tracks.forEach(track => fragment.appendChild(this.createTrackElement(track)));
+    this.elements.resultsContainer.appendChild(fragment);
     console.log('Resultados inseridos no DOM');
   },
 
@@ -209,8 +276,7 @@ const Spotify = {
     const element = document.createElement('div');
     element.className = 'spotify-track';
     element.innerHTML = `
-      <img src="${track.albumImage}" alt="Capa do álbum ${track.albumName}" 
-           class="track-image" width="60" height="60" />
+      <img src="${track.albumImage}" alt="Capa do álbum ${track.albumName}" class="track-image" width="60" height="60" />
       <div class="track-info">
         <h4 class="track-name">${track.name}</h4>
         <p class="track-artist">${track.artists.join(', ')}</p>
@@ -237,78 +303,26 @@ const Spotify = {
           ` : '<span class="no-preview-text" aria-label="Prévia não disponível">Sem prévia</span>'}
         </div>
       </div>
-      <button type="button" class="btn select-track-btn" 
-              data-track-id="${track.id}" aria-label="Selecionar ${track.name}">
+      <button type="button" class="btn select-track-btn" data-track-id="${track.id}" aria-label="Selecionar ${track.name}">
         Selecionar
       </button>
     `;
-    
+
     const audioElement = element.querySelector('.track-preview');
-    const playPauseBtn = element.querySelector('.play-pause-btn');
-    const playIcon = element.querySelector('.play-icon');
-    const pauseIcon = element.querySelector('.pause-icon');
-    const progressBar = element.querySelector('.progress');
-    const durationElement = element.querySelector('.duration');
-    const errorElement = element.querySelector('.preview-error');
-    
     if (audioElement) {
-      audioElement.addEventListener('loadedmetadata', () => {
-        durationElement.textContent = `0:00 / ${formatTime(audioElement.duration)}`;
-      });
-
-      audioElement.addEventListener('timeupdate', () => {
-        const currentTime = audioElement.currentTime;
-        const duration = audioElement.duration || 30;
-        const progressPercent = (currentTime / duration) * 100;
-        progressBar.style.width = `${progressPercent}%`;
-        durationElement.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-      });
-
-      audioElement.addEventListener('ended', () => {
-        playPauseBtn.setAttribute('aria-label', `Tocar prévia de ${track.name}`);
-        playIcon.style.display = 'inline';
-        pauseIcon.style.display = 'none';
-        audioElement.currentTime = 0;
-        progressBar.style.width = '0%';
-      });
-
-      audioElement.addEventListener('play', () => {
-        document.querySelectorAll('.track-preview').forEach(otherAudio => {
-          if (otherAudio !== audioElement) {
-            otherAudio.pause();
-            otherAudio.currentTime = 0;
-            const otherBtn = otherAudio.closest('.audio-player').querySelector('.play-pause-btn');
-            otherBtn.querySelector('.play-icon').style.display = 'inline';
-            otherBtn.querySelector('.pause-icon').style.display = 'none';
-            otherBtn.setAttribute('aria-label', `Tocar prévia de ${otherAudio.closest('.spotify-track').querySelector('.track-name').textContent}`);
-          }
-        });
-      });
-
-      audioElement.addEventListener('error', () => {
-        console.error(`Erro ao reproduzir prévia para ${track.name}:`, audioElement.error);
-        errorElement.style.display = 'block';
-        audioElement.closest('.audio-player').style.display = 'none';
-      });
-
-      playPauseBtn.addEventListener('click', () => {
-        if (audioElement.paused) {
-          audioElement.play();
-          playPauseBtn.setAttribute('aria-label', `Pausar prévia de ${track.name}`);
-          playIcon.style.display = 'none';
-          pauseIcon.style.display = 'inline';
-        } else {
-          audioElement.pause();
-          playPauseBtn.setAttribute('aria-label', `Tocar prévia de ${track.name}`);
-          playIcon.style.display = 'inline';
-          pauseIcon.style.display = 'none';
-        }
-      });
+      AudioPlayer.initialize(
+        audioElement,
+        element.querySelector('.play-pause-btn'),
+        element.querySelector('.play-icon'),
+        element.querySelector('.pause-icon'),
+        element.querySelector('.progress'),
+        element.querySelector('.duration'),
+        element.querySelector('.preview-error'),
+        track.name
+      );
     }
 
-    element.querySelector('.select-track-btn')
-      .addEventListener('click', () => this.selectTrack(track, element));
-    
+    element.querySelector('.select-track-btn').addEventListener('click', () => this.selectTrack(track, element));
     return element;
   },
 
@@ -317,17 +331,16 @@ const Spotify = {
       el.classList.remove('selected');
       el.querySelector('.select-track-btn').textContent = 'Selecionar';
     });
-    
+
     element.classList.add('selected');
     element.querySelector('.select-track-btn').textContent = 'Selecionado ✓';
-    this.selectedTrackInput.value = track.id;
-    this.previewUrlInput.value = track.previewUrl || '';
-    
+    this.elements.selectedTrackInput.value = track.id;
+    this.elements.previewUrlInput.value = track.previewUrl || '';
     this.showSelectedTrackFeedback(track);
   },
 
   showSelectedTrackFeedback(track) {
-    this.resultsContainer.insertAdjacentHTML('afterbegin',
+    this.elements.resultsContainer.insertAdjacentHTML('afterbegin',
       `<div class="selected-track-info">
         Música selecionada: <strong>${track.name}</strong> - ${track.artists.join(', ')}
         ${track.previewUrl ? '<br><em>Prévia disponível</em>' : '<br><em>Esta música não tem prévia disponível.</em>'}
@@ -337,45 +350,42 @@ const Spotify = {
   },
 
   showFeedback(message, type = 'info') {
-    this.resultsContainer.innerHTML = 
-      `<div class="feedback feedback--${type}">${message}</div>`;
+    this.elements.resultsContainer.innerHTML = `<div class="feedback feedback--${type}">${message}</div>`;
     console.log(`Feedback exibido: ${type} - ${message}`);
   },
 
   toggleLoading(isLoading) {
-    this.searchBtn.disabled = isLoading;
-    this.searchBtn.innerHTML = isLoading 
-      ? '<span class="btn__loading"></span> Buscando...' 
-      : 'Buscar';
+    this.elements.searchBtn.disabled = isLoading;
+    this.elements.searchBtn.innerHTML = isLoading ? '<span class="btn__loading"></span> Buscando...' : 'Buscar';
     console.log('Estado de loading:', isLoading);
   }
 };
 
+// Módulo para gerenciar o formulário
 const FormManager = {
+  requiredElements: {
+    form: DOM.getElement('form'),
+    submitBtn: DOM.getElement('submitBtn'),
+    nomeInput: DOM.getElement('nomeInput'),
+    mensagemInput: DOM.getElement('mensagemInput')
+  },
+
   init() {
-    if (!DOM.form || !DOM.submitBtn || !DOM.nomeInput || !DOM.mensagemInput) {
-      console.error('Elementos do formulário não encontrados:', {
-        form: !!DOM.form,
-        submitBtn: !!DOM.submitBtn,
-        nomeInput: !!DOM.nomeInput,
-        mensagemInput: !!DOM.mensagemInput
-      });
-      return;
-    }
+    if (!DOM.validateElements(this.requiredElements)) return;
     this.setupEventListeners();
     this.setCurrentYear();
   },
 
   setupEventListeners() {
-    DOM.form.addEventListener('submit', async (e) => {
+    DOM.getElement('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       await this.handleSubmit();
     });
   },
 
   async handleSubmit() {
-    const nome = DOM.nomeInput.value.trim();
-    const mensagem = DOM.mensagemInput.value.trim();
+    const nome = DOM.getElement('nomeInput').value.trim();
+    const mensagem = DOM.getElement('mensagemInput').value.trim();
 
     if (!nome || !mensagem) {
       alert('Por favor, preencha os campos Nome e Mensagem.');
@@ -385,44 +395,30 @@ const FormManager = {
     const formData = new FormData();
     formData.append('nome', nome);
     formData.append('mensagem', mensagem);
-    if (DOM.dataInput.value) formData.append('data', DOM.dataInput.value);
-    if (DOM.fotoInput.files[0]) formData.append('foto', DOM.fotoInput.files[0]);
-    if (DOM.selectedTrackInput?.value) formData.append('spotify', DOM.selectedTrackInput.value);
-    if (DOM.previewUrlInput?.value) formData.append('previewUrl', DOM.previewUrlInput.value);
+    if (DOM.getElement('dataInput').value) formData.append('data', DOM.getElement('dataInput').value);
+    if (DOM.getElement('fotoInput').files[0]) formData.append('foto', DOM.getElement('fotoInput').files[0]);
+    if (Spotify.elements.selectedTrackInput?.value) formData.append('spotify', Spotify.elements.selectedTrackInput.value);
+    if (Spotify.elements.previewUrlInput?.value) formData.append('previewUrl', Spotify.elements.previewUrlInput.value);
 
     try {
-      DOM.submitBtn.classList.add('loading');
-      DOM.submitBtn.disabled = true;
+      DOM.getElement('submitBtn').classList.add('loading');
+      DOM.getElement('submitBtn').disabled = true;
 
       console.log('Enviando formulário com dados:', {
         nome,
         mensagem,
-        data: DOM.dataInput.value,
-        hasFoto: !!DOM.fotoInput.files[0],
-        spotify: DOM.selectedTrackInput?.value,
-        previewUrl: DOM.previewUrlInput?.value
+        data: DOM.getElement('dataInput').value,
+        hasFoto: !!DOM.getElement('fotoInput').files[0],
+        spotify: Spotify.elements.selectedTrackInput?.value,
+        previewUrl: Spotify.elements.previewUrlInput?.value
       });
 
-
-const spotifyResponse = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/spotify/search?q=${encodeURIComponent(query)}`, {
-  method: 'GET',
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-});
-
-
-const response = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/cards`, {
-  method: 'POST',
-  body: formData
-});
-
-      console.log('Resposta do envio:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url
+      const response = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/cards`, {
+        method: 'POST',
+        body: formData
       });
+
+      console.log('Resposta do envio:', { status: response.status, url: response.url });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -431,18 +427,17 @@ const response = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-
 
       const data = await response.json();
       console.log('Cartão criado:', data);
-
       this.showCardPreview(data.cardData);
     } catch (error) {
       console.error('Erro ao enviar formulário:', error);
       let errorMessage = error.message;
       if (error.message.includes('Failed to fetch')) {
-        errorMessage = 'Não foi possível conectar ao servidor em https://messagelove-backend.onrender.com/api/cards. Verifique se o backend está rodando com HTTPS e se o CORS está configurado para http://127.0.0.1:5500.';
+        errorMessage = 'Não foi possível conectar ao servidor em https://messagelove-backend.onrender.com/api/cards. Verifique se: 1) O backend está rodando; 2) O CORS está configurado para https://messagelove-frontend.vercel.app; 3) A conexão está estável.';
       }
       alert(`Erro: ${errorMessage}`);
     } finally {
-      DOM.submitBtn.classList.remove('loading');
-      DOM.submitBtn.disabled = false;
+      DOM.getElement('submitBtn').classList.remove('loading');
+      DOM.getElement('submitBtn').disabled = false;
     }
   },
 
@@ -480,71 +475,28 @@ const response = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-
     `;
 
     const audioElement = previewContainer.querySelector('.card-audio-preview');
-    const playPauseBtn = previewContainer.querySelector('.play-pause-btn');
-    const playIcon = previewContainer.querySelector('.play-icon');
-    const pauseIcon = previewContainer.querySelector('.pause-icon');
-    const progressBar = previewContainer.querySelector('.progress');
-    const durationElement = previewContainer.querySelector('.duration');
-    const errorElement = previewContainer.querySelector('.preview-error');
-    
     if (audioElement) {
-      audioElement.addEventListener('loadedmetadata', () => {
-        durationElement.textContent = `0:00 / ${formatTime(audioElement.duration)}`;
-      });
-
-      audioElement.addEventListener('timeupdate', () => {
-        const currentTime = audioElement.currentTime;
-        const duration = audioElement.duration || 30;
-        const progressPercent = (currentTime / duration) * 100;
-        progressBar.style.width = `${progressPercent}%`;
-        durationElement.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-      });
-
-      audioElement.addEventListener('ended', () => {
-        playPauseBtn.setAttribute('aria-label', 'Tocar prévia');
-        playIcon.style.display = 'inline';
-        pauseIcon.style.display = 'none';
-        audioElement.currentTime = 0;
-        progressBar.style.width = '0%';
-      });
-
-      audioElement.addEventListener('error', () => {
-        console.error('Erro ao reproduzir prévia no cartão:', audioElement.error);
-        errorElement.style.display = 'block';
-        audioElement.closest('.audio-player').style.display = 'none';
-      });
-
-      playPauseBtn.addEventListener('click', () => {
-        if (audioElement.paused) {
-          audioElement.play();
-          playPauseBtn.setAttribute('aria-label', 'Pausar prévia');
-          playIcon.style.display = 'none';
-          pauseIcon.style.display = 'inline';
-        } else {
-          audioElement.pause();
-          playPauseBtn.setAttribute('aria-label', 'Tocar prévia');
-          playIcon.style.display = 'inline';
-          pauseIcon.style.display = 'none';
-        }
-      });
+      AudioPlayer.initialize(
+        audioElement,
+        previewContainer.querySelector('.play-pause-btn'),
+        previewContainer.querySelector('.play-icon'),
+        previewContainer.querySelector('.pause-icon'),
+        previewContainer.querySelector('.progress'),
+        previewContainer.querySelector('.duration'),
+        previewContainer.querySelector('.preview-error')
+      );
     }
 
     document.body.appendChild(previewContainer);
   },
 
   setCurrentYear() {
-    if (DOM.currentYear) {
-      DOM.currentYear.textContent = new Date().getFullYear();
-    }
+    const currentYear = DOM.getElement('currentYear');
+    if (currentYear) currentYear.textContent = new Date().getFullYear();
   }
 };
 
-function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-}
-
+// Inicialização
 function init() {
   console.log('Inicializando aplicação...');
   setTimeout(() => {
