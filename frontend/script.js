@@ -144,8 +144,8 @@ const Spotify = {
     try {
       this.toggleLoading(true);
       console.log('Iniciando busca com query:', query);
-      
-      const response = await fetch(`https://localhost:3001/api/spotify/search?q=${encodeURIComponent(query)}`, {
+
+      const response = await fetch(`https://messagelove-backend.onrender.com/api/spotify/search?q=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -177,7 +177,7 @@ const Spotify = {
       console.error('Erro na busca:', error);
       let errorMessage = error.message;
       if (error.message.includes('Failed to fetch')) {
-        errorMessage = 'Não foi possível conectar ao servidor em https://localhost:3001/api/spotify/search. Verifique se: 1) O backend está rodando com HTTPS na porta 3001; 2) O CORS está configurado para http://127.0.0.1:5500; 3) Não há bloqueios devido a HTTP/HTTPS misto; 4) Os certificados SSL estão válidos.';
+        errorMessage = 'Não foi possível conectar ao servidor em https://messagelove-backend.onrender.com/api/spotify/search. Verifique se: 1) O backend está rodando com HTTPS na porta 3001; 2) O CORS está configurado para http://127.0.0.1:5500; 3) Não há bloqueios devido a HTTP/HTTPS misto; 4) Os certificados SSL estão válidos.';
       }
       this.showFeedback(errorMessage, 'error');
     } finally {
