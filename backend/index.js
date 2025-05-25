@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3001;
 
 // Configurar CORS para permitir o frontend (atualizar para o domínio do deploy)
 app.use(cors({ 
-  origin: process.env.FRONTEND_URL || 'http://127.0.0.1:5500', // Ajustar para o domínio do frontend no deploy
+  origin: process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app', // Ajustar para o domínio do frontend no deploy
   credentials: true,
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Accept']

@@ -534,7 +534,7 @@ const response = await fetch(`${process.env.BACKEND_URL || 'https://localhost:30
 
   setCurrentYear() {
     if (DOM.currentYear) {
-      DOM.currentYear.textContent = new Date().getFullYear(); // 2025, baseado na data atual
+      DOM.currentYear.textContent = new Date().getFullYear();
     }
   }
 };
