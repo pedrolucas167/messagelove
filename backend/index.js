@@ -191,7 +191,7 @@ app.post('/api/cards', (req, res) => {
         console.error('Erro ao salvar cartão:', err.message);
         return res.status(500).json({ message: 'Erro ao salvar cartão' });
       }
-      const viewLink = `${process.env.BACKEND_URL || 'https://localhost:3001'}/card/${cardId}`;
+      const viewLink = `${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/card/${cardId}`;
       res.json({ viewLink, cardData });
     }
   );

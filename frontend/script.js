@@ -404,7 +404,7 @@ const FormManager = {
       });
 
 
-      const spotifyResponse = await fetch(`${process.env.BACKEND_URL || 'https://localhost:3001'}/api/spotify/search?q=${encodeURIComponent(query)}`, {
+      const spotifyResponse = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/spotify/search?q=${encodeURIComponent(query)}`, {
   method: 'GET',
   headers: {
     'Accept': 'application/json',
@@ -413,7 +413,7 @@ const FormManager = {
 });
 
 
-const response = await fetch(`${process.env.BACKEND_URL || 'https://localhost:3001'}/api/cards`, {
+const response = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/cards`, {
   method: 'POST',
   body: formData
 });
@@ -437,7 +437,7 @@ const response = await fetch(`${process.env.BACKEND_URL || 'https://localhost:30
       console.error('Erro ao enviar formulário:', error);
       let errorMessage = error.message;
       if (error.message.includes('Failed to fetch')) {
-        errorMessage = 'Não foi possível conectar ao servidor em https://localhost:3001/api/cards. Verifique se o backend está rodando com HTTPS e se o CORS está configurado para http://127.0.0.1:5500.';
+        errorMessage = 'Não foi possível conectar ao servidor em https://messagelove-backend.onrender.com/api/cards. Verifique se o backend está rodando com HTTPS e se o CORS está configurado para http://127.0.0.1:5500.';
       }
       alert(`Erro: ${errorMessage}`);
     } finally {
