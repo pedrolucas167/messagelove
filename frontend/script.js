@@ -404,7 +404,7 @@ const FormManager = {
       });
 
 
-      const spotifyResponse = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/spotify/search?q=${encodeURIComponent(query)}`, {
+const spotifyResponse = await fetch(`${process.env.BACKEND_URL || 'https://messagelove-backend.onrender.com'}/api/spotify/search?q=${encodeURIComponent(query)}`, {
   method: 'GET',
   headers: {
     'Accept': 'application/json',
