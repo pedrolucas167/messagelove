@@ -1,5 +1,3 @@
-// script.js
-// Data: 25/05/2025, 05:50 PM -03
 
 // Módulo para gerenciar elementos DOM
 const DOM = {
