@@ -1,129 +1,168 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Messagelove</title>
+  <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e músicas para presentear quem você ama." />
+  <meta name="theme-color" content="#e91e63" />
+  <title>Messagelove - Crie Cartões Especiais Personalizados</title>
+  
+  <!-- Pré-conexão para melhor performance -->
+  <link rel="preconnect" href="https://localhost:3001" />
+  
+  <!-- Favicon e ícones -->
+  <link rel="icon" href="/assets/coracao.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="/assets/coracao.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/coracao-180x180.png" sizes="180x180" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  
+  <!-- Folha de estilos -->
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM8b+z4xj5c5e5e5e5e5e5e5e5e5e5e5e5e5" crossorigin="anonymous" />
-  <link rel="icon" href="/assets/coracao.png" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="/assets/coracao.png" />
- 
+  
+  <!-- CSS crítico inline -->
+  <style>
+    .no-js-alert {
+      display: none;
+      padding: var(--space-md); /* Usar variável de espaçamento */
+      background-color: var(--color-error);
+      color: var(--color-white);
+      text-align: center;
+      border-radius: var(--radius-md);
+    }
+    .no-js .no-js-alert { display: block; }
+    .no-js .main-content { display: none; }
+  </style>
+  
+  <!-- Meta tags para SEO e compartilhamento -->
+  <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
+  <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e músicas para presentear quem você ama." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://messagelove.app" />
+  <meta property="og:image" content="/assets/og-image.jpg" />
+  <meta property="og:locale" content="pt_BR" />
 </head>
-<body>
-  <div class="container">
-    <h1>Criar Cartão Especial</h1>
-    
-    <div class="form-container">
-      <form id="cardForm">
-        <div class="form-group">
-          <label for="nome">Nome do Destinatário:</label>
-          <input type="text" id="nome" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="data">Data Especial (opcional):</label>
-          <input type="date" id="data">
-        </div>
-        
-        <div class="form-group">
-          <label for="mensagem">Mensagem:</label>
-          <textarea id="mensagem" required></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label for="fotoUpload">Foto (opcional):</label>
-          <input type="file" id="fotoUpload" accept="image/*">
-          <img id="fotoPreview" class="preview" alt="Pré-visualização da foto">
-        </div>
-        
-        <div class="form-group">
-          <label for="audioUpload">Música (MP3, opcional):</label>
-          <input type="file" id="audioUpload" accept="audio/*">
-          <audio id="audioPreview" class="preview" controls></audio>
-        </div>
-        
-        <div class="form-group">
-          <label for="spotify">Link do Spotify (opcional):</label>
-          <input type="text" id="spotify" placeholder="Cole o link ou ID da música do Spotify">
-        </div>
-        
-        <button type="submit">Criar Cartão</button>
-      </form>
-    </div>
+<body class="no-js">
+  <!-- Alerta para usuários sem JavaScript -->
+  <div class="no-js-alert" role="alert">
+    <p>Este site requer JavaScript para funcionar corretamente. Por favor, ative-o em suas configurações do navegador.</p>
   </div>
 
+  <!-- Cabeçalho -->
+  <header class="main-header" role="banner">
+    <div class="container">
+      <h1>Crie um Cartão Especial</h1>
+      <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e músicas</p>
+    </div>
+  </header>
+
+  <!-- Conteúdo principal -->
+  <main class="main-content" role="main">
+    <div class="container">
+      <form id="cardForm" class="card-form" novalidate data-js="card-form">
+        <fieldset class="form-section">
+          <legend class="section-title"><h2>Informações do Cartão</h2></legend>
+          
+          <div class="form-group">
+            <label for="nome" class="required-field">
+              Nome do Destinatário
+              <span class="sr-only">(obrigatório)</span>
+            </label>
+            <input type="text" 
+                   id="nome" 
+                   name="nome" 
+                   required 
+                   placeholder="Para quem é este cartão?"
+                   aria-required="true"
+                   data-js="nome-input" />
+            <small class="field-hint">Obrigatório</small>
+          </div>
+
+          <div class="form-group">
+            <label for="data">Data Especial</label>
+            <input type="date" 
+                   id="data" 
+                   name="data" 
+                   aria-describedby="dataHelp"
+                   data-js="data-input" />
+            <small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
+          </div>
+
+          <div class="form-group">
+            <label for="mensagem" class="required-field">
+              Sua Mensagem
+              <span class="sr-only">(obrigatório)</span>
+            </label>
+            <textarea id="mensagem" 
+                      name="mensagem" 
+                      required 
+                      placeholder="Escreva sua mensagem especial..."
+                      aria-required="true"
+                      data-js="mensagem-input"></textarea>
+            <small class="field-hint">Obrigatório</small>
+          </div>
+
+          <div class="form-group file-upload" data-js="file-upload">
+            <label for="fotoUpload">Adicionar Foto</label>
+            <input type="file" 
+                   id="fotoUpload" 
+                   name="foto" 
+                   accept="image/jpeg,image/png" 
+                   aria-describedby="fotoHelp"
+                   data-js="foto-input" />
+            <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG (máx. 5MB)</small>
+            <div class="preview-container" hidden data-js="preview-container">
+              <img id="fotoPreview" 
+                   class="preview" 
+                   alt="Pré-visualização da foto selecionada" 
+                   data-js="foto-preview" />
+              <button type="button" 
+                      class="btn btn-remove" 
+                      id="removeFoto" 
+                      aria-label="Remover foto selecionada"
+                      data-js="remove-foto">
+                ×
+              </button>
+            </div>
+          </div>
+
+          <!-- Seção Spotify (injetada via JavaScript) -->
+          <div data-js="spotify-section"></div>
+
+          <div class="form-group form-actions">
+            <button type="submit" 
+                    class="btn btn-submit btn--primary" 
+                    id="submitBtn"
+                    data-js="submit-btn">
+              <span class="btn-text">Criar Cartão</span>
+              <span class="btn-loading" aria-hidden="true" hidden>
+                <span class="btn-spinner" aria-hidden="true"></span>
+                Processando...
+              </span>
+            </button>
+            <small class="form-note">
+              Seu cartão será gerado e você receberá um link único para compartilhar.
+            </small>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="main-footer" role="contentinfo">
+    <div class="container">
+      <p>
+        <span>Messagelove © <span id="currentYear" data-js="current-year">2025</span></span>
+        <span>Feito com <span aria-label="coração">❤️</span> por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Pedro Marques</a></span>
+      </p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
   <script>
-    // Preview das imagens
-    document.getElementById('fotoUpload').addEventListener('change', function(e) {
-      const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const preview = document.getElementById('fotoPreview');
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-        }
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Preview do áudio
-    document.getElementById('audioUpload').addEventListener('change', function(e) {
-      const file = this.files[0];
-      if (file) {
-        const preview = document.getElementById('audioPreview');
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = 'block';
-      }
-    });
-
-    // Envio do formulário
-    document.getElementById('cardForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const formData = new FormData();
-      formData.append('nome', document.getElementById('nome').value);
-      formData.append('mensagem', document.getElementById('mensagem').value);
-      formData.append('data', document.getElementById('data').value);
-      
-      // Adiciona arquivos se existirem
-      const fotoFile = document.getElementById('fotoUpload').files[0];
-      const audioFile = document.getElementById('audioUpload').files[0];
-      
-      if (fotoFile) formData.append('foto', fotoFile);
-      if (audioFile) formData.append('audio', audioFile);
-      
-      // Spotify (extrai o ID da URL se for um link)
-      const spotifyInput = document.getElementById('spotify').value;
-      if (spotifyInput) {
-        let spotifyId = spotifyInput;
-        // Se for uma URL, extrai o ID
-        const spotifyRegex = /spotify:track:([a-zA-Z0-9]+)|open\.spotify\.com\/track\/([a-zA-Z0-9]+)/;
-        const match = spotifyInput.match(spotifyRegex);
-        if (match) {
-          spotifyId = match[1] || match[2];
-        }
-        formData.append('spotify', spotifyId);
-      }
-
-      try {
-        const response = await fetch('http://localhost:3001/api/cards', {
-          method: 'POST',
-          body: formData
-        });
-        
-        const result = await response.json();
-        if (result.success && result.viewLink) {
-          window.location.href = result.viewLink;
-        } else {
-          alert('Erro ao criar cartão: ' + (result.error || 'Erro desconhecido'));
-        }
-      } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao enviar dados para o servidor');
-      }
-    });
+    // Remover classe no-js se JavaScript estiver habilitado
+    document.body.classList.remove('no-js');
   </script>
+  <script src="script.js"></script>
 </body>
 </html>
