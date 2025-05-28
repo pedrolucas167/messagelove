@@ -1,21 +1,24 @@
+/* Import Google Font 'Inter' - Movido para o topo */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* ============================================
    🔧 CONFIGURAÇÕES GLOBAIS
    ============================================ */
 
 :root {
-  --color-primary: hsl(330, 70%, 60%); /* Um roxo/rosa mais suave e elegante */
-  --color-primary-dark: hsl(313, 60%, 45%); /* Versão mais escura para hover/active */
-  --color-secondary: hsl(255, 80%, 75%); /* Tom mais claro para detalhes */
-  --color-bg: hsl(120, 9%, 98%); /* Fundo muito claro, quase branco, com um toque de cinza */
-  --color-white: hsl(0, 0%, 100%); /* Branco puro */
-  --color-text: hsl(240, 5%, 20%); /* Texto principal, um cinza escuro suave */
-  --color-muted: hsl(240, 3%, 45%); /* Texto secundário, um cinza médio */
-  --color-light: hsl(240, 10%, 93%); /* Fundo claro para elementos */
-  --color-border: hsl(240, 5%, 85%); /* Bordas sutis */
-  --color-error: hsl(0, 70%, 55%); /* Vermelho de erro vibrante */
-  --color-success: hsl(120, 60%, 45%); /* Verde de sucesso suave */
-  --color-spotify: hsl(141, 70%, 40%); /* Verde Spotify ligeiramente aprofundado */
-  --color-overlay: hsla(240, 5%, 10%, 0.15); /* Overlay mais escuro e sutil */
+  --color-primary: hsl(330, 70%, 60%);
+  --color-primary-dark: hsl(313, 60%, 45%);
+  --color-secondary: hsl(255, 80%, 75%);
+  --color-bg: hsl(120, 9%, 98%);
+  --color-white: hsl(0, 0%, 100%);
+  --color-text: hsl(240, 5%, 20%);
+  --color-muted: hsl(240, 3%, 45%);
+  --color-light: hsl(240, 10%, 93%);
+  --color-border: hsl(240, 5%, 85%);
+  --color-error: hsl(0, 70%, 55%);
+  --color-success: hsl(120, 60%, 45%);
+  --color-spotify: hsl(141, 70%, 40%);
+  --color-overlay: hsla(240, 5%, 10%, 0.15);
 
   /* 📐 ESPAÇAMENTO */
   --space-xxs: 0.25rem; /* 4px */
@@ -28,7 +31,7 @@
 
   /* 🔄 TRANSIÇÕES */
   --transition-fast: 150ms ease-out;
-  --transition-base: 250ms cubic-bezier(0.25, 0.8, 0.25, 1); /* Mais suave e elegante */
+  --transition-base: 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
   --transition-medium: 350ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 500ms ease-out;
 
@@ -39,12 +42,13 @@
   --radius-xl: 1.5rem; /* 24px */
   --radius-pill: 9999px;
 
-  /* ☁️ SOMBRAS - Mais suaves e com maior profundidade */
+  /* ☁️ SOMBRAS */
   --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
-  --shadow-focus: 0 0 0 4px hsla(255, 70%, 60%, 0.25); /* Cor primária com transparência */
+  --shadow-focus: 0 0 0 4px hsla(var(--color-primary), 0.25); /* Usando a cor primária HSL para o foco */
+  --shadow-focus-spotify: 0 0 0 4px hsla(141, 70%, 40%, 0.2); /* Foco específico para Spotify */
 
   /* 📱 BREAKPOINTS */
   --breakpoint-sm: 480px;
@@ -68,6 +72,7 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  font-size: 16px; /* Define um tamanho de fonte base para rem funcionar previsivelmente */
 }
 
 body {
@@ -79,10 +84,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  min-height: 100vh; /* Garante que o body ocupe pelo menos toda a altura da viewport */
 }
-
-/* Import Google Font 'Inter' */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 img,
 picture,
@@ -100,13 +103,14 @@ ul {
 }
 
 a {
-  color: inherit;
+  color: var(--color-primary); /* Cor padrão para links */
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 a:hover {
-  text-decoration: none;
   color: var(--color-primary-dark);
+  text-decoration: underline; /* Sublinhado no hover para melhor acessibilidade */
 }
 
 button,
@@ -117,7 +121,7 @@ textarea {
   color: inherit;
   background-color: transparent;
   border: none;
-  appearance: none;
+  /* appearance: none;  Pode ser problemático para acessibilidade em alguns inputs, use com cautela */
 }
 
 button {
@@ -126,35 +130,33 @@ button {
   user-select: none;
 }
 
+/* ============================================
+   🧱 COMPONENTES GENÉRICOS
+   ============================================ */
 .container {
   width: 100%;
-  max-width: min(960px, 92vw);
+  max-width: min(960px, 92vw); /* Usa min() para flexibilidade */
   margin-inline: auto;
-  padding-inline: var(--space-md);
+  padding-inline: var(--space-md); /* Espaçamento lateral */
 }
 
 .card {
   background-color: var(--color-white);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: hidden;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  overflow: hidden; /* Para conter elementos filhos com bordas arredondadas */
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px); /* Leve elevação no hover */
   box-shadow: var(--shadow-lg);
 }
 
-.form-section {
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
+/* Botões */
 .btn {
-  --btn-bg: var(--color-primary);
-  --btn-text: var(--color-white);
+  --btn-bg-color: var(--color-primary); /* Variável local para cor de fundo */
+  --btn-text-color: var(--color-white); /* Variável local para cor do texto */
   
   display: inline-flex;
   align-items: center;
@@ -163,76 +165,91 @@ button {
   padding: var(--space-sm) var(--space-lg);
   border-radius: var(--radius-md);
   font-weight: 600;
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-  transition: all var(--transition-base);
-  border: 1px solid transparent;
+  background-color: var(--btn-bg-color);
+  color: var(--btn-text-color);
+  transition: 
+    background-color var(--transition-base),
+    color var(--transition-base),
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    opacity var(--transition-base);
+  border: 1px solid transparent; /* Para consistência de tamanho com botões outline */
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  text-align: center; /* Garante centralização do texto */
+  white-space: nowrap; /* Evita quebra de linha no texto do botão */
 }
 
 .btn:hover:not(:disabled) {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
-  background-color: var(--color-primary-dark);
+  /* A cor de fundo do hover será definida pelos modificadores */
 }
 
 .btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0); /* Remove a elevação ao clicar */
   box-shadow: var(--shadow-sm);
-  background-color: var(--color-primary-dark);
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  filter: grayscale(50%);
+  filter: grayscale(60%); /* Mais sutil que 50% */
+  box-shadow: none !important; /* Remove sombra em botões desabilitados */
+  transform: none !important; /* Remove transform em botões desabilitados */
 }
 
 .btn--primary {
-  --btn-bg: var(--color-primary);
-  --btn-text: var(--color-white);
+  --btn-bg-color: var(--color-primary);
+  --btn-text-color: var(--color-white);
+}
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
 }
 
 .btn--spotify {
-  --btn-bg: var(--color-spotify);
-  --btn-text: var(--color-white);
-  box-shadow: var(--shadow-sm);
+  --btn-bg-color: var(--color-spotify);
+  --btn-text-color: var(--color-white);
+  box-shadow: var(--shadow-sm); /* Sombra sutil inicial */
 }
-
 .btn--spotify:hover:not(:disabled) {
-  background-color: hsl(141, 60%, 30%);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  background-color: hsl(141, 65%, 35%); /* Spotify um pouco mais escuro no hover */
+  /* Herda transform e box-shadow do .btn:hover */
 }
 
 .btn--outline {
-  --btn-bg: transparent;
-  --btn-text: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  --btn-bg-color: transparent;
+  --btn-text-color: var(--color-primary);
+  border-color: var(--color-primary); /* Define a cor da borda */
 }
-
 .btn--outline:hover:not(:disabled) {
   background-color: var(--color-primary);
-  color: var(--color-white);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  color: var(--color-white); /* Inverte as cores no hover */
+  /* Herda transform e box-shadow do .btn:hover */
 }
 
 .btn--block {
-  display: flex;
+  display: flex; /* Garante que o botão ocupe a largura total e centralize o conteúdo */
   width: 100%;
 }
 
-.btn__loading {
-  display: inline-block;
+/* Spinner de Loading para Botões (Corrigido para usar .btn__loading) */
+.btn .btn__loading { /* Escondido por padrão */
+  display: none; 
+}
+.btn.loading .btn__loading { /* Exibido quando .loading está presente */
+  display: inline-block; /* Usar inline-block para se comportar como texto mas permitir dimensões */
   width: 1.2em;
   height: 1.2em;
-  border: 2px solid var(--btn-text);
-  border-top-color: transparent;
+  border: 2px solid var(--btn-text-color); /* Usa a variável de cor do texto do botão */
+  border-top-color: transparent; /* Cria o efeito de "corte" para o spin */
   border-radius: var(--radius-pill);
-  animation: spin 1s linear infinite;
-  margin-right: var(--space-xs);
+  animation: spin 0.8s linear infinite; /* Animação de rotação */
+  margin-right: var(--space-xs); /* Espaçamento se houver texto ao lado (que estaria escondido) */
+}
+.btn.loading > *:not(.btn__loading) { /* Esconde outros filhos diretos (texto, ícones) quando loading */
+  visibility: hidden;
+  opacity: 0;
 }
 
 @keyframes spin {
@@ -246,7 +263,7 @@ button {
 .main-header {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: var(--color-white);
-  padding-block: var(--space-xxl);
+  padding-block: var(--space-xxl) var(--space-xl); /* Mais padding no topo */
   margin-bottom: var(--space-xl);
   text-align: center;
   box-shadow: var(--shadow-md);
@@ -263,17 +280,18 @@ button {
   border-top: 1px solid var(--color-border);
   text-align: center;
   font-size: 0.9rem;
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-xs); /* Sombra sutil para dar profundidade */
 }
 
 /* ============================================
    ✍️ TIPOGRAFIA
    ============================================ */
 
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 { /* Inclui h5, h6 para consistência */
   line-height: 1.2;
   font-weight: 700;
   color: var(--color-text);
+  margin-top: 0; /* Remove margem superior padrão */
 }
 
 h1 {
@@ -294,26 +312,27 @@ h2 {
   font-weight: 400;
   max-width: 700px;
   margin-inline: auto;
+  line-height: 1.5; /* Melhor legibilidade para parágrafos mais longos */
 }
 
 .section-title {
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--color-primary-dark);
-  padding-inline: var(--space-sm);
+  /* padding-inline: var(--space-sm); */ /* Removido para melhor alinhamento com o conteúdo abaixo */
   margin-bottom: var(--space-lg);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
-  display: inline-block;
+  display: inline-block; /* Para que a ::after se posicione corretamente */
 }
 
 .section-title::after {
   content: '';
   position: absolute;
-  bottom: -5px;
+  bottom: -6px; /* Ajuste fino da posição */
   left: 0;
-  width: 50%;
+  width: 60%; /* Largura da linha decorativa */
   height: 3px;
   background-color: var(--color-secondary);
   border-radius: var(--radius-pill);
@@ -326,14 +345,20 @@ h2 {
 .card-form {
   background-color: var(--color-white);
   border-radius: var(--radius-xl);
-  padding: var(--space-xl);
+  padding: clamp(var(--space-md), 5vw, var(--space-xl)); /* Padding responsivo */
   box-shadow: var(--shadow-lg);
   margin-bottom: var(--space-xl);
-  border: 1px solid var(--color-light);
+  border: 1px solid var(--color-light); /* Borda sutil */
 }
 
 .form-group {
   margin-bottom: var(--space-lg);
+}
+
+.form-section { /* Equivalente ao fieldset */
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 label {
@@ -350,7 +375,11 @@ label {
   font-weight: normal;
 }
 
-input,
+input[type="text"],
+input[type="date"],
+input[type="email"], /* Adicionando outros tipos comuns */
+input[type="url"],
+input[type="search"],
 textarea,
 select {
   width: 100%;
@@ -363,19 +392,25 @@ select {
     box-shadow var(--transition-base),
     background-color var(--transition-base);
   color: var(--color-text);
+  font-size: 1rem; /* Garante tamanho legível */
 }
 
-input:focus,
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
 textarea:focus,
 select:focus {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
   background-color: var(--color-white);
+  outline: none; /* Remove o outline padrão do navegador ao usar box-shadow para foco */
 }
 
 textarea {
   min-height: 140px;
-  resize: vertical;
+  resize: vertical; /* Permite redimensionamento vertical */
 }
 
 .field-hint {
@@ -389,12 +424,8 @@ textarea {
    📁 UPLOAD DE ARQUIVOS
    ============================================ */
 
-.file-upload {
-  position: relative;
-}
-
 .file-upload input[type="file"] {
-  padding: var(--space-sm);
+  padding: var(--space-lg) var(--space-sm); /* Mais padding vertical para área de drop maior */
   border: 2px dashed var(--color-border);
   background-color: var(--color-light);
   width: 100%;
@@ -403,75 +434,81 @@ textarea {
   font-size: 0.95rem;
   color: var(--color-muted);
   text-align: center;
+  transition: all var(--transition-base);
 }
 
-.file-upload input[type="file"]:hover {
+.file-upload input[type="file"]:hover,
+.file-upload input[type="file"]:focus {
   border-color: var(--color-primary);
-  background-color: hsla(255, 70%, 60%, 0.05);
+  background-color: hsla(var(--color-primary), 0.05); /* Fundo sutil com cor primária */
+  color: var(--color-primary-dark);
 }
 
-.preview-container {
-  position: relative;
+.preview-container { /* Container para preview da imagem e botão de remover */
+  position: relative; /* Para posicionamento absoluto do botão de remover */
   margin-top: var(--space-md);
   border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  overflow: hidden; /* Garante que a imagem não ultrapasse o border-radius */
+  /* box-shadow: var(--shadow-sm); Removido, a imagem já tem sombra */
+  line-height: 0; /* Remove espaço extra abaixo da imagem */
 }
 
-.preview {
+.preview { /* Imagem de preview */
   max-width: 100%;
-  max-height: 350px;
-  object-fit: contain;
+  max-height: 350px; /* Altura máxima para o preview */
+  object-fit: contain; /* Garante que a imagem inteira seja visível */
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm); /* Sombra na própria imagem */
+  background-color: var(--color-light); /* Fundo caso a imagem seja transparente ou pequena */
 }
 
-.btn-remove {
-  --size: 32px;
+.btn-remove { /* Botão para remover a foto */
+  --btn-remove-size: 32px;
   position: absolute;
-  top: calc(var(--size) / -2);
-  right: calc(var(--size) / -2);
-  width: var(--size);
-  height: var(--size);
+  top: var(--space-xs); /* Posicionado dentro do container */
+  right: var(--space-xs);
+  width: var(--btn-remove-size);
+  height: var(--btn-remove-size);
   border-radius: var(--radius-pill);
   background-color: var(--color-error);
   color: var(--color-white);
-  font-size: 1.1rem;
-  line-height: 1;
+  font-size: 1.2rem; /* Tamanho do ícone (ex: '×') */
+  line-height: var(--btn-remove-size); /* Centraliza o ícone verticalmente */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  transition: transform var(--transition-base), background-color var(--transition-base), box-shadow var(--transition-base);
   box-shadow: var(--shadow-sm);
+  border: 2px solid var(--color-white); /* Borda para destacar do fundo */
+  padding: 0; /* Remove padding extra do .btn se herdado */
+  z-index: 10; /* Garante que fique sobre a imagem */
 }
 
 .btn-remove:hover {
-  transform: scale(1.15);
+  transform: scale(1.1);
+  background-color: hsl(0, 70%, 50%); /* Error mais escuro no hover */
   box-shadow: var(--shadow-md);
 }
 
-/* Spotify Search */
+/* ============================================
+   🎵 SPOTIFY SEARCH
+   ============================================ */
 
 .spotify-search-container {
   display: flex;
   gap: var(--space-sm);
   margin-bottom: var(--space-md);
-  align-items: center;
+  align-items: stretch; /* Para botões e inputs terem a mesma altura */
 }
 
-.spotify-search-input {
-  flex: 1;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background-color: var(--color-light);
-  transition: all var(--transition-base);
-  font-size: 0.95rem;
+.spotify-search-input { /* Input de busca do Spotify */
+  flex: 1; /* Ocupa o espaço restante */
+  /* Herda estilos de input[type="text"] */
 }
 
 .spotify-search-input:focus {
-  border-color: var(--color-spotify);
-  box-shadow: 0 0 0 4px hsla(141, 70%, 40%, 0.2);
+  border-color: var(--color-spotify); /* Foco com cor do Spotify */
+  box-shadow: var(--shadow-focus-spotify);
   background-color: var(--color-white);
 }
 
@@ -483,6 +520,7 @@ textarea {
   border-radius: var(--radius-md);
   background-color: var(--color-white);
   box-shadow: var(--shadow-md);
+  /* Estilização da scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--color-spotify) var(--color-light);
 }
@@ -490,16 +528,14 @@ textarea {
 .spotify-results::-webkit-scrollbar {
   width: 10px;
 }
-
 .spotify-results::-webkit-scrollbar-track {
   background: var(--color-light);
   border-radius: var(--radius-pill);
 }
-
 .spotify-results::-webkit-scrollbar-thumb {
   background-color: var(--color-spotify);
   border-radius: var(--radius-pill);
-  border: 2px solid var(--color-light);
+  border: 2px solid var(--color-light); /* Borda interna para o thumb */
 }
 
 .spotify-track {
@@ -508,48 +544,49 @@ textarea {
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-md);
   border-bottom: 1px solid var(--color-light);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
   cursor: pointer;
-  position: relative;
+  position: relative; /* Para o pseudo-elemento ::after */
 }
 
 .spotify-track:last-child {
-  border-bottom: none;
+  border-bottom: none; /* Remove borda do último item */
 }
 
 .spotify-track:hover {
   background-color: var(--color-light);
-  transform: translateX(5px);
+  transform: translateX(4px); /* Leve deslocamento no hover */
 }
 
 .spotify-track.selected {
-  background-color: hsla(141, 70%, 40%, 0.08);
+  background-color: hsla(141, 70%, 40%, 0.08); /* Fundo sutil para item selecionado */
   border-left: 5px solid var(--color-spotify);
-  padding-left: calc(var(--space-md) - 5px);
-  font-weight: 600;
+  padding-left: calc(var(--space-md) - 5px); /* Ajusta padding para compensar a borda */
+  font-weight: 600; /* Destaca texto do item selecionado */
 }
 
-.spotify-track.selected::after {
-  content: '✓';
-  position: absolute;
-  right: var(--space-md);
-  color: var(--color-spotify);
-  font-size: 1.2rem;
+.spotify-track.selected .select-track-btn { /* Estilo do botão quando a faixa está selecionada */
+  background-color: var(--color-spotify);
+  color: var(--color-white);
+  opacity: 1; /* Garante que não fique com opacidade de :disabled se o botão for desabilitado por JS */
+  /* Outros estilos podem ser adicionados para o botão 'Selecionado ✓' */
 }
+
+/* Removido o ::after para o checkmark, pois o texto do botão é alterado por JS */
 
 .track-image {
   width: 60px;
   height: 60px;
   border-radius: var(--radius-sm);
   object-fit: cover;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Evita que a imagem encolha */
   box-shadow: var(--shadow-xs);
 }
 
 .track-info {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
+  flex: 1; /* Ocupa o espaço restante */
+  min-width: 0; /* Permite que text-overflow funcione corretamente em flex items */
+  overflow: hidden; /* Necessário para text-overflow */
 }
 
 .track-name {
@@ -559,6 +596,7 @@ textarea {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--color-text);
+  margin-bottom: var(--space-xxs); /* Pequena margem inferior */
 }
 
 .track-artist,
@@ -568,41 +606,56 @@ textarea {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.3; /* Melhor espaçamento entre linhas */
 }
 
-.selected-track-info {
-  padding: var(--space-md);
-  background-color: hsla(141, 70%, 40%, 0.08);
+/* ============================================
+   📢 FEEDBACK E NOTIFICAÇÕES
+   ============================================ */
+
+.selected-track-info,
+.feedback { /* Estilo base para todos os feedbacks */
+  padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-md);
   font-size: 0.95rem;
-  border-left: 5px solid var(--color-spotify);
-  color: var(--color-text);
+  font-weight: 500;
   box-shadow: var(--shadow-sm);
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+.selected-track-info { /* Específico para a música selecionada */
+  background-color: hsla(141, 70%, 40%, 0.08);
+  border-left-color: var(--color-spotify);
+  color: var(--color-text); /* Texto principal para melhor leitura */
+}
+.selected-track-info strong {
+  color: var(--color-spotify); /* Destaque para o nome da música */
 }
 
 .feedback--error {
   color: var(--color-error);
-  background-color: hsla(0, 70%, 55%, 0.1);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-md);
-  border-left: 4px solid var(--color-error);
-  font-weight: 500;
+  background-color: hsla(0, 70%, 55%, 0.08);
+  border-left-color: var(--color-error);
 }
 
-.feedback--info {
-  color: var(--color-spotify);
-  background-color: hsla(141, 70%, 40%, 0.1);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-md);
-  border-left: 4px solid var(--color-spotify);
-  font-weight: 500;
+.feedback--info { /* Pode ser usado para "nenhuma música encontrada" etc. */
+  color: var(--color-secondary); /* Usando cor secundária para info */
+  background-color: hsla(255, 80%, 75%, 0.1);
+  border-left-color: var(--color-secondary);
 }
 
-/* Player de Áudio Personalizado */
-.audio-player {
+.feedback--success { /* Se precisar de feedback de sucesso geral */
+  color: var(--color-success);
+  background-color: hsla(120, 60%, 45%, 0.1);
+  border-left-color: var(--color-success);
+}
+
+/* ============================================
+   🎧 PLAYER DE ÁUDIO (usado por AudioPlayerManager)
+   ============================================ */
+.audio-player { /* Container principal do player */
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -611,118 +664,222 @@ textarea {
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  min-width: 280px; /* Largura mínima para acomodar controles */
 }
 
-.play-pause-btn {
+.audio-player .play-pause-btn { /* Botão de Play/Pause */
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.2rem; /* Tamanho do ícone (emoji) */
   padding: var(--space-xs);
   border-radius: var(--radius-pill);
-  transition: background-color var(--transition-base);
+  transition: background-color var(--transition-base), transform var(--transition-fast);
+  color: var(--color-spotify); /* Cor do ícone */
+  line-height: 1; /* Para melhor alinhamento do emoji */
 }
 
-.play-pause-btn:hover {
+.audio-player .play-pause-btn:hover {
   background-color: var(--color-overlay);
+  transform: scale(1.1);
 }
 
-.progress-bar {
-  flex: 1;
-  height: 4px;
+.audio-player .progress-bar-container { /* Container da barra de progresso (trilho) */
+  flex-grow: 1; /* Ocupa o espaço restante */
+  height: 6px; /* Altura do trilho */
   background-color: var(--color-border);
   border-radius: var(--radius-pill);
-  overflow: hidden;
+  overflow: hidden; /* Garante que o .progress-bar não ultrapasse */
+  cursor: pointer; /* Indica que é clicável para buscar */
+  position: relative; /* Para posicionamento de dicas, se houver */
 }
 
-.progress {
-  width: 0;
+.audio-player .progress-bar { /* Barra de progresso real (preenchimento) */
+  width: 0%; /* Inicia em 0, controlado por JS */
   height: 100%;
   background-color: var(--color-spotify);
-  transition: width 0.1s linear;
+  border-radius: var(--radius-pill); /* Arredondamento consistente */
+  transition: width 0.1s linear; /* Transição suave da largura */
 }
 
-.duration {
+.audio-player .duration { /* Display de tempo */
   font-size: 0.8rem;
   color: var(--color-muted);
   font-weight: 500;
+  min-width: 70px; /* Espaço para "0:00 / 0:00" */
+  text-align: right;
 }
 
-.preview-error {
+.audio-player .preview-error { /* Mensagem de erro do player */
   margin-top: var(--space-xs);
   font-size: 0.8rem;
   color: var(--color-error);
   font-weight: 500;
+  width: 100%; /* Se o player for escondido e só a msg de erro aparecer */
 }
 
-.card-preview {
-  background-color: var(--color-white);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  margin-top: var(--space-xl);
-  box-shadow: var(--shadow-md);
-}
-
-.card-preview img {
-  max-width: 200px;
-  margin-top: var(--space-md);
-  border-radius: var(--radius-md);
-}
-
-.track-preview,
-.card-audio-preview {
-  display: none; /* Escondido, pois usamos controles personalizados */
+.audio-element { /* A tag <audio> real, escondida */
+  display: none;
 }
 
 /* ============================================
-   🚀 ESTADOS E FEEDBACK
+   🖼️ PRÉVIA DO CARTÃO (Após submit e na página /card/:id)
    ============================================ */
 
-.btn.loading .btn-text {
-  display: none;
-}
-
-.btn.loading .btn-loading {
-  display: inline-flex;
-}
-
-.btn-submit.loading {
-  color: transparent;
-}
-
-.btn-submit .btn-loading {
-  display: none;
+/* Wrapper para a prévia dinâmica mostrada após o submit */
+.card-preview-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: hsla(0, 0%, 0%, 0.5); /* Overlay escuro */
+  display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  justify-content: center;
+  padding: var(--space-md);
+  z-index: 1000; /* Sobre todos os outros elementos */
+  overflow-y: auto; /* Scroll se o conteúdo for maior que a tela */
+  animation: fadeInOverlay 0.3s ease-out;
 }
 
-.btn-submit.loading .btn-loading {
-  display: inline-flex;
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.btn-spinner {
-  display: inline-block;
-  width: 1.1em;
-  height: 1.1em;
-  border: 2px solid var(--color-white);
-  border-top-color: transparent;
-  border-radius: var(--radius-pill);
-  animation: spin 1s linear infinite;
+.card-preview { /* Estilo do container do cartão em si, usado tanto na prévia dinâmica quanto na página estática */
+  background-color: var(--color-white);
+  border-radius: var(--radius-xl); /* Raio maior para destaque */
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-lg);
+  max-width: 600px;
+  width: 100%;
+  animation: fadeInCardModal 0.4s ease-out 0.1s backwards; /* Animação com delay */
+  position: relative; /* Para o botão de fechar */
+  max-height: 90vh; /* Altura máxima para evitar que saia da tela */
+  overflow-y: auto; /* Scroll interno se o conteúdo do cartão for grande */
 }
 
-.error-message {
+@keyframes fadeInCardModal {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-md);
+}
+
+.card-preview-header h2 {
+  margin-bottom: 0; /* Remove margem do h2 dentro do header */
+  color: var(--color-primary-dark);
+  font-size: 1.8rem;
+}
+
+.card-preview .close-preview-btn { /* Botão de fechar no canto da prévia dinâmica */
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: var(--space-xs);
+  line-height: 1;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+.card-preview .close-preview-btn:hover {
   color: var(--color-error);
-  font-size: 0.88rem;
-  margin-top: var(--space-xs);
-  font-weight: 500;
+  transform: scale(1.1);
 }
+
+.card-preview p {
+  margin-bottom: var(--space-sm);
+  font-size: 1.1rem; /* Texto um pouco maior na prévia */
+  line-height: 1.7; /* Melhor legibilidade */
+}
+.card-preview p strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.card-preview .preview-image-container {
+  margin-block: var(--space-md);
+  text-align: center; /* Centraliza a imagem se ela for menor que o container */
+}
+.card-preview .preview-image {
+  max-width: 100%; /* Garante que a imagem não ultrapasse o container */
+  max-height: 300px; /* Altura máxima para a imagem na prévia */
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-preview .preview-audio-container {
+  margin-block: var(--space-md);
+}
+.card-preview .preview-audio-container h3 {
+  font-size: 1.2rem;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.card-preview .preview-link-info {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-light);
+  font-size: 0.95rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+.card-preview .preview-link-info a {
+  font-weight: 600;
+  word-break: break-all; /* Quebra links longos */
+}
+
+.card-preview .close-preview-btn-bottom { /* Botão de fechar na parte inferior da prévia */
+  display: block;
+  margin-top: var(--space-lg);
+  margin-inline: auto; /* Centraliza */
+  --btn-bg-color: var(--color-secondary); /* Cor diferente para o botão inferior */
+  --btn-text-color: var(--color-text);
+}
+.card-preview .close-preview-btn-bottom:hover:not(:disabled) {
+  background-color: hsl(255, 75%, 70%);
+}
+
+
+/* Estilos para a PÁGINA DE VISUALIZAÇÃO ESTÁTICA (/card/:id) */
+#card-view-page { /* ID para o body ou um wrapper na página /card/:id */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); /* Gradiente diferente para a página de visualização */
+  padding: var(--space-md); /* Espaçamento nas bordas */
+}
+
+#card-view-page .card-preview { /* Reutiliza .card-preview, mas pode ter ajustes específicos para a página */
+  /* A animação fadeInCardModal já se aplica aqui, o que é bom */
+  /* Outros ajustes se necessário para a página estática */
+  margin-top: 0; /* Remove margem superior se #card-view-page já centraliza */
+}
+
+#card-view-page .card-preview h1 { /* Título H1 na página de visualização */
+  text-align: center;
+  margin-bottom: var(--space-lg);
+  color: var(--color-primary-dark);
+}
+
 
 /* ============================================
    🛠️ UTILITÁRIOS
    ============================================ */
 
-.sr-only {
+.sr-only { /* Para leitores de tela */
   position: absolute;
   width: 1px;
   height: 1px;
@@ -742,7 +899,11 @@ textarea {
    📱 RESPONSIVIDADE
    ============================================ */
 
-@media (max-width: 768px) {
+@media (max-width: /* --breakpoint-md */ 768px) {
+  html {
+    font-size: 15px; /* Ajusta o tamanho base da fonte para telas menores */
+  }
+
   .card-form {
     padding: var(--space-lg);
     border-radius: var(--radius-lg);
@@ -752,34 +913,36 @@ textarea {
     padding-block: var(--space-xl);
   }
 
-  h1 {
-    font-size: clamp(1.8rem, 6vw, 2.5rem);
-  }
-
-  h2 {
-    font-size: clamp(1.4rem, 4.5vw, 1.8rem);
-  }
-
   .section-title {
     font-size: 1.1rem;
   }
 
   .audio-player {
-    padding: var(--space-xs);
+    padding: var(--space-xs); /* Menos padding no player em telas menores */
   }
 
-  .play-pause-btn {
+  .audio-player .play-pause-btn {
     font-size: 1rem;
+  }
+
+  .card-preview { /* Na prévia dinâmica e na página estática */
+    padding: var(--space-lg);
+  }
+  .card-preview-header h2 {
+    font-size: 1.5rem;
   }
 }
 
-@media (max-width: 480px) {
-  .spotify-search-container {
-    flex-direction: column;
-    gap: var(--space-xs);
+@media (max-width: /* --breakpoint-sm */ 480px) {
+  html {
+    font-size: 14px;
   }
 
-  .spotify-search-container .btn {
+  .spotify-search-container {
+    flex-direction: column;
+    gap: var(--space-sm); /* Aumenta o gap quando em coluna */
+  }
+  .spotify-search-container .btn { /* Botão de busca ocupa largura total */
     width: 100%;
   }
 
@@ -788,35 +951,45 @@ textarea {
     border-radius: var(--radius-md);
   }
 
-  .track-info {
-    min-width: 0;
-    overflow: hidden;
-  }
-
   .spotify-track {
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; Removido, pode quebrar o layout com o botão de selecionar */
+    gap: var(--space-sm); /* Reduz gap */
     padding: var(--space-sm);
   }
-
   .track-image {
     width: 45px;
     height: 45px;
   }
-
   .spotify-track.selected {
-    padding-left: calc(var(--space-sm) - 5px);
+    padding-left: calc(var(--space-sm) - 5px); /* Ajuste para borda */
   }
-
-  .spotify-track.selected::after {
-    right: var(--space-sm);
-  }
-
+  
   .audio-player {
+    flex-wrap: wrap; /* Permite que os itens quebrem linha se não couberem */
     gap: var(--space-xs);
   }
-
-  .duration {
+  .audio-player .duration {
     font-size: 0.75rem;
+    min-width: auto; /* Permite encolher mais */
+    text-align: left; /* Alinha à esquerda se quebrar linha */
+    flex-basis: 100%; /* Ocupa toda a largura se quebrar linha */
+    margin-top: var(--space-xxs);
+  }
+  .audio-player .progress-bar-container {
+    min-width: 100px; /* Garante que a barra não fique muito pequena */
+  }
+
+  .card-preview {
+    padding: var(--space-md);
+  }
+  .card-preview-header h2 {
+    font-size: 1.3rem;
+  }
+  .card-preview p {
+    font-size: 1rem;
+  }
+  .card-preview .close-preview-btn {
+    font-size: 1.8rem;
   }
 }
 
@@ -825,63 +998,18 @@ textarea {
    ============================================ */
 
 .no-js-alert {
-  display: none;
+  display: none; /* Escondido por padrão */
   padding: var(--space-md);
   background-color: var(--color-error);
   color: var(--color-white);
   text-align: center;
+  font-weight: 500;
 }
 
-.no-js .no-js-alert {
+.no-js .no-js-alert { /* Exibido se a classe .no-js estiver no <html> */
   display: block;
 }
 
-.no-js .main-content {
+.no-js .main-content { /* Esconde o conteúdo principal se JS estiver desabilitado */
   display: none;
-}
-
-/* Estilos para a página de visualização do cartão */
-#card-view {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--color-bg), var(--color-light));
-  padding: var(--space-xl);
-}
-
-.card-preview {
-  background-color: var(--color-white);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  box-shadow: var(--shadow-lg);
-  max-width: 600px;
-  width: 100%;
-  animation: fadeIn 1s ease-out;
-}
-
-.card-preview h1 {
-  text-align: center;
-  margin-bottom: var(--space-lg);
-  color: var(--color-primary-dark);
-}
-
-.card-preview p {
-  margin-bottom: var(--space-sm);
-  font-size: 1.1rem;
-}
-
-.card-preview p strong {
-  color: var(--color-text);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
