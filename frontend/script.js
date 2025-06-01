@@ -334,4 +334,6 @@
     App.init();
   }
 
+// ... (seu módulo App e o restante do script.js) ...
+
 })(window, document);
