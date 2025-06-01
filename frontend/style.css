@@ -1013,3 +1013,76 @@ textarea {
 .no-js .main-content { /* Esconde o conteúdo principal se JS estiver desabilitado */
   display: none;
 }
+
+
+#appNotificationArea {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  width: 300px; /* Ou o que for mais adequado */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 15px;
+  border-radius: 5px;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 0.9em;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  opacity: 0.95;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification.notification--removing {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.notification--success {
+  background-color: #28a745; /* Verde */
+}
+
+.notification--error {
+  background-color: #dc3545; /* Vermelho */
+}
+
+.notification--info {
+  background-color: #17a2b8; /* Azul/Ciano */
+}
+
+.notification__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.btn__loading {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: btn-spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.5em;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
