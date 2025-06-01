@@ -47,8 +47,9 @@
   --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
-  --shadow-focus: 0 0 0 4px hsla(var(--color-primary), 0.25); /* Usando a cor primária HSL para o foco */
-  --shadow-focus-spotify: 0 0 0 4px hsla(141, 70%, 40%, 0.2); /* Foco específico para Spotify */
+  /* Ajustado para usar HSL completo para compatibilidade */
+  --shadow-focus: 0 0 0 4px hsla(330, 70%, 60%, 0.25); 
+  --shadow-focus-spotify: 0 0 0 4px hsla(141, 70%, 40%, 0.2);
 
   /* 📱 BREAKPOINTS */
   --breakpoint-sm: 480px;
@@ -72,7 +73,7 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  font-size: 16px; /* Define um tamanho de fonte base para rem funcionar previsivelmente */
+  font-size: 16px;
 }
 
 body {
@@ -84,7 +85,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  min-height: 100vh; /* Garante que o body ocupe pelo menos toda a altura da viewport */
+  min-height: 100vh;
 }
 
 img,
@@ -103,14 +104,14 @@ ul {
 }
 
 a {
-  color: var(--color-primary); /* Cor padrão para links */
+  color: var(--color-primary);
   text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 a:hover {
   color: var(--color-primary-dark);
-  text-decoration: underline; /* Sublinhado no hover para melhor acessibilidade */
+  text-decoration: underline;
 }
 
 button,
@@ -121,7 +122,6 @@ textarea {
   color: inherit;
   background-color: transparent;
   border: none;
-  /* appearance: none;  Pode ser problemático para acessibilidade em alguns inputs, use com cautela */
 }
 
 button {
@@ -135,28 +135,28 @@ button {
    ============================================ */
 .container {
   width: 100%;
-  max-width: min(960px, 92vw); /* Usa min() para flexibilidade */
+  max-width: min(960px, 92vw);
   margin-inline: auto;
-  padding-inline: var(--space-md); /* Espaçamento lateral */
+  padding-inline: var(--space-md);
 }
 
 .card {
   background-color: var(--color-white);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  overflow: hidden; /* Para conter elementos filhos com bordas arredondadas */
+  overflow: hidden;
   transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .card:hover {
-  transform: translateY(-4px); /* Leve elevação no hover */
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }
 
 /* Botões */
 .btn {
-  --btn-bg-color: var(--color-primary); /* Variável local para cor de fundo */
-  --btn-text-color: var(--color-white); /* Variável local para cor do texto */
+  --btn-bg-color: var(--color-primary);
+  --btn-text-color: var(--color-white);
   
   display: inline-flex;
   align-items: center;
@@ -173,30 +173,29 @@ button {
     transform var(--transition-base),
     box-shadow var(--transition-base),
     opacity var(--transition-base);
-  border: 1px solid transparent; /* Para consistência de tamanho com botões outline */
+  border: 1px solid transparent;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  text-align: center; /* Garante centralização do texto */
-  white-space: nowrap; /* Evita quebra de linha no texto do botão */
+  text-align: center;
+  white-space: nowrap;
 }
 
 .btn:hover:not(:disabled) {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
-  /* A cor de fundo do hover será definida pelos modificadores */
 }
 
 .btn:active:not(:disabled) {
-  transform: translateY(0); /* Remove a elevação ao clicar */
+  transform: translateY(0);
   box-shadow: var(--shadow-sm);
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  filter: grayscale(60%); /* Mais sutil que 50% */
-  box-shadow: none !important; /* Remove sombra em botões desabilitados */
-  transform: none !important; /* Remove transform em botões desabilitados */
+  filter: grayscale(60%);
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .btn--primary {
@@ -207,49 +206,67 @@ button {
   background-color: var(--color-primary-dark);
 }
 
+.btn--secondary { /* Adicionado para o botão de logout, por exemplo */
+  --btn-bg-color: var(--color-muted);
+  --btn-text-color: var(--color-white);
+}
+.btn--secondary:hover:not(:disabled) {
+  background-color: hsl(240, 3%, 35%); /* Um pouco mais escuro que --color-muted */
+}
+
 .btn--spotify {
   --btn-bg-color: var(--color-spotify);
   --btn-text-color: var(--color-white);
-  box-shadow: var(--shadow-sm); /* Sombra sutil inicial */
+  box-shadow: var(--shadow-sm);
 }
 .btn--spotify:hover:not(:disabled) {
-  background-color: hsl(141, 65%, 35%); /* Spotify um pouco mais escuro no hover */
-  /* Herda transform e box-shadow do .btn:hover */
+  background-color: hsl(141, 65%, 35%);
 }
 
 .btn--outline {
   --btn-bg-color: transparent;
   --btn-text-color: var(--color-primary);
-  border-color: var(--color-primary); /* Define a cor da borda */
+  border-color: var(--color-primary);
 }
 .btn--outline:hover:not(:disabled) {
   background-color: var(--color-primary);
-  color: var(--color-white); /* Inverte as cores no hover */
-  /* Herda transform e box-shadow do .btn:hover */
+  color: var(--color-white);
 }
 
 .btn--block {
-  display: flex; /* Garante que o botão ocupe a largura total e centralize o conteúdo */
+  display: flex;
   width: 100%;
 }
 
-/* Spinner de Loading para Botões (Corrigido para usar .btn__loading) */
-.btn .btn__loading { /* Escondido por padrão */
+/* Spinner de Loading para Botões */
+.btn .btn__loading { /* O span do spinner dentro do botão, escondido por padrão */
   display: none; 
 }
-.btn.loading .btn__loading { /* Exibido quando .loading está presente */
-  display: inline-block; /* Usar inline-block para se comportar como texto mas permitir dimensões */
-  width: 1.2em;
+/* ATUALIZAÇÃO: O JS adiciona a classe 'btn--loading', não 'loading' */
+.btn.btn--loading .btn__loading { /* Exibido quando .btn--loading está presente no botão */
+  display: inline-block;
+  width: 1.2em; /* Ajuste o tamanho conforme necessário */
   height: 1.2em;
-  border: 2px solid var(--btn-text-color); /* Usa a variável de cor do texto do botão */
+  border: 2px solid var(--btn-text-color); /* Usa a cor do texto do botão atual */
   border-top-color: transparent; /* Cria o efeito de "corte" para o spin */
-  border-radius: var(--radius-pill);
-  animation: spin 0.8s linear infinite; /* Animação de rotação */
-  margin-right: var(--space-xs); /* Espaçamento se houver texto ao lado (que estaria escondido) */
+  border-radius: var(--radius-pill); /* 50% para círculo */
+  animation: spin 0.8s linear infinite;
+  margin-right: var(--space-xs); /* Se o texto de loading ainda for visível */
 }
-.btn.loading > *:not(.btn__loading) { /* Esconde outros filhos diretos (texto, ícones) quando loading */
+/* ATUALIZAÇÃO: O JS já substitui o innerHTML do botão. 
+   Se você quiser manter o texto original e apenas mostrar o spinner ao lado,
+   a lógica JS e este CSS precisariam de uma abordagem diferente.
+   A lógica JS atual (Utils.toggleButtonLoading) coloca o spinner E o texto de loading.
+   Se a intenção é esconder o texto original e mostrar SÓ o spinner + texto de loading,
+   o JS já faz isso ao mudar o innerHTML.
+   O seletor abaixo é para esconder o texto original SE o spinner for adicionado como um irmão.
+   Mas como o JS refaz o innerHTML, este seletor pode não ser estritamente necessário
+   com a implementação JS atual do toggleButtonLoading.
+*/
+.btn.btn--loading > span:not(.btn__loading) { /* Esconde o texto original (ex: <span class="btn-text">) */
   visibility: hidden;
   opacity: 0;
+  display:none; /* Para garantir que não ocupe espaço */
 }
 
 @keyframes spin {
@@ -263,11 +280,22 @@ button {
 .main-header {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: var(--color-white);
-  padding-block: var(--space-xxl) var(--space-xl); /* Mais padding no topo */
+  padding-block: var(--space-xxl) var(--space-xl);
   margin-bottom: var(--space-xl);
   text-align: center;
   box-shadow: var(--shadow-md);
 }
+
+/* NOVO: Estilo para o container dos botões de autenticação Spotify */
+.spotify-auth-controls {
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-md); /* Adicionado para espaçamento inferior */
+  /* text-align: center; /* Já definido no header, mas pode ser reforçado aqui se mover o div */
+}
+.spotify-auth-controls .btn { /* Espaçamento entre os botões se estiverem na mesma linha */
+  margin: var(--space-xs); /* Espaçamento geral */
+}
+
 
 .main-content {
   padding-block: var(--space-md) var(--space-xl);
@@ -280,59 +308,53 @@ button {
   border-top: 1px solid var(--color-border);
   text-align: center;
   font-size: 0.9rem;
-  box-shadow: var(--shadow-xs); /* Sombra sutil para dar profundidade */
+  box-shadow: var(--shadow-xs);
 }
 
 /* ============================================
-   ✍️ TIPOGRAFIA
+   ✍️ TIPOGRAFIA 
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-
-h1, h2, h3, h4, h5, h6 { /* Inclui h5, h6 para consistência */
+h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
   font-weight: 700;
   color: var(--color-text);
-  margin-top: 0; /* Remove margem superior padrão */
+  margin-top: 0;
 }
-
 h1 {
   font-size: clamp(2.2rem, 6vw, 3rem);
   margin-bottom: var(--space-sm);
   letter-spacing: -0.02em;
 }
-
 h2 {
   font-size: clamp(1.8rem, 4.5vw, 2.2rem);
   margin-bottom: var(--space-md);
   letter-spacing: -0.01em;
 }
-
 .subtitle {
   font-size: clamp(1.1rem, 3.5vw, 1.3rem);
   opacity: 0.85;
   font-weight: 400;
   max-width: 700px;
   margin-inline: auto;
-  line-height: 1.5; /* Melhor legibilidade para parágrafos mais longos */
+  line-height: 1.5;
 }
-
 .section-title {
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--color-primary-dark);
-  /* padding-inline: var(--space-sm); */ /* Removido para melhor alinhamento com o conteúdo abaixo */
   margin-bottom: var(--space-lg);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
-  display: inline-block; /* Para que a ::after se posicione corretamente */
+  display: inline-block;
 }
-
 .section-title::after {
   content: '';
   position: absolute;
-  bottom: -6px; /* Ajuste fino da posição */
+  bottom: -6px;
   left: 0;
-  width: 60%; /* Largura da linha decorativa */
+  width: 60%;
   height: 3px;
   background-color: var(--color-secondary);
   border-radius: var(--radius-pill);
@@ -340,27 +362,24 @@ h2 {
 
 /* ============================================
    📝 FORMULÁRIOS
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-
 .card-form {
   background-color: var(--color-white);
   border-radius: var(--radius-xl);
-  padding: clamp(var(--space-md), 5vw, var(--space-xl)); /* Padding responsivo */
+  padding: clamp(var(--space-md), 5vw, var(--space-xl));
   box-shadow: var(--shadow-lg);
   margin-bottom: var(--space-xl);
-  border: 1px solid var(--color-light); /* Borda sutil */
+  border: 1px solid var(--color-light);
 }
-
 .form-group {
   margin-bottom: var(--space-lg);
 }
-
-.form-section { /* Equivalente ao fieldset */
+.form-section {
   border: none;
   padding: 0;
   margin: 0;
 }
-
 label {
   display: block;
   margin-bottom: var(--space-xs);
@@ -368,16 +387,14 @@ label {
   color: var(--color-muted);
   font-size: 0.95rem;
 }
-
 .required-field::after {
   content: " *";
   color: var(--color-error);
   font-weight: normal;
 }
-
 input[type="text"],
 input[type="date"],
-input[type="email"], /* Adicionando outros tipos comuns */
+input[type="email"],
 input[type="url"],
 input[type="search"],
 textarea,
@@ -392,9 +409,8 @@ select {
     box-shadow var(--transition-base),
     background-color var(--transition-base);
   color: var(--color-text);
-  font-size: 1rem; /* Garante tamanho legível */
+  font-size: 1rem;
 }
-
 input[type="text"]:focus,
 input[type="date"]:focus,
 input[type="email"]:focus,
@@ -405,14 +421,12 @@ select:focus {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
   background-color: var(--color-white);
-  outline: none; /* Remove o outline padrão do navegador ao usar box-shadow para foco */
+  outline: none;
 }
-
 textarea {
   min-height: 140px;
-  resize: vertical; /* Permite redimensionamento vertical */
+  resize: vertical;
 }
-
 .field-hint {
   display: block;
   margin-top: var(--space-xs);
@@ -422,10 +436,10 @@ textarea {
 
 /* ============================================
    📁 UPLOAD DE ARQUIVOS
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-
 .file-upload input[type="file"] {
-  padding: var(--space-lg) var(--space-sm); /* Mais padding vertical para área de drop maior */
+  padding: var(--space-lg) var(--space-sm);
   border: 2px dashed var(--color-border);
   background-color: var(--color-light);
   width: 100%;
@@ -436,82 +450,72 @@ textarea {
   text-align: center;
   transition: all var(--transition-base);
 }
-
 .file-upload input[type="file"]:hover,
 .file-upload input[type="file"]:focus {
   border-color: var(--color-primary);
-  background-color: hsla(var(--color-primary), 0.05); /* Fundo sutil com cor primária */
+  background-color: hsla(330, 70%, 60%, 0.05); /* Usando HSL da cor primária */
   color: var(--color-primary-dark);
 }
-
-.preview-container { /* Container para preview da imagem e botão de remover */
-  position: relative; /* Para posicionamento absoluto do botão de remover */
+.preview-container {
+  position: relative;
   margin-top: var(--space-md);
   border-radius: var(--radius-md);
-  overflow: hidden; /* Garante que a imagem não ultrapasse o border-radius */
-  /* box-shadow: var(--shadow-sm); Removido, a imagem já tem sombra */
-  line-height: 0; /* Remove espaço extra abaixo da imagem */
+  overflow: hidden;
+  line-height: 0;
 }
-
-.preview { /* Imagem de preview */
+.preview {
   max-width: 100%;
-  max-height: 350px; /* Altura máxima para o preview */
-  object-fit: contain; /* Garante que a imagem inteira seja visível */
+  max-height: 350px;
+  object-fit: contain;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm); /* Sombra na própria imagem */
-  background-color: var(--color-light); /* Fundo caso a imagem seja transparente ou pequena */
+  box-shadow: var(--shadow-sm);
+  background-color: var(--color-light);
 }
-
-.btn-remove { /* Botão para remover a foto */
+.btn-remove {
   --btn-remove-size: 32px;
   position: absolute;
-  top: var(--space-xs); /* Posicionado dentro do container */
+  top: var(--space-xs);
   right: var(--space-xs);
   width: var(--btn-remove-size);
   height: var(--btn-remove-size);
   border-radius: var(--radius-pill);
   background-color: var(--color-error);
   color: var(--color-white);
-  font-size: 1.2rem; /* Tamanho do ícone (ex: '×') */
-  line-height: var(--btn-remove-size); /* Centraliza o ícone verticalmente */
+  font-size: 1.2rem;
+  line-height: var(--btn-remove-size);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform var(--transition-base), background-color var(--transition-base), box-shadow var(--transition-base);
   box-shadow: var(--shadow-sm);
-  border: 2px solid var(--color-white); /* Borda para destacar do fundo */
-  padding: 0; /* Remove padding extra do .btn se herdado */
-  z-index: 10; /* Garante que fique sobre a imagem */
+  border: 2px solid var(--color-white);
+  padding: 0;
+  z-index: 10;
 }
-
 .btn-remove:hover {
   transform: scale(1.1);
-  background-color: hsl(0, 70%, 50%); /* Error mais escuro no hover */
+  background-color: hsl(0, 70%, 50%);
   box-shadow: var(--shadow-md);
 }
 
 /* ============================================
    🎵 SPOTIFY SEARCH
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-
 .spotify-search-container {
   display: flex;
   gap: var(--space-sm);
   margin-bottom: var(--space-md);
-  align-items: stretch; /* Para botões e inputs terem a mesma altura */
+  align-items: stretch;
 }
-
-.spotify-search-input { /* Input de busca do Spotify */
-  flex: 1; /* Ocupa o espaço restante */
-  /* Herda estilos de input[type="text"] */
+.spotify-search-input {
+  flex: 1;
 }
-
 .spotify-search-input:focus {
-  border-color: var(--color-spotify); /* Foco com cor do Spotify */
+  border-color: var(--color-spotify);
   box-shadow: var(--shadow-focus-spotify);
   background-color: var(--color-white);
 }
-
 .spotify-results {
   max-height: 350px;
   overflow-y: auto;
@@ -520,11 +524,9 @@ textarea {
   border-radius: var(--radius-md);
   background-color: var(--color-white);
   box-shadow: var(--shadow-md);
-  /* Estilização da scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--color-spotify) var(--color-light);
 }
-
 .spotify-results::-webkit-scrollbar {
   width: 10px;
 }
@@ -535,9 +537,8 @@ textarea {
 .spotify-results::-webkit-scrollbar-thumb {
   background-color: var(--color-spotify);
   border-radius: var(--radius-pill);
-  border: 2px solid var(--color-light); /* Borda interna para o thumb */
+  border: 2px solid var(--color-light);
 }
-
 .spotify-track {
   display: flex;
   align-items: center;
@@ -546,49 +547,39 @@ textarea {
   border-bottom: 1px solid var(--color-light);
   transition: background-color var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
   cursor: pointer;
-  position: relative; /* Para o pseudo-elemento ::after */
+  position: relative;
 }
-
 .spotify-track:last-child {
-  border-bottom: none; /* Remove borda do último item */
+  border-bottom: none;
 }
-
 .spotify-track:hover {
   background-color: var(--color-light);
-  transform: translateX(4px); /* Leve deslocamento no hover */
+  transform: translateX(4px);
 }
-
 .spotify-track.selected {
-  background-color: hsla(141, 70%, 40%, 0.08); /* Fundo sutil para item selecionado */
+  background-color: hsla(141, 70%, 40%, 0.08);
   border-left: 5px solid var(--color-spotify);
-  padding-left: calc(var(--space-md) - 5px); /* Ajusta padding para compensar a borda */
-  font-weight: 600; /* Destaca texto do item selecionado */
+  padding-left: calc(var(--space-md) - 5px);
+  font-weight: 600;
 }
-
-.spotify-track.selected .select-track-btn { /* Estilo do botão quando a faixa está selecionada */
+.spotify-track.selected .select-track-btn {
   background-color: var(--color-spotify);
   color: var(--color-white);
-  opacity: 1; /* Garante que não fique com opacidade de :disabled se o botão for desabilitado por JS */
-  /* Outros estilos podem ser adicionados para o botão 'Selecionado ✓' */
+  opacity: 1;
 }
-
-/* Removido o ::after para o checkmark, pois o texto do botão é alterado por JS */
-
 .track-image {
   width: 60px;
   height: 60px;
   border-radius: var(--radius-sm);
   object-fit: cover;
-  flex-shrink: 0; /* Evita que a imagem encolha */
+  flex-shrink: 0;
   box-shadow: var(--shadow-xs);
 }
-
 .track-info {
-  flex: 1; /* Ocupa o espaço restante */
-  min-width: 0; /* Permite que text-overflow funcione corretamente em flex items */
-  overflow: hidden; /* Necessário para text-overflow */
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
-
 .track-name {
   font-size: 1.05rem;
   font-weight: 600;
@@ -596,9 +587,8 @@ textarea {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--color-text);
-  margin-bottom: var(--space-xxs); /* Pequena margem inferior */
+  margin-bottom: var(--space-xxs);
 }
-
 .track-artist,
 .track-album {
   font-size: 0.88rem;
@@ -606,15 +596,15 @@ textarea {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3; /* Melhor espaçamento entre linhas */
+  line-height: 1.3;
 }
 
 /* ============================================
    📢 FEEDBACK E NOTIFICAÇÕES
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-
 .selected-track-info,
-.feedback { /* Estilo base para todos os feedbacks */
+.feedback {
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-md);
@@ -624,29 +614,25 @@ textarea {
   border-left-width: 4px;
   border-left-style: solid;
 }
-
-.selected-track-info { /* Específico para a música selecionada */
+.selected-track-info {
   background-color: hsla(141, 70%, 40%, 0.08);
   border-left-color: var(--color-spotify);
-  color: var(--color-text); /* Texto principal para melhor leitura */
+  color: var(--color-text);
 }
 .selected-track-info strong {
-  color: var(--color-spotify); /* Destaque para o nome da música */
+  color: var(--color-spotify);
 }
-
 .feedback--error {
   color: var(--color-error);
   background-color: hsla(0, 70%, 55%, 0.08);
   border-left-color: var(--color-error);
 }
-
-.feedback--info { /* Pode ser usado para "nenhuma música encontrada" etc. */
-  color: var(--color-secondary); /* Usando cor secundária para info */
+.feedback--info {
+  color: var(--color-secondary);
   background-color: hsla(255, 80%, 75%, 0.1);
   border-left-color: var(--color-secondary);
 }
-
-.feedback--success { /* Se precisar de feedback de sucesso geral */
+.feedback--success {
   color: var(--color-success);
   background-color: hsla(120, 60%, 45%, 0.1);
   border-left-color: var(--color-success);
@@ -654,8 +640,9 @@ textarea {
 
 /* ============================================
    🎧 PLAYER DE ÁUDIO (usado por AudioPlayerManager)
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-.audio-player { /* Container principal do player */
+.audio-player {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -664,108 +651,96 @@ textarea {
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  min-width: 280px; /* Largura mínima para acomodar controles */
+  min-width: 280px;
 }
-
-.audio-player .play-pause-btn { /* Botão de Play/Pause */
+.audio-player .play-pause-btn {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem; /* Tamanho do ícone (emoji) */
+  font-size: 1.2rem;
   padding: var(--space-xs);
   border-radius: var(--radius-pill);
   transition: background-color var(--transition-base), transform var(--transition-fast);
-  color: var(--color-spotify); /* Cor do ícone */
-  line-height: 1; /* Para melhor alinhamento do emoji */
+  color: var(--color-spotify);
+  line-height: 1;
 }
-
 .audio-player .play-pause-btn:hover {
   background-color: var(--color-overlay);
   transform: scale(1.1);
 }
-
-.audio-player .progress-bar-container { /* Container da barra de progresso (trilho) */
-  flex-grow: 1; /* Ocupa o espaço restante */
-  height: 6px; /* Altura do trilho */
+.audio-player .progress-bar-container {
+  flex-grow: 1;
+  height: 6px;
   background-color: var(--color-border);
   border-radius: var(--radius-pill);
-  overflow: hidden; /* Garante que o .progress-bar não ultrapasse */
-  cursor: pointer; /* Indica que é clicável para buscar */
-  position: relative; /* Para posicionamento de dicas, se houver */
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
 }
-
-.audio-player .progress-bar { /* Barra de progresso real (preenchimento) */
-  width: 0%; /* Inicia em 0, controlado por JS */
+.audio-player .progress-bar {
+  width: 0%;
   height: 100%;
   background-color: var(--color-spotify);
-  border-radius: var(--radius-pill); /* Arredondamento consistente */
-  transition: width 0.1s linear; /* Transição suave da largura */
+  border-radius: var(--radius-pill);
+  transition: width 0.1s linear;
 }
-
-.audio-player .duration { /* Display de tempo */
+.audio-player .duration {
   font-size: 0.8rem;
   color: var(--color-muted);
   font-weight: 500;
-  min-width: 70px; /* Espaço para "0:00 / 0:00" */
+  min-width: 70px;
   text-align: right;
 }
-
-.audio-player .preview-error { /* Mensagem de erro do player */
+.audio-player .preview-error {
   margin-top: var(--space-xs);
   font-size: 0.8rem;
   color: var(--color-error);
   font-weight: 500;
-  width: 100%; /* Se o player for escondido e só a msg de erro aparecer */
+  width: 100%;
 }
-
-.audio-element { /* A tag <audio> real, escondida */
+.audio-element {
   display: none;
 }
 
 /* ============================================
    🖼️ PRÉVIA DO CARTÃO (Após submit e na página /card/:id)
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-
-/* Wrapper para a prévia dinâmica mostrada após o submit */
 .card-preview-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: hsla(0, 0%, 0%, 0.5); /* Overlay escuro */
+  background-color: hsla(0, 0%, 0%, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-md);
-  z-index: 1000; /* Sobre todos os outros elementos */
-  overflow-y: auto; /* Scroll se o conteúdo for maior que a tela */
+  z-index: 1000;
+  overflow-y: auto;
   animation: fadeInOverlay 0.3s ease-out;
 }
-
 @keyframes fadeInOverlay {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
-.card-preview { /* Estilo do container do cartão em si, usado tanto na prévia dinâmica quanto na página estática */
+.card-preview {
   background-color: var(--color-white);
-  border-radius: var(--radius-xl); /* Raio maior para destaque */
+  border-radius: var(--radius-xl);
   padding: var(--space-xl);
   box-shadow: var(--shadow-lg);
   max-width: 600px;
   width: 100%;
-  animation: fadeInCardModal 0.4s ease-out 0.1s backwards; /* Animação com delay */
-  position: relative; /* Para o botão de fechar */
-  max-height: 90vh; /* Altura máxima para evitar que saia da tela */
-  overflow-y: auto; /* Scroll interno se o conteúdo do cartão for grande */
+  animation: fadeInCardModal 0.4s ease-out 0.1s backwards;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
 }
-
 @keyframes fadeInCardModal {
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
-
 .card-preview-header {
   display: flex;
   justify-content: space-between;
@@ -774,14 +749,12 @@ textarea {
   border-bottom: 1px solid var(--color-border);
   padding-bottom: var(--space-md);
 }
-
 .card-preview-header h2 {
-  margin-bottom: 0; /* Remove margem do h2 dentro do header */
+  margin-bottom: 0;
   color: var(--color-primary-dark);
   font-size: 1.8rem;
 }
-
-.card-preview .close-preview-btn { /* Botão de fechar no canto da prévia dinâmica */
+.card-preview .close-preview-btn {
   background: none;
   border: none;
   font-size: 2rem;
@@ -795,29 +768,26 @@ textarea {
   color: var(--color-error);
   transform: scale(1.1);
 }
-
 .card-preview p {
   margin-bottom: var(--space-sm);
-  font-size: 1.1rem; /* Texto um pouco maior na prévia */
-  line-height: 1.7; /* Melhor legibilidade */
+  font-size: 1.1rem;
+  line-height: 1.7;
 }
 .card-preview p strong {
   color: var(--color-text);
   font-weight: 600;
 }
-
 .card-preview .preview-image-container {
   margin-block: var(--space-md);
-  text-align: center; /* Centraliza a imagem se ela for menor que o container */
+  text-align: center;
 }
 .card-preview .preview-image {
-  max-width: 100%; /* Garante que a imagem não ultrapasse o container */
-  max-height: 300px; /* Altura máxima para a imagem na prévia */
+  max-width: 100%;
+  max-height: 300px;
   border-radius: var(--radius-md);
   object-fit: contain;
   box-shadow: var(--shadow-sm);
 }
-
 .card-preview .preview-audio-container {
   margin-block: var(--space-md);
 }
@@ -826,7 +796,6 @@ textarea {
   color: var(--color-text);
   margin-bottom: var(--space-sm);
 }
-
 .card-preview .preview-link-info {
   margin-top: var(--space-lg);
   padding-top: var(--space-md);
@@ -837,49 +806,41 @@ textarea {
 }
 .card-preview .preview-link-info a {
   font-weight: 600;
-  word-break: break-all; /* Quebra links longos */
+  word-break: break-all;
 }
-
-.card-preview .close-preview-btn-bottom { /* Botão de fechar na parte inferior da prévia */
+.card-preview .close-preview-btn-bottom {
   display: block;
   margin-top: var(--space-lg);
-  margin-inline: auto; /* Centraliza */
-  --btn-bg-color: var(--color-secondary); /* Cor diferente para o botão inferior */
-  --btn-text-color: var(--color-text);
+  margin-inline: auto;
+  --btn-bg-color: var(--color-secondary);
+  --btn-text-color: var(--color-text); /* Ajustado para melhor contraste com fundo secundário claro */
 }
 .card-preview .close-preview-btn-bottom:hover:not(:disabled) {
   background-color: hsl(255, 75%, 70%);
 }
 
-
 /* Estilos para a PÁGINA DE VISUALIZAÇÃO ESTÁTICA (/card/:id) */
-#card-view-page { /* ID para o body ou um wrapper na página /card/:id */
+#card-view-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); /* Gradiente diferente para a página de visualização */
-  padding: var(--space-md); /* Espaçamento nas bordas */
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  padding: var(--space-md);
 }
-
-#card-view-page .card-preview { /* Reutiliza .card-preview, mas pode ter ajustes específicos para a página */
-  /* A animação fadeInCardModal já se aplica aqui, o que é bom */
-  /* Outros ajustes se necessário para a página estática */
-  margin-top: 0; /* Remove margem superior se #card-view-page já centraliza */
+#card-view-page .card-preview {
+  margin-top: 0;
 }
-
-#card-view-page .card-preview h1 { /* Título H1 na página de visualização */
+#card-view-page .card-preview h1 {
   text-align: center;
   margin-bottom: var(--space-lg);
   color: var(--color-primary-dark);
 }
 
-
 /* ============================================
    🛠️ UTILITÁRIOS
    ============================================ */
-
-.sr-only { /* Para leitores de tela */
+.sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -890,171 +851,94 @@ textarea {
   white-space: nowrap;
   border-width: 0;
 }
-
 .hidden {
   display: none !important;
 }
 
 /* ============================================
    📱 RESPONSIVIDADE
+   (Mantido como estava no seu original, parece bom)
    ============================================ */
-
-@media (max-width: /* --breakpoint-md */ 768px) {
-  html {
-    font-size: 15px; /* Ajusta o tamanho base da fonte para telas menores */
-  }
-
-  .card-form {
-    padding: var(--space-lg);
-    border-radius: var(--radius-lg);
-  }
-
-  .main-header {
-    padding-block: var(--space-xl);
-  }
-
-  .section-title {
-    font-size: 1.1rem;
-  }
-
-  .audio-player {
-    padding: var(--space-xs); /* Menos padding no player em telas menores */
-  }
-
-  .audio-player .play-pause-btn {
-    font-size: 1rem;
-  }
-
-  .card-preview { /* Na prévia dinâmica e na página estática */
-    padding: var(--space-lg);
-  }
-  .card-preview-header h2 {
-    font-size: 1.5rem;
-  }
+@media (max-width: 768px) { /* --breakpoint-md */
+  html { font-size: 15px; }
+  .card-form { padding: var(--space-lg); border-radius: var(--radius-lg); }
+  .main-header { padding-block: var(--space-xl); }
+  .section-title { font-size: 1.1rem; }
+  .audio-player { padding: var(--space-xs); }
+  .audio-player .play-pause-btn { font-size: 1rem; }
+  .card-preview { padding: var(--space-lg); }
+  .card-preview-header h2 { font-size: 1.5rem; }
 }
-
-@media (max-width: /* --breakpoint-sm */ 480px) {
-  html {
-    font-size: 14px;
-  }
-
-  .spotify-search-container {
-    flex-direction: column;
-    gap: var(--space-sm); /* Aumenta o gap quando em coluna */
-  }
-  .spotify-search-container .btn { /* Botão de busca ocupa largura total */
-    width: 100%;
-  }
-
-  .card-form {
-    padding: var(--space-md);
-    border-radius: var(--radius-md);
-  }
-
-  .spotify-track {
-    /* flex-wrap: wrap; Removido, pode quebrar o layout com o botão de selecionar */
-    gap: var(--space-sm); /* Reduz gap */
-    padding: var(--space-sm);
-  }
-  .track-image {
-    width: 45px;
-    height: 45px;
-  }
-  .spotify-track.selected {
-    padding-left: calc(var(--space-sm) - 5px); /* Ajuste para borda */
-  }
-  
-  .audio-player {
-    flex-wrap: wrap; /* Permite que os itens quebrem linha se não couberem */
-    gap: var(--space-xs);
-  }
-  .audio-player .duration {
-    font-size: 0.75rem;
-    min-width: auto; /* Permite encolher mais */
-    text-align: left; /* Alinha à esquerda se quebrar linha */
-    flex-basis: 100%; /* Ocupa toda a largura se quebrar linha */
-    margin-top: var(--space-xxs);
-  }
-  .audio-player .progress-bar-container {
-    min-width: 100px; /* Garante que a barra não fique muito pequena */
-  }
-
-  .card-preview {
-    padding: var(--space-md);
-  }
-  .card-preview-header h2 {
-    font-size: 1.3rem;
-  }
-  .card-preview p {
-    font-size: 1rem;
-  }
-  .card-preview .close-preview-btn {
-    font-size: 1.8rem;
-  }
+@media (max-width: 480px) { /* --breakpoint-sm */
+  html { font-size: 14px; }
+  .spotify-search-container { flex-direction: column; gap: var(--space-sm); }
+  .spotify-search-container .btn { width: 100%; }
+  .card-form { padding: var(--space-md); border-radius: var(--radius-md); }
+  .spotify-track { gap: var(--space-sm); padding: var(--space-sm); }
+  .track-image { width: 45px; height: 45px; }
+  .spotify-track.selected { padding-left: calc(var(--space-sm) - 5px); }
+  .audio-player { flex-wrap: wrap; gap: var(--space-xs); }
+  .audio-player .duration { font-size: 0.75rem; min-width: auto; text-align: left; flex-basis: 100%; margin-top: var(--space-xxs); }
+  .audio-player .progress-bar-container { min-width: 100px; }
+  .card-preview { padding: var(--space-md); }
+  .card-preview-header h2 { font-size: 1.3rem; }
+  .card-preview p { font-size: 1rem; }
+  .card-preview .close-preview-btn { font-size: 1.8rem; }
 }
 
 /* ============================================
-   🎨 ESTILOS PARA NO-JS
+   🎨 ESTILOS PARA NO-JS E NOTIFICAÇÕES/LOADING (Já presentes e corretos)
    ============================================ */
-
 .no-js-alert {
-  display: none; /* Escondido por padrão */
+  display: none;
   padding: var(--space-md);
   background-color: var(--color-error);
   color: var(--color-white);
   text-align: center;
   font-weight: 500;
 }
-
-.no-js .no-js-alert { /* Exibido se a classe .no-js estiver no <html> */
+.no-js .no-js-alert {
   display: block;
 }
-
-.no-js .main-content { /* Esconde o conteúdo principal se JS estiver desabilitado */
+.no-js .main-content {
   display: none;
 }
 
-
+/* Estilos para NotificationManager (mantidos do seu exemplo, parecem bons) */
 #appNotificationArea {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 2000;
-  width: 300px; /* Ou o que for mais adequado */
+  width: 300px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .notification {
   padding: 15px;
-  border-radius: 5px;
+  border-radius: 5px; /* --radius-sm pode ser usado aqui */
   color: #fff;
-  font-family: Arial, sans-serif;
+  /* font-family: Arial, sans-serif;  Removido para herdar de body */
   font-size: 0.9em;
   position: relative;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md); /* Usando variável de sombra */
   opacity: 0.95;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
 .notification.notification--removing {
   opacity: 0;
   transform: translateX(100%);
 }
-
 .notification--success {
-  background-color: #28a745; /* Verde */
+  background-color: var(--color-success); /* Usando variável de cor */
 }
-
 .notification--error {
-  background-color: #dc3545; /* Vermelho */
+  background-color: var(--color-error); /* Usando variável de cor */
 }
-
 .notification--info {
-  background-color: #17a2b8; /* Azul/Ciano */
+  background-color: var(--color-secondary); /* Usando variável de cor */
 }
-
 .notification__close {
   position: absolute;
   top: 8px;
@@ -1069,6 +953,18 @@ textarea {
   padding: 0;
 }
 
+/* Estilos para o spinner de loading no botão (mantido do seu exemplo, parece bom) */
+/* Nota: A classe de loading no botão no JS é 'btn--loading', não 'loading'.
+   Os estilos na seção de componentes para o spinner já usam '.btn.btn--loading'.
+   Se a definição abaixo for uma duplicata ou diferente, ela pode ser removida
+   ou unificada com a da seção de componentes.
+   A versão na seção de componentes é:
+   .btn.btn--loading .btn__loading { ... border-top-color: transparent; ...}
+   A versão abaixo é:
+   .btn__loading { ... border-right-color: transparent; ... }
+   Vou manter a versão da seção de componentes e remover esta duplicata.
+*/
+/* REMOVIDO - Duplicata do .btn__loading já definido melhor na seção de componentes.
 .btn__loading {
   width: 1em;
   height: 1em;
@@ -1086,3 +982,4 @@ textarea {
     transform: rotate(360deg);
   }
 }
+*/
