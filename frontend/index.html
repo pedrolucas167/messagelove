@@ -7,61 +7,90 @@
   <meta name="theme-color" content="#e91e63" />
   <title>Messagelove - Crie Cartões Especiais Personalizados</title>
   
-
   <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
   <link rel="preconnect" href="https://accounts.spotify.com" /> 
   <link rel="preconnect" href="https://api.spotify.com" />
   <link rel="preconnect" href="https://sdk.scdn.co" /> 
   
-  <!-- Favicon e ícones -->
   <link rel="icon" href="assets/coracao.png" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="assets/coracao.png" sizes="180x180" />
   <link rel="manifest" href="/manifest.webmanifest" /> 
-  <script src="https://developer.spotify.com/documentation/web-api/tutorials/code-flow"></script>
-
   
-  <!-- Folha de estilos -->
+  <script src="https://developer.spotify.com/documentation/web-api/tutorials/code-flow"></script>
+  
   <link rel="stylesheet" href="style.css" />
   
-  <!-- CSS crítico inline -->
   <style>
     .no-js-alert {
       display: none;
-      padding: var(--space-md); /* Usar variável de espaçamento */
-      background-color: var(--color-error);
-      color: var(--color-white);
+      padding: var(--space-md, 1em); /* Fallback para var */
+      background-color: var(--color-error, #d9534f); /* Fallback para var */
+      color: var(--color-white, #fff); /* Fallback para var */
       text-align: center;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-md, 4px); /* Fallback para var */
     }
     .no-js .no-js-alert { display: block; }
     .no-js .main-content { display: none; }
+
+    /* Estilo básico para botões (pode estar no seu style.css) */
+    .btn {
+      padding: 0.75em 1.5em;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md, 4px);
+      cursor: pointer;
+      font-size: 1em;
+      text-decoration: none;
+      display: inline-block;
+      margin: 0.25em;
+    }
+    .btn--spotify {
+      background-color: #1DB954; /* Cor do Spotify */
+      color: white;
+    }
+    .btn--spotify:hover {
+      background-color: #1AA34A;
+    }
+    .btn--secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn--secondary:hover {
+      background-color: #5a6268;
+    }
+    .spotify-auth-controls { /* Container para os botões de login/logout */
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        text-align: center; /* Ou alinhe como preferir */
+    }
   </style>
   
-  <!-- Meta tags para SEO e compartilhamento -->
   <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
   <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e músicas para presentear quem você ama." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://messagelove.app" />
-  <meta property="og:image" content="/assets/og-image.jpg" />
+  <meta property="og:url" content="https://messagelove.app" /> {/* Verifique se este é o seu domínio final */}
+  <meta property="og:image" content="/assets/og-image.jpg" /> {/* Verifique o caminho */}
   <meta property="og:locale" content="pt_BR" />
 </head>
 <body class="no-js">
-  <!-- Alerta para usuários sem JavaScript -->
   <div class="no-js-alert" role="alert">
     <p>Este site requer JavaScript para funcionar corretamente. Por favor, ative-o em suas configurações do navegador.</p>
   </div>
 
-  <!-- Cabeçalho -->
   <header class="main-header" role="banner">
     <div class="container">
       <h1>Crie um Cartão Especial</h1>
       <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e músicas</p>
+      
+      <div class="spotify-auth-controls">
+        <button type="button" id="loginWithSpotifyBtn" class="btn btn--spotify">Entrar com Spotify para Tocar Músicas</button>
+        <button type="button" id="logoutSpotifyBtn" class="btn btn--secondary" style="display:none;">Sair do Spotify</button>
+      </div>
     </div>
   </header>
 
-  <!-- Conteúdo principal -->
   <main class="main-content" role="main">
     <div class="container">
+      {/* O restante do seu formulário e conteúdo principal aqui... */}
       <form id="cardForm" class="card-form" novalidate data-js="card-form">
         <fieldset class="form-section">
           <legend class="section-title"><h2>Informações do Cartão</h2></legend>
@@ -129,7 +158,7 @@
             </div>
           </div>
 
-          <!-- Seção Spotify (injetada via JavaScript) -->
+          
           <div data-js="spotify-section"></div>
 
           <div class="form-group form-actions">
@@ -152,7 +181,6 @@
     </div>
   </main>
 
-  <!-- Rodapé -->
   <footer class="main-footer" role="contentinfo">
     <div class="container">
       <p>
@@ -162,13 +190,12 @@
     </div>
   </footer>
 
-  <!-- JavaScript -->
   <script>
     // Remover classe no-js se JavaScript estiver habilitado
     document.body.classList.remove('no-js');
-    
   </script>
-  <<script src="spotifyAuth.js"></script> 
+
+  <script src="spotifyAuth.js"></script> 
   <script src="script.js"></script>
 </body>
 </html>

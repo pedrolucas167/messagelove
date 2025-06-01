@@ -21,7 +21,6 @@ const devFrontendUrl = `http://localhost:${devFrontendLocalPort}`;
 const allowedOrigins = [frontendUrl];
 if (process.env.NODE_ENV !== 'production') {
   allowedOrigins.push(devFrontendUrl);
-  // For Gitpod or similar environments that expose ports on a dynamic URL
   if (process.env.GITPOD_WORKSPACE_URL) {
     const gitpodOrigin = process.env.GITPOD_WORKSPACE_URL.replace('https://', `https://${devFrontendLocalPort}-`);
     allowedOrigins.push(gitpodOrigin);
@@ -43,27 +42,20 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Accept', 'Authorization']
 }));
 
-// Handle preflight requests
-app.options('*', cors());
-
+app.options('*', cors()); // Handle preflight requests
 
 // --- Middleware ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Serve static files (e.g., style.css for the /card/:id view) from 'public' directory
-app.use(express.static('public'));
-
+app.use(express.static('public')); // Serve static files from 'public' directory
 
 // --- Database Setup (SQLite) ---
-const DB_PATH = './cards.db'; // Ensure this path is writable and persistent on Render (configure a Disk)
+const DB_PATH = './cards.db';
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
     console.error('DATABASE ERROR: Failed to connect to SQLite:', err.message);
-    // Consider exiting if DB connection fails, as the app might be unusable
-    // process.exit(1); 
   } else {
     console.log(`DATABASE: Connected to SQLite database at ${DB_PATH}`);
-    // Create table if it doesn't exist
     db.run(`
       CREATE TABLE IF NOT EXISTS cards (
         id TEXT PRIMARY KEY,
@@ -71,7 +63,7 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
         data TEXT,
         mensagem TEXT NOT NULL,
         spotifyTrackId TEXT,
-        spotifyTrackName TEXT, -- Added to store track name for display
+        spotifyTrackName TEXT,
         previewUrl TEXT,
         fotoUrl TEXT 
       )
@@ -85,7 +77,6 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
   }
 });
 
-
 // --- Spotify API Setup ---
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
@@ -93,37 +84,32 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 let spotifyAccessToken = null;
-let tokenExpiryTime = 0; // Timestamp in ms when the token expires
+let tokenExpiryTime = 0;
 
 async function refreshSpotifyToken() {
-  // Check if token exists and is still valid (with a 5-minute buffer)
   if (spotifyAccessToken && Date.now() < tokenExpiryTime - (5 * 60 * 1000)) {
-    // console.log('SPOTIFY: Using cached access token.');
-    spotifyApi.setAccessToken(spotifyAccessToken); // Ensure the API client instance has the token
+    spotifyApi.setAccessToken(spotifyAccessToken);
     return;
   }
-
   try {
-    console.log('SPOTIFY: Requesting new access token...');
+    console.log('SPOTIFY: Requesting new application access token...');
     const data = await spotifyApi.clientCredentialsGrant();
     spotifyAccessToken = data.body['access_token'];
     tokenExpiryTime = Date.now() + (data.body['expires_in'] * 1000);
     spotifyApi.setAccessToken(spotifyAccessToken);
-    console.log('SPOTIFY: New access token obtained and set.');
+    console.log('SPOTIFY: New application access token obtained and set.');
   } catch (error) {
-    spotifyAccessToken = null; // Reset token on failure
+    spotifyAccessToken = null;
     tokenExpiryTime = 0;
-    console.error('SPOTIFY ERROR: Failed to refresh access token:', error.response ? error.response.data : error.message);
-    // This error should be handled by the calling function, perhaps by retrying or returning an error to the client
-    throw new Error('Failed to authenticate with Spotify. Please check server logs.');
+    console.error('SPOTIFY ERROR: Failed to refresh application access token:', error.response ? error.response.data : error.message);
+    throw new Error('Failed to authenticate application with Spotify. Please check server logs.');
   }
 }
 
-// Helper to fetch preview_url from the more detailed track endpoint if not initially available
 async function fetchPreviewUrlFromTrackEndpoint(trackId) {
   if (!trackId) return null;
   try {
-    await refreshSpotifyToken(); // Ensure token is valid
+    await refreshSpotifyToken();
     const response = await spotifyApi.getTrack(trackId);
     return response.body.preview_url || null;
   } catch (error) {
@@ -138,15 +124,13 @@ function formatTrackData(item) {
     name: item.name,
     artists: item.artists.map(artist => artist.name),
     albumName: item.album.name,
-    albumImage: item.album.images[0]?.url || '', // Use first image, if available
-    previewUrl: item.preview_url || null // This might be null
+    albumImage: item.album.images[0]?.url || '',
+    previewUrl: item.preview_url || null
   };
 }
 
-// --- Utility for Async Route Handling ---
 const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
-
 
 // --- API Endpoints ---
 
@@ -160,60 +144,44 @@ app.get('/api/status', (req, res) => {
 
 app.get('/api/spotify/search', asyncHandler(async (req, res) => {
   const { q, limit = 10 } = req.query;
-
   if (!q) {
     return res.status(400).json({ message: 'Search query parameter "q" is required.' });
   }
-
-  await refreshSpotifyToken(); // Ensure token is valid before making a request
-
+  await refreshSpotifyToken();
   console.log(`SPOTIFY: Searching for tracks with query "${q}", limit ${limit}`);
   const response = await spotifyApi.searchTracks(q, { limit: Number(limit) });
-  
   let tracks = response.body.tracks.items.map(formatTrackData);
-
-  // Attempt to fetch preview_url for tracks where it's initially missing
   tracks = await Promise.all(tracks.map(async (track) => {
     if (!track.previewUrl) {
-      // console.log(`SPOTIFY: Preview URL missing for "${track.name}". Fetching details...`);
       const detailedPreviewUrl = await fetchPreviewUrlFromTrackEndpoint(track.id);
       if (detailedPreviewUrl) {
         track.previewUrl = detailedPreviewUrl;
-        // console.log(`SPOTIFY: Found preview URL for "${track.name}" via track endpoint.`);
       }
     }
     return track;
   }));
-
   console.log(`SPOTIFY: Found ${tracks.length} tracks for query "${q}".`);
   res.json(tracks);
 }));
 
 app.post('/api/cards', asyncHandler(async (req, res) => {
-  // Basic validation
   const { nome, data, mensagem, spotifyTrackId, spotifyTrackName, previewUrl, fotoUrl } = req.body;
-
   if (!nome || !mensagem) {
     return res.status(400).json({ message: 'Fields "nome" and "mensagem" are required.' });
   }
-
   const cardId = uuidv4();
   console.log('API POST /api/cards: Received data for new card:', { nome, data, spotifyTrackId });
-
   const cardData = {
     id: cardId,
     nome,
-    data: data || null, // Ensure optional fields are null if not provided
+    data: data || null,
     mensagem,
     spotifyTrackId: spotifyTrackId || null,
-    spotifyTrackName: spotifyTrackName || null, // Store track name
+    spotifyTrackName: spotifyTrackName || null,
     previewUrl: previewUrl || null,
-    fotoUrl: fotoUrl || null // Placeholder for future photo uploads
+    fotoUrl: fotoUrl || null
   };
   
-  // Note: sqlite3's db.run does not directly support promises with util.promisify
-  // due to its use of 'this' for result properties and multiple callback arguments.
-  // For simplicity, we'll use the callback style here or a custom promise wrapper if preferred.
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO cards (id, nome, data, mensagem, spotifyTrackId, spotifyTrackName, previewUrl, fotoUrl) 
@@ -222,17 +190,21 @@ app.post('/api/cards', asyncHandler(async (req, res) => {
         cardData.id, cardData.nome, cardData.data, cardData.mensagem, 
         cardData.spotifyTrackId, cardData.spotifyTrackName, cardData.previewUrl, cardData.fotoUrl
       ],
-      function(err) { // Use function keyword to access `this` if needed (though not here)
+      function(err) {
         if (err) {
           console.error('DATABASE ERROR: Failed to save card:', err.message);
-          reject(new Error('Failed to save card to database.')); // This will be caught by asyncHandler
-        } else {
-          console.log(`DATABASE: Card saved with ID: ${cardId}`);
-          // Use RENDER_EXTERNAL_URL if available (set by Render), otherwise fallback for local dev
-          const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
-          const viewLink = `${baseUrl}/card/${cardId}`;
-          resolve(res.status(201).json({ message: 'Card created successfully', viewLink, cardData }));
+          return reject(new Error('Failed to save card to database.')); 
         }
+        console.log(`DATABASE: Card saved with ID: ${cardId}`);
+        
+        // --- MUDANÇA APLICADA AQUI ---
+        // O viewLink agora aponta para uma rota no seu frontend Vercel.
+        // Certifique-se que seu frontend tenha uma rota como '/cards/view/:id' para exibir o cartão.
+        const frontendBaseUrlForViewLink = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
+        const viewLink = `${frontendBaseUrlForViewLink}/cards/view/${cardId}`; 
+        // Você pode ajustar o caminho '/cards/view/' se a sua rota no frontend for diferente (ex: '/card/')
+        
+        resolve(res.status(201).json({ message: 'Card created successfully', viewLink, cardData }));
       }
     );
   });
@@ -240,31 +212,28 @@ app.post('/api/cards', asyncHandler(async (req, res) => {
 
 app.get('/api/card/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-
-  // Similar to db.run, db.get requires callback or custom promisify
   return new Promise((resolve, reject) => {
     db.get(`SELECT * FROM cards WHERE id = ?`, [id], (err, row) => {
       if (err) {
         console.error('DATABASE ERROR: Failed to fetch card:', err.message);
-        reject(new Error('Failed to fetch card from database.'));
-      } else if (!row) {
-        resolve(res.status(404).json({ message: 'Card not found.' }));
-      } else {
-        console.log(`DATABASE: Fetched card with ID: ${id}`);
-        resolve(res.json(row));
+        return reject(new Error('Failed to fetch card from database.'));
       }
+      if (!row) {
+        return resolve(res.status(404).json({ message: 'Card not found.' }));
+      }
+      console.log(`DATABASE: Fetched card with ID: ${id}`);
+      resolve(res.json(row));
     });
   });
 }));
 
-
 // --- HTML View for a Single Card (Served by Backend) ---
-// This endpoint serves an HTML page that then fetches data via /api/card/:id
-// Ensure you have a 'public' folder with 'style.css' if you link to it.
+// Este endpoint pode se tornar opcional ou ser usado para um preview mais simples
+// se o seu frontend Vercel assumir a visualização principal do cartão com o Playback SDK.
 app.get('/card/:id', (req, res) => {
   const { id } = req.params;
-  // It's generally better to use a templating engine (EJS, Pug, Handlebars)
-  // or load HTML from a file for more complex pages.
+  // (O HTML e script JS para esta página permanecem os mesmos da versão anterior)
+  // Se esta página for mantida, ela continuará tocando apenas PREVIEWS de música.
   res.send(`
     <!DOCTYPE html>
     <html lang="pt-BR">
@@ -274,18 +243,18 @@ app.get('/card/:id', (req, res) => {
       <title>Seu Cartão Especial - Messagelove</title>
       <link rel="stylesheet" href="/style.css"> 
       <style>
-        /* Basic inline styles for quick preview if style.css is missing */
-        body { font-family: sans-serif; margin: 0; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; width: 90%; }
+        body { font-family: sans-serif; margin: 0; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1em;}
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; width: 100%; }
         .card-preview h1 { text-align: center; color: #333; }
-        .card-preview p { color: #555; line-height: 1.6; }
+        .card-preview p { color: #555; line-height: 1.6; word-break: break-word; }
         .audio-player { display: flex; align-items: center; margin-top: 10px; padding: 10px; background-color: #eee; border-radius: 4px; }
         .play-pause-btn { background: none; border: none; font-size: 1.5em; cursor: pointer; margin-right: 10px;}
         .progress-bar-container { flex-grow: 1; height: 8px; background-color: #ccc; border-radius: 4px; overflow: hidden; margin: 0 10px; cursor: pointer;}
         .progress-bar { width: 0%; height: 100%; background-color: #5cb85c; }
-        .duration { font-size: 0.9em; color: #333; }
+        .duration { font-size: 0.9em; color: #333; min-width: 70px; text-align: right; }
         .preview-error { color: red; font-size: 0.9em; margin-top: 5px; }
         .error-message { color: red; text-align: center; }
+        img.preview-image { max-width: 100%; border-radius: 4px; margin-top:10px; }
       </style>
     </head>
     <body>
@@ -299,10 +268,6 @@ app.get('/card/:id', (req, res) => {
       </div>
 
       <script>
-        // Client-side JavaScript to fetch and display the card
-        // This is a mini audio player implementation.
-        // For a full app, you'd typically use the more robust player from your main frontend.
-
         function formatTime(totalSeconds) {
           if (isNaN(totalSeconds) || totalSeconds < 0) return '0:00';
           const minutes = Math.floor(totalSeconds / 60);
@@ -329,7 +294,7 @@ app.get('/card/:id', (req, res) => {
             let dataFormatada = 'Não especificada';
             if (card.data) {
                 try {
-                    const dateObj = new Date(card.data + 'T00:00:00'); // Assume input YYYY-MM-DD
+                    const dateObj = new Date(card.data + 'T00:00:00');
                     if (!isNaN(dateObj.getTime())) {
                         dataFormatada = dateObj.toLocaleDateString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' });
                     } else { dataFormatada = card.data; }
@@ -340,7 +305,7 @@ app.get('/card/:id', (req, res) => {
               <p><strong>Para:</strong> \${card.nome}</p>
               <p><strong>Data:</strong> \${dataFormatada}</p>
               <p><strong>Mensagem:</strong> \${card.mensagem.replace(/\\n/g, '<br>')}</p>
-              \${card.fotoUrl ? \`<div><img src="\${card.fotoUrl}" alt="Foto do Cartão" style="max-width:100%; border-radius:4px; margin-top:10px;"></div>\` : ''}
+              \${card.fotoUrl ? \`<div><img src="\${card.fotoUrl}" alt="Foto do Cartão" class="preview-image"></div>\` : ''}
               \${card.previewUrl ? \`
                 <div>
                   <h3>Música: \${card.spotifyTrackName || 'Faixa selecionada'}</h3>
@@ -356,7 +321,7 @@ app.get('/card/:id', (req, res) => {
                       Seu navegador não suporta o elemento de áudio.
                     </audio>
                   </div>
-                  <div class="preview-error" style="display: none; color: red; font-size: 0.9em;">
+                  <div class="preview-error" style="display: none;">
                     Não foi possível reproduzir a prévia.
                   </div>
                 </div>
@@ -377,14 +342,14 @@ app.get('/card/:id', (req, res) => {
 
               audioElement.onloadedmetadata = () => {
                 audioDuration = audioElement.duration;
-                durationElement.textContent = \`0:00 / \${formatTime(audioDuration)}\`;
+                durationElement.textContent = \`0:00 / \${formatTime(audioDuration || 0)}\`; // Fallback para 0 se duration for NaN
               };
               audioElement.ontimeupdate = () => {
                 if (audioDuration > 0) {
                   const progressPercent = (audioElement.currentTime / audioDuration) * 100;
                   progressBar.style.width = \`\${progressPercent}%\`;
                 }
-                durationElement.textContent = \`\${formatTime(audioElement.currentTime)} / \${formatTime(audioDuration)}\`;
+                durationElement.textContent = \`\${formatTime(audioElement.currentTime)} / \${formatTime(audioDuration || 0)}\`;
               };
               audioElement.onended = () => {
                 playIcon.style.display = 'inline';
@@ -396,7 +361,7 @@ app.get('/card/:id', (req, res) => {
               audioElement.onerror = (e) => {
                 console.error('Audio Error:', audioElement.error, e);
                 errorElement.style.display = 'block';
-                playerElement.style.display = 'none';
+                if(playerElement) playerElement.style.display = 'none';
               };
               playPauseBtn.onclick = () => {
                 if (audioElement.paused) {
@@ -431,7 +396,6 @@ app.get('/card/:id', (req, res) => {
             contentDiv.innerHTML = \`<p class="error-message">Erro ao carregar o cartão: \${error.message}</p>\`;
           }
         }
-        // Load the card data when the page is ready
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', loadCard);
         } else {
@@ -443,39 +407,31 @@ app.get('/card/:id', (req, res) => {
   `);
 });
 
-
 // --- Global Error Handler ---
-// This should be the last middleware
 app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR HANDLER:", err.name, err.message);
-  if (err.stack) {
+  if (err.stack && process.env.NODE_ENV !== 'production') { // Não logar stack em produção por padrão aqui, mas pode ser útil em logs centralizados
     console.error(err.stack);
   }
-  // Avoid sending stack trace in production
-  const statusCode = err.status || 500; // err.status for custom errors
+  const statusCode = err.status || 500;
   const errorMessage = statusCode === 500 && process.env.NODE_ENV === 'production' 
     ? 'An unexpected error occurred on the server.' 
     : err.message || 'Internal Server Error';
-
   res.status(statusCode).json({ 
     message: errorMessage,
-    ...(process.env.NODE_ENV !== 'production' && { errorName: err.name, stack: err.stack }) // Include more details in dev
+    ...(process.env.NODE_ENV !== 'production' && { errorName: err.name })
   });
 });
-
 
 // --- Server Start ---
 app.listen(PORT, () => {
   console.log(`HTTP Server running on port ${PORT}`);
   console.log(`Frontend expected at: ${frontendUrl} or ${devFrontendUrl}`);
-  console.log(`Card view page (if served by backend): http://localhost:${PORT}/card/some-card-id`);
-  // Initial Spotify token fetch
+  // Initial Spotify token fetch for application
   refreshSpotifyToken().catch(err => {
-    console.error("Failed to fetch initial Spotify token on startup:", err.message);
-    // Depending on app requirements, you might want to exit if Spotify auth fails critically
+    console.error("Failed to fetch initial Spotify application token on startup:", err.message);
   });
 });
-
 
 // --- Graceful Shutdown ---
 process.on('SIGINT', () => {
