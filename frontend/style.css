@@ -953,33 +953,4 @@ textarea {
   padding: 0;
 }
 
-/* Estilos para o spinner de loading no botão (mantido do seu exemplo, parece bom) */
-/* Nota: A classe de loading no botão no JS é 'btn--loading', não 'loading'.
-   Os estilos na seção de componentes para o spinner já usam '.btn.btn--loading'.
-   Se a definição abaixo for uma duplicata ou diferente, ela pode ser removida
-   ou unificada com a da seção de componentes.
-   A versão na seção de componentes é:
-   .btn.btn--loading .btn__loading { ... border-top-color: transparent; ...}
-   A versão abaixo é:
-   .btn__loading { ... border-right-color: transparent; ... }
-   Vou manter a versão da seção de componentes e remover esta duplicata.
-*/
-/* REMOVIDO - Duplicata do .btn__loading já definido melhor na seção de componentes.
-.btn__loading {
-  width: 1em;
-  height: 1em;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  animation: btn-spin 0.6s linear infinite;
-  vertical-align: middle;
-  margin-right: 0.5em;
-}
-
-@keyframes btn-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-*/
+ 
