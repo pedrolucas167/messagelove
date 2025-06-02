@@ -12,15 +12,10 @@
   <link rel="preconnect" href="https://api.spotify.com" />
   <link rel="preconnect" href="https://sdk.scdn.co" /> 
   
-
- <!-- Favicon padrão -->
-<link rel="icon" href="/assets/coracao.png" type="image/png" />
-<link rel="shortcut icon" href="/assets/coracao.png" type="image/png" />
-<!-- Ícone para dispositivos Apple -->
-<link rel="apple-touch-icon" href="/assets/coracao.png" sizes="180x180" />
-<!-- Manifesto PWA -->
-<link rel="manifest" href="/manifest.webmanifest" />
-
+  <link rel="icon" href="/assets/coracao.png" type="image/png" />
+  <link rel="shortcut icon" href="/assets/coracao.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/coracao.png" sizes="180x180" />
+  <link rel="manifest" href="/manifest.webmanifest" /> 
   
   <script src="https://developer.spotify.com/documentation/web-api/tutorials/code-flow"></script>
   
@@ -28,53 +23,38 @@
   
   <style>
     .no-js-alert {
-      display: none;
-      padding: var(--space-md, 1em); /* Fallback para var */
-      background-color: var(--color-error, #d9534f); /* Fallback para var */
-      color: var(--color-white, #fff); /* Fallback para var */
-      text-align: center;
-      border-radius: var(--radius-md, 4px); /* Fallback para var */
+      display: none; padding: var(--space-md, 1em); background-color: var(--color-error, #d9534f);
+      color: var(--color-white, #fff); text-align: center; border-radius: var(--radius-md, 4px);
     }
     .no-js .no-js-alert { display: block; }
     .no-js .main-content { display: none; }
 
-    /* Estilo básico para botões (pode estar no seu style.css) */
     .btn {
-      padding: 0.75em 1.5em;
-      border: 1px solid transparent;
-      border-radius: var(--radius-md, 4px);
-      cursor: pointer;
-      font-size: 1em;
-      text-decoration: none;
-      display: inline-block;
-      margin: 0.25em;
+      padding: 0.75em 1.5em; border: 1px solid transparent; border-radius: var(--radius-md, 4px);
+      cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0.25em;
     }
-    .btn--spotify {
-      background-color: #1DB954; /* Cor do Spotify */
-      color: white;
+    .btn--spotify, .btn--load-track { /* Estilo para o novo botão de carregar */
+      background-color: #1DB954; color: white;
     }
-    .btn--spotify:hover {
+    .btn--spotify:hover, .btn--load-track:hover {
       background-color: #1AA34A;
     }
-    .btn--secondary {
-      background-color: #6c757d;
-      color: white;
-    }
-    .btn--secondary:hover {
-      background-color: #5a6268;
-    }
-    .spotify-auth-controls { /* Container para os botões de login/logout */
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        text-align: center; /* Ou alinhe como preferir */
-    }
+    .btn--secondary { background-color: #6c757d; color: white; }
+    .btn--secondary:hover { background-color: #5a6268; }
+    .spotify-auth-controls { margin-top: 1rem; margin-bottom: 1rem; text-align: center; }
+
+    /* Estilos para o novo input e player embed */
+    .spotify-url-input-container { margin-bottom: var(--space-md, 1.5rem); }
+    #spotifyEmbedPlayerContainer { margin-top: var(--space-md, 1.5rem); }
+    #spotifyEmbedPlayer { display: none; /* Começa escondido */ }
+    #spotifyPlayerMessage { color: var(--color-muted, #6c757d); font-style: italic; }
   </style>
   
   <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
   <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e músicas para presentear quem você ama." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://messagelove.app" /> {/* Verifique se este é o seu domínio final */}
-  <meta property="og:image" content="/assets/og-image.jpg" /> {/* Verifique o caminho */}
+  <meta property="og:url" content="https://messagelove.app" />
+  <meta property="og:image" content="/assets/og-image.jpg" />
   <meta property="og:locale" content="pt_BR" />
 </head>
 <body class="no-js">
@@ -87,100 +67,83 @@
       <h1>Crie um Cartão Especial</h1>
       <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e músicas</p>
       
-      <div class="spotify-auth-controls">
-        <button type="button" id="loginWithSpotifyBtn" class="btn btn--spotify">Entrar com Spotify para Tocar Músicas</button>
-        <button type="button" id="logoutSpotifyBtn" class="btn btn--secondary" style="display:none;">Sair do Spotify</button>
       </div>
-    </div>
   </header>
 
   <main class="main-content" role="main">
     <div class="container">
-      {/* O restante do seu formulário e conteúdo principal aqui... */}
       <form id="cardForm" class="card-form" novalidate data-js="card-form">
         <fieldset class="form-section">
           <legend class="section-title"><h2>Informações do Cartão</h2></legend>
           
+          {/* Campos existentes: Nome, Data, Mensagem, FotoUpload ... */}
           <div class="form-group">
-            <label for="nome" class="required-field">
-              Nome do Destinatário
-              <span class="sr-only">(obrigatório)</span>
-            </label>
-            <input type="text" 
-                   id="nome" 
-                   name="nome" 
-                   required 
-                   placeholder="Para quem é este cartão?"
-                   aria-required="true"
-                   data-js="nome-input" />
+            <label for="nome" class="required-field">Nome do Destinatário<span class="sr-only">(obrigatório)</span></label>
+            <input type="text" id="nome" name="nome" required placeholder="Para quem é este cartão?" aria-required="true" data-js="nome-input" />
             <small class="field-hint">Obrigatório</small>
           </div>
 
           <div class="form-group">
             <label for="data">Data Especial</label>
-            <input type="date" 
-                   id="data" 
-                   name="data" 
-                   aria-describedby="dataHelp"
-                   data-js="data-input" />
+            <input type="date" id="data" name="data" aria-describedby="dataHelp" data-js="data-input" />
             <small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
           </div>
 
           <div class="form-group">
-            <label for="mensagem" class="required-field">
-              Sua Mensagem
-              <span class="sr-only">(obrigatório)</span>
-            </label>
-            <textarea id="mensagem" 
-                      name="mensagem" 
-                      required 
-                      placeholder="Escreva sua mensagem especial..."
-                      aria-required="true"
-                      data-js="mensagem-input"></textarea>
+            <label for="mensagem" class="required-field">Sua Mensagem<span class="sr-only">(obrigatório)</span></label>
+            <textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem especial..." aria-required="true" data-js="mensagem-input"></textarea>
             <small class="field-hint">Obrigatório</small>
           </div>
 
           <div class="form-group file-upload" data-js="file-upload">
             <label for="fotoUpload">Adicionar Foto</label>
-            <input type="file" 
-                   id="fotoUpload" 
-                   name="foto" 
-                   accept="image/jpeg,image/png" 
-                   aria-describedby="fotoHelp"
-                   data-js="foto-input" />
+            <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png" aria-describedby="fotoHelp" data-js="foto-input" />
             <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG (máx. 5MB)</small>
             <div class="preview-container" hidden data-js="preview-container">
-              <img id="fotoPreview" 
-                   class="preview" 
-                   alt="Pré-visualização da foto selecionada" 
-                   data-js="foto-preview" />
-              <button type="button" 
-                      class="btn btn-remove" 
-                      id="removeFoto" 
-                      aria-label="Remover foto selecionada"
-                      data-js="remove-foto">
-                ×
-              </button>
+              <img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada" data-js="foto-preview" />
+              <button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto selecionada" data-js="remove-foto">×</button>
             </div>
           </div>
-
           
-          <div data-js="spotify-section"></div>
+          {/* --- NOVA SEÇÃO PARA COLAR URL DO SPOTIFY E PLAYER EMBED --- */}
+          <div class="form-group spotify-url-input-container">
+            <label for="spotifyUrlInput">Link da Música do Spotify (Opcional)</label>
+            <input type="url" id="spotifyUrlInput" name="spotifyUrl" placeholder="Cole o link da música do Spotify aqui" aria-describedby="spotifyUrlHelp" />
+            <button type="button" id="loadSpotifyTrackBtn" class="btn btn--load-track" style="margin-top: 0.5em;">Carregar Música</button>
+            <small id="spotifyUrlHelp" class="field-hint">Abra o Spotify, encontre a música, clique em 'Compartilhar' > 'Copiar Link da música'.</small>
+          </div>
+
+          {/* Placeholder para o player incorporado do Spotify */}
+          <div id="spotifyEmbedPlayerContainer">
+            <p id="spotifyPlayerMessage" style="text-align: center;">Cole um link e clique em "Carregar Música" para ver o player aqui.</p>
+            <iframe 
+              id="spotifyEmbedPlayer"
+              style="border-radius:12px; display:none; margin-top: 0.5em;" 
+              src="" 
+              width="100%" 
+              height="152" { /* Altura padrão para embed compacto, ou 352 para maior */ }
+              frameBorder="0" 
+              allowfullscreen="" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy"
+              title="Player Incorporado do Spotify">
+            </iframe>
+          </div>
+          {/* --- FIM DA NOVA SEÇÃO SPOTIFY --- */}
+
+
+          {/* O placeholder original 'data-js="spotify-section"' para a busca integrada pode ser removido
+               ou mantido se você planeja ter as duas opções no futuro. Vou remover por clareza. */}
+          {/* <div data-js="spotify-section"></div> */}
 
           <div class="form-group form-actions">
-            <button type="submit" 
-                    class="btn btn-submit btn--primary" 
-                    id="submitBtn"
-                    data-js="submit-btn">
+            <button type="submit" class="btn btn-submit btn--primary" id="submitBtn" data-js="submit-btn">
               <span class="btn-text">Criar Cartão</span>
               <span class="btn-loading" aria-hidden="true" hidden>
-                <span class="btn-spinner" aria-hidden="true"></span>
-                Processando...
+                <span class="btn-spinner" aria-hidden="true"></span> Processando...
               </span>
             </button>
-            <small class="form-note">
-              Seu cartão será gerado e você receberá um link único para compartilhar.
-            </small>
+            <small class="form-note">Seu cartão será gerado e você receberá um link único para compartilhar.</small>
           </div>
         </fieldset>
       </form>
@@ -188,7 +151,8 @@
   </main>
 
   <footer class="main-footer" role="contentinfo">
-    <div class="container">
+    {/* ... seu rodapé ... */}
+     <div class="container">
       <p>
         <span>Messagelove © <span id="currentYear" data-js="current-year">2025</span></span>
         <span>Feito com <span aria-label="coração">❤️</span> por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Pedro Marques</a></span>
@@ -197,10 +161,9 @@
   </footer>
 
   <script>
-    // Remover classe no-js se JavaScript estiver habilitado
     document.body.classList.remove('no-js');
   </script>
- 
+  {/* script.js agora conteria a lógica para o #loadSpotifyTrackBtn e o resto da aplicação */}
   <script src="script.js"></script>
 </body>
 </html>
