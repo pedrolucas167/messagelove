@@ -450,11 +450,10 @@
     }
   };
 
-  // Inicializa a aplicação
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', App.init);
-  } else {
-    App.init();
-  }
 
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', App.init.bind(App)); 
+} else {
+  App.init(); 
+}
 })(window, document);
