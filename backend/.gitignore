@@ -1,0 +1,82 @@
+# Dependências
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Arquivos de Ambiente (NUNCA versione .env com segredos reais!)
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+.envrc
+# Se você usa um arquivo .env.example para versionar as chaves (sem valores),
+# considere adicionar uma exceção para ele: !.env.example
+
+# Diretórios de Build/Distribuição
+dist/
+build/
+out/
+
+# Arquivos de Cache
+.cache/
+.npm/
+.eslintcache
+# Para Yarn v1
+.yarn/cache/
+# Para Yarn v2+ (Berry) - ajuste conforme sua configuração
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+# Arquivos de IDE e Editor
+.idea/
+*.sublime-project
+*.sublime-workspace
+# Configurações do VSCode (ignora tudo, exceto arquivos comuns de configuração de projeto)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# Arquivos de Sistema Operacional
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*~
+
+# Relatórios de Teste e Cobertura
+coverage/
+.nyc_output/
+
+# --- Adições Solicitadas ---
+
+# Banco de Dados SQLite Local
+# Adicionado para ignorar o arquivo de banco de dados local 'cards.db' e outros arquivos SQLite.
+# Se o seu 'cards.db' de produção for gerenciado de outra forma (ex: disco persistente no Render)
+# e este for apenas para desenvolvimento, ignorá-lo é uma boa prática.
+cards.db
+*.sqlite
+*.sqlite3
+
+# Certificados SSL e Chaves Privadas Locais
+# Adicionado para ignorar arquivos .pem e .key locais.
+*.pem
+*.key
+
+# Uploads locais
+# Adicionado para ignorar uma pasta de uploads local.
+uploads/
