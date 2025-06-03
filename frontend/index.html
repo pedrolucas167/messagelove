@@ -86,10 +86,11 @@
     }
     .youtube-player-wrapper {
       position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-      max-width: 100%; background: #000;
+      max-width: 100%; background: #000; margin-top: 15px;
     }
     .youtube-player-wrapper iframe {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      border: none;
     }
     .card-preview {
       max-width: 600px; margin: 20px auto; padding: 20px; background: #fff;
@@ -141,6 +142,29 @@
     .btn-remove {
       background: #f44336; color: white; border: none; padding: 0.25em 0.5em;
       border-radius: 4px; cursor: pointer; margin-top: 0.5em;
+    }
+    
+    /* Estilos para o player de YouTube */
+    .youtube-preview-container {
+      margin-top: 20px;
+      display: none;
+    }
+    .youtube-preview-container.active {
+      display: block;
+    }
+    .youtube-preview-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .youtube-preview-actions button {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    .youtube-error {
+      color: #f44336;
+      margin-top: 5px;
+      font-size: 14px;
     }
   </style>
   
@@ -200,8 +224,20 @@
           <!-- Seção para adicionar URL do YouTube -->
           <div class="form-group">
             <label for="youtubeUrlInput">Link do YouTube (Opcional)</label>
-            <input type="url" id="youtubeUrlInput" name="previewUrl" class="form-input" placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp" aria-required="false" />
+            <div class="input-container" style="display: flex; gap: 10px;">
+              <input type="url" id="youtubeUrlInput" name="youtubeUrl" class="form-input" placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp" aria-required="false" />
+              <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary" style="white-space: nowrap;">Adicionar</button>
+            </div>
             <small id="youtubeUrlHelp" class="field-hint">Se desejar, adicione um vídeo do YouTube ao seu cartão.</small>
+            <div id="youtubeError" class="youtube-error"></div>
+          </div>
+          
+          <!-- Container para pré-visualização do vídeo -->
+          <div id="youtubePreviewContainer" class="youtube-preview-container">
+            <div class="youtube-player-wrapper">
+              <iframe id="youtubePlayer" allowfullscreen></iframe>
+            </div>
+            <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
           </div>
           <!-- Fim da seção YouTube -->
 
@@ -232,6 +268,101 @@
 
   <script>
     document.body.classList.remove('no-js');
+    
+    // Função para extrair o ID do vídeo do YouTube
+    function extractYouTubeId(url) {
+      if (!url) return null;
+      
+      const patterns = [
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^?]+)/
+      ];
+      
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+          return match[1].split('&')[0];
+        }
+      }
+      
+      return null;
+    }
+
+    // Função para validar e mostrar o player do YouTube
+    function handleYouTubeUrl() {
+      const urlInput = document.getElementById('youtubeUrlInput');
+      const errorElement = document.getElementById('youtubeError');
+      const previewContainer = document.getElementById('youtubePreviewContainer');
+      const playerIframe = document.getElementById('youtubePlayer');
+      const videoIdInput = document.getElementById('youtubeVideoId');
+      
+      const url = urlInput.value.trim();
+      const videoId = extractYouTubeId(url);
+      
+      if (videoId) {
+        errorElement.textContent = '';
+        playerIframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+        videoIdInput.value = videoId;
+        previewContainer.classList.add('active');
+      } else {
+        errorElement.textContent = 'Por favor, insira um link válido do YouTube.';
+        previewContainer.classList.remove('active');
+        videoIdInput.value = '';
+      }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Atualizar ano no footer
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+      
+      // Botão para adicionar URL do YouTube
+      document.getElementById('addYoutubeUrlBtn').addEventListener('click', handleYouTubeUrl);
+      
+      // Permitir que o Enter também dispare a validação do YouTube
+      document.getElementById('youtubeUrlInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleYouTubeUrl();
+        }
+      });
+      
+      // Upload de foto
+      const fotoUpload = document.getElementById('fotoUpload');
+      const fotoPreview = document.getElementById('fotoPreview');
+      const previewContainer = document.querySelector('[data-js="preview-container"]');
+      const removeFotoBtn = document.getElementById('removeFoto');
+      
+      if (fotoUpload) {
+        fotoUpload.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
+              alert('Por favor, selecione uma imagem válida (máx. 5MB).');
+              e.target.value = '';
+              return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              fotoPreview.src = e.target.result;
+              previewContainer.hidden = false;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+      
+      if (removeFotoBtn) {
+        removeFotoBtn.addEventListener('click', function() {
+          fotoUpload.value = '';
+          previewContainer.hidden = true;
+        });
+      }
+    });
   </script>
   <script src="script.js"></script>
 </body>
