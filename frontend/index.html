@@ -3,24 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e músicas para presentear quem você ama." />
+  <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
   <meta name="theme-color" content="#e91e63" />
   <title>Messagelove - Crie Cartões Especiais Personalizados</title>
   
   <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
-  <link rel="preconnect" href="https://accounts.spotify.com" /> 
-  <link rel="preconnect" href="https://api.spotify.com" />
-  <link rel="preconnect" href="https://sdk.scdn.co" /> 
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   
   <link rel="icon" href="/assets/coracao.png" type="image/png" />
   <link rel="shortcut icon" href="/assets/coracao.png" type="image/png" />
   <link rel="apple-touch-icon" href="/assets/coracao.png" sizes="180x180" />
-  <link rel="manifest" href="/manifest.webmanifest" /> 
-  
-  <script src="https://developer.spotify.com/documentation/web-api/tutorials/code-flow"></script>
-  
+  <link rel="manifest" href="/manifest.webmanifest" />
+
   <link rel="stylesheet" href="style.css" />
-  
+
   <style>
     .no-js-alert {
       display: none; padding: var(--space-md, 1em); background-color: var(--color-error, #d9534f);
@@ -33,25 +30,122 @@
       padding: 0.75em 1.5em; border: 1px solid transparent; border-radius: var(--radius-md, 4px);
       cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0.25em;
     }
-    .btn--spotify, .btn--load-track { /* Estilo para o novo botão de carregar */
-      background-color: #1DB954; color: white;
+    .btn--primary {
+      background-color: #e91e63; color: white;
     }
-    .btn--spotify:hover, .btn--load-track:hover {
-      background-color: #1AA34A;
+    .btn--primary:hover {
+      background-color: #c2185b;
     }
-    .btn--secondary { background-color: #6c757d; color: white; }
-    .btn--secondary:hover { background-color: #5a6268; }
-    .spotify-auth-controls { margin-top: 1rem; margin-bottom: 1rem; text-align: center; }
+    .btn--secondary {
+      background-color: #6c757d; color: white;
+    }
+    .btn--secondary:hover {
+      background-color: #5a6268;
+    }
+    .btn--loading {
+      position: relative;
+    }
+    .btn--loading .btn-text {
+      visibility: hidden;
+    }
+    .btn--loading .btn-loading {
+      visibility: visible; position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .btn-spinner::before {
+      content: ''; display: inline-block; width: 16px; height: 16px;
+      border: 2px solid #fff; border-top-color: transparent; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-right: 8px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
-    /* Estilos para o novo input e player embed */
-    .spotify-url-input-container { margin-bottom: var(--space-md, 1.5rem); }
-    #spotifyEmbedPlayerContainer { margin-top: var(--space-md, 1.5rem); }
-    #spotifyEmbedPlayer { display: none; /* Começa escondido */ }
-    #spotifyPlayerMessage { color: var(--color-muted, #6c757d); font-style: italic; }
+    .notification {
+      padding: 10px; margin: 10px 0; border-radius: var(--radius-md, 4px);
+      position: relative; animation: slideIn 0.5s ease-in;
+    }
+    .notification--success { background: #4caf50; color: white; }
+    .notification--error { background: #f44336; color: white; }
+    .notification--info { background: #2196f3; color: white; }
+    .notification--removing { animation: slideOut 0.5s ease-out forwards; }
+    .notification__close {
+      position: absolute; right: 10px; top: 10px; background: none;
+      border: none; color: white; font-size: 16px; cursor: pointer;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-20px); opacity: 0; }
+    }
+
+    .preview-video-container {
+      margin-top: 15px;
+    }
+    .youtube-player-wrapper {
+      position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+      max-width: 100%; background: #000;
+    }
+    .youtube-player-wrapper iframe {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    }
+    .card-preview {
+      max-width: 600px; margin: 20px auto; padding: 20px; background: #fff;
+      border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .card-preview-header {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .close-preview-btn, .close-preview-btn-bottom {
+      cursor: pointer; background: #f44336; color: white; border: none;
+      padding: 5px 10px; border-radius: 4px;
+    }
+    .preview-link-info a {
+      color: #1a73e8; text-decoration: none;
+    }
+    .preview-link-info a:hover {
+      text-decoration: underline;
+    }
+    .preview-image-container img {
+      max-width: 100%; border-radius: 4px; margin-top: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 1em;
+    }
+    .form-input, textarea, input[type="file"] {
+      width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: var(--radius-md, 4px);
+      font-size: 1em;
+    }
+    textarea {
+      resize: vertical; min-height: 100px;
+    }
+    .field-hint {
+      font-size: 0.85em; color: #666; display: block; margin-top: 0.25em;
+    }
+    .required-field::after {
+      content: '*'; color: #d9534f; margin-left: 0.25em;
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+    }
+    .preview-container {
+      margin-top: 0.5em;
+    }
+    .preview-container img {
+      max-width: 100%; border-radius: 4px;
+    }
+    .btn-remove {
+      background: #f44336; color: white; border: none; padding: 0.25em 0.5em;
+      border-radius: 4px; cursor: pointer; margin-top: 0.5em;
+    }
   </style>
   
   <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
-  <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e músicas para presentear quem você ama." />
+  <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://messagelove.app" />
   <meta property="og:image" content="/assets/og-image.jpg" />
@@ -65,9 +159,8 @@
   <header class="main-header" role="banner">
     <div class="container">
       <h1>Crie um Cartão Especial</h1>
-      <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e músicas</p>
-      
-      </div>
+      <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos do YouTube</p>
+    </div>
   </header>
 
   <main class="main-content" role="main">
@@ -76,7 +169,6 @@
         <fieldset class="form-section">
           <legend class="section-title"><h2>Informações do Cartão</h2></legend>
           
-          {/* Campos existentes: Nome, Data, Mensagem, FotoUpload ... */}
           <div class="form-group">
             <label for="nome" class="required-field">Nome do Destinatário<span class="sr-only">(obrigatório)</span></label>
             <input type="text" id="nome" name="nome" required placeholder="Para quem é este cartão?" aria-required="true" data-js="nome-input" />
@@ -96,45 +188,22 @@
           </div>
 
           <div class="form-group file-upload" data-js="file-upload">
-            <label for="fotoUpload">Adicionar Foto</label>
-            <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png" aria-describedby="fotoHelp" data-js="foto-input" />
-            <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG (máx. 5MB)</small>
+            <label for="fotoUpload">Adicionar Foto (Opcional)</label>
+            <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" aria-describedby="fotoHelp" data-js="foto-input" />
+            <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
             <div class="preview-container" hidden data-js="preview-container">
               <img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada" data-js="foto-preview" />
               <button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto selecionada" data-js="remove-foto">×</button>
             </div>
           </div>
-          
-          {/* --- NOVA SEÇÃO PARA COLAR URL DO SPOTIFY E PLAYER EMBED --- */}
-          <div class="form-group spotify-url-input-container">
-            <label for="spotifyUrlInput">Link da Música do Spotify (Opcional)</label>
-            <input type="url" id="spotifyUrlInput" name="spotifyUrl" placeholder="Cole o link da música do Spotify aqui" aria-describedby="spotifyUrlHelp" />
-            <button type="button" id="loadSpotifyTrackBtn" class="btn btn--load-track" style="margin-top: 0.5em;">Carregar Música</button>
-            <small id="spotifyUrlHelp" class="field-hint">Abra o Spotify, encontre a música, clique em 'Compartilhar' > 'Copiar Link da música'.</small>
+
+          <!-- Seção para adicionar URL do YouTube -->
+          <div class="form-group">
+            <label for="youtubeUrlInput">Link do YouTube (Opcional)</label>
+            <input type="url" id="youtubeUrlInput" name="previewUrl" class="form-input" placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp" aria-required="false" />
+            <small id="youtubeUrlHelp" class="field-hint">Se desejar, adicione um vídeo do YouTube ao seu cartão.</small>
           </div>
-
-          {/* Placeholder para o player incorporado do Spotify */}
-          <div id="spotifyEmbedPlayerContainer">
-            <p id="spotifyPlayerMessage" style="text-align: center;">Cole um link e clique em "Carregar Música" para ver o player aqui.</p>
-            <iframe 
-              id="spotifyEmbedPlayer"
-              style="border-radius:12px; display:none; margin-top: 0.5em;" 
-              src="" 
-              width="100%" 
-              height="152" { /* Altura padrão para embed compacto, ou 352 para maior */ }
-              frameBorder="0" 
-              allowfullscreen="" 
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-              loading="lazy"
-              title="Player Incorporado do Spotify">
-            </iframe>
-          </div>
-          {/* --- FIM DA NOVA SEÇÃO SPOTIFY --- */}
-
-
-          {/* O placeholder original 'data-js="spotify-section"' para a busca integrada pode ser removido
-               ou mantido se você planeja ter as duas opções no futuro. Vou remover por clareza. */}
-          {/* <div data-js="spotify-section"></div> */}
+          <!-- Fim da seção YouTube -->
 
           <div class="form-group form-actions">
             <button type="submit" class="btn btn-submit btn--primary" id="submitBtn" data-js="submit-btn">
@@ -151,8 +220,7 @@
   </main>
 
   <footer class="main-footer" role="contentinfo">
-    {/* ... seu rodapé ... */}
-     <div class="container">
+    <div class="container">
       <p>
         <span>Messagelove © <span id="currentYear" data-js="current-year">2025</span></span>
         <span>Feito com <span aria-label="coração">❤️</span> por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Pedro Marques</a></span>
@@ -160,10 +228,11 @@
     </div>
   </footer>
 
+  <div id="appNotificationArea"></div>
+
   <script>
     document.body.classList.remove('no-js');
   </script>
-  {/* script.js agora conteria a lógica para o #loadSpotifyTrackBtn e o resto da aplicação */}
   <script src="script.js"></script>
 </body>
 </html>

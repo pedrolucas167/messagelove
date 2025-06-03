@@ -1,50 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Um cartão especial criado com Messagelove apenas para você!">
   <title>Seu Cartão Especial | Messagelove</title>
-  
-  {/* Links para CSS e Favicon/Manifest - Ajuste os caminhos se 'assets' não estiver na raiz */}
-  <link rel="stylesheet" href="/frontend/style.css" />
-  <link rel="icon" href="/assets/coracao.png" type="image/png" /> 
-  <link rel="apple-touch-icon" href="/assets/coracao.png" /> 
-  <link rel="manifest" href="/manifest.webmanifest" /> 
-
-  {/* Adicionado para clareza, embora não usado diretamente aqui se Web Playback SDK for para SPA principal */}
-  <script src="https://developer.spotify.com/documentation/web-api/tutorials/code-flow"></script> 
-  <style>
-    /* Estilo básico para feedback de carregamento e erro, pode ser movido para style.css */
-    .loading-state, .error-state {
-      text-align: center;
-      padding: 2rem;
-      font-size: 1.2em;
-      color: #555;
-    }
-    .card-media { min-height: 80px; /* Para evitar colapso se nada for carregado */ }
-    .hidden { display: none !important; }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/assets/coracao.png" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/coracao.png">
+  <link rel="manifest" href="/manifest.webmanifest">
 </head>
-
 <body>
-  <header class="card-header">
+  <header class="main-header">
     <div class="container">
       <h1>Seu Cartão Especial</h1>
       <p class="subtitle">Criado com ❤️ usando <strong>Messagelove</strong></p>
     </div>
   </header>
 
-  <main class="card-main">
+  <main class="main-content">
     <div class="container">
-      <article id="cartao" class="cartao">
+      <article id="cartao" class="card-preview">
         <div class="card-content">
-          {/* Conteúdo será preenchido por card.js */}
           <div id="card-data-container">
             <div id="card-loading" class="loading-state">Carregando seu cartão... 💌</div>
             <div id="card-error" class="error-state hidden"></div>
-            
-            <div id="card-details" class="hidden"> {/* Escondido até os dados carregarem */}
+            <div id="card-details" class="hidden">
               <h2 id="nome" class="card-title"></h2>
               <div class="card-meta">
                 <p id="data" class="card-date"></p>
@@ -53,39 +34,8 @@
                 <p id="mensagem" class="message-text"></p>
               </section>
               <section class="card-media">
-                <img 
-                  id="foto" 
-                  class="card-image hidden" {/* Escondido até ter src */}
-                  src="" {/* Será preenchido por JS, ou pode manter o placeholder */}
-                  alt="Imagem especial do cartão" 
-                  title="Imagem do cartão"
-                />
-
-                {/* O card.js decidirá qual player mostrar/preencher */}
-                <div id="spotify-container" class="music-player hidden">
-                  {/* O src do iframe será definido por card.js se houver um spotifyTrackId */}
-                  {/* URL de embed: https://developer.spotify.com/documentation/web-api/reference/player/3{ID_DA_FAIXA} */}
-                  <iframe 
-                    id="spotify"
-                    style="border-radius:12px" /* Sugestão de estilo do Spotify */
-                    src="" /* Será preenchido por JS */
-                    width="100%" 
-                    height="152" /* Altura sugerida pelo Spotify para o embed compacto */
-                    frameBorder="0" 
-                    allowfullscreen="" /* Atributo booleano */
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                    loading="lazy"
-                    title="Player Incorporado do Spotify">
-                  </iframe>
-                </div>
-
-                <div id="audio-container" class="music-player hidden">
-                  {/* O src da source será definido por card.js se houver uma previewUrl (MP3) */}
-                  <audio id="mp3" controls style="width: 100%;">
-                    <source src="" type="audio/mpeg" />
-                    Seu navegador não suporta o elemento de áudio.
-                  </audio>
-                </div>
+                <img id="foto" class="preview-image hidden" src="" alt="Imagem especial do cartão" title="Imagem do cartão">
+                <div id="youtube-container"></div>
               </section>
             </div>
           </div>
@@ -94,19 +44,13 @@
     </div>
   </main>
 
-  <footer class="card-footer">
+  <footer class="main-footer">
     <div class="container">
-      <p>Messagelove &copy; <span id="currentYear"></span></p>
+      <p>Messagelove © <span id="currentYear"></span></p>
       <p class="share-text">💌 Gostou? Crie o seu também e compartilhe amor!</p>
-      {/* Opcional: Link para criar um novo cartão */}
-      {/* <p><a href="https://messagelove-frontend.vercel.app/">Crie seu próprio cartão!</a></p> */}
     </div>
   </footer>
 
-  <script>
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
-  </script>
-  {/* card.js será responsável por buscar os dados do cartão e preencher o HTML */}
-  <script src="/frontend/card.js"></script> 
+  <script src="/card.js"></script>
 </body>
 </html>
