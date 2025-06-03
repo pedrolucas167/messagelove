@@ -18,45 +18,20 @@
       return null;
     }
 
-    static async validateUrl(url) {
-      const videoId = this.getVideoId(url);
-      if (!videoId) return null;
-      try {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${process.env.YOUTUBE_API_KEY}`);
-        const data = await response.json();
-        if (!data.items.length) return null;
-        return {
-          url,
-          videoId,
-          title: data.items[0].snippet.title,
-          thumbnail: data.items[0].snippet.thumbnails?.medium?.url || ''
-        };
-      } catch {
-        return null;
-      }
-    }
-
-    static createPlayerHtml(videoData, index, total) {
-      if (!videoData || !videoData.videoId) {
+    static createPlayerHtml(videoId) {
+      if (!videoId) {
         return '<div class="preview-video-container"><p>Link do YouTube inválido.</p></div>';
       }
       return `
         <div class="preview-video-container">
-          <h3>${videoData.title || 'Vídeo ' + (index + 1)}</h3>
           <div class="youtube-player-container">
-            ${videoData.thumbnail ? `<img src="${videoData.thumbnail}" alt="Thumbnail do vídeo ${videoData.title}" class="video-thumbnail">` : ''}
             <iframe
-              id="youtubePlayer"
-              src="https://www.youtube.com/embed/${videoData.videoId}?rel=0&modestbranding=1"
-              title="${videoData.title || 'Vídeo do YouTube'}"
+              src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1"
+              title="Vídeo do YouTube"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
-          </div>
-          <div class="video-controls">
-            <button type="button" class="btn btn--secondary prev-video-btn" ${index === 0 ? 'disabled' : ''}>Vídeo Anterior</button>
-            <button type="button" class="btn btn--secondary next-video-btn" ${index === total - 1 ? 'disabled' : ''}>Próximo Vídeo</button>
           </div>
         </div>
       `;
@@ -87,19 +62,23 @@
       notification.classList.add('notification--removing');
       setTimeout(() => notification.remove(), 300);
     }
+
+    appendNotification(notification) {
+      this.#notificationArea.appendChild(notification);
+    }
+
+    removeNotification(notification) {
+      this.#removeNotification(notification);
+    }
   }
 
   class FormManager {
     #form;
     #notificationManager;
-    #youtubeUrlsContainer;
-    #currentVideoIndex = 0;
-    #youtubeData = [];
 
     constructor() {
       this.#form = document.getElementById('cardForm');
       this.#notificationManager = new NotificationManager();
-      this.#youtubeUrlsContainer = document.getElementById('youtubeUrlsContainer');
     }
 
     init() {
@@ -108,19 +87,37 @@
         return;
       }
       this.#setupEventListeners();
-      console.log('FormManager: Inicializado.');
     }
 
     #setupEventListeners() {
       this.#form.addEventListener('submit', (e) => this.#handleSubmit(e));
-      document.getElementById('addYoutubeUrlBtn').addEventListener('click', () => this.#addYoutubeUrlInput());
-      document.getElementById('fotoUpload').addEventListener('change', (e) => this.#handleFileUpload(e));
-      document.getElementById('removeFoto')?.addEventListener('click', () => this.#removePhoto());
-      this.#youtubeUrlsContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-url-btn')) {
-          this.#removeYoutubeUrlInput(e.target);
+      document.getElementById('addYoutubeUrlBtn').addEventListener('click', () => this.#handleYoutubeUrl());
+      document.getElementById('youtubeUrlInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.#handleYoutubeUrl();
         }
       });
+      document.getElementById('fotoUpload').addEventListener('change', (e) => this.#handleFileUpload(e));
+      document.getElementById('removeFoto')?.addEventListener('click', () => this.#removePhoto());
+    }
+
+    #handleYoutubeUrl() {
+      const urlInput = document.getElementById('youtubeUrlInput');
+      const previewContainer = document.getElementById('youtubePreviewContainer');
+      const errorElement = document.getElementById('youtubeError');
+      
+      const videoId = YouTubeManager.getVideoId(urlInput.value.trim());
+      
+      if (videoId) {
+        errorElement.textContent = '';
+        previewContainer.innerHTML = YouTubeManager.createPlayerHtml(videoId);
+        previewContainer.classList.add('active');
+        document.getElementById('youtubeVideoId').value = videoId;
+      } else {
+        errorElement.textContent = 'Por favor, insira um link válido do YouTube.';
+        previewContainer.classList.remove('active');
+      }
     }
 
     async #handleSubmit(event) {
@@ -135,24 +132,14 @@
         data: formData.get('data'),
         mensagem: formData.get('mensagem'),
         fotoUrl: document.getElementById('fotoPreview')?.src || '',
-        youtubeUrls: formData.getAll('youtubeUrls[]').filter(url => url.trim())
+        youtubeVideoId: formData.get('youtubeVideoId') || null
       };
 
       try {
-        this.#youtubeData = [];
-        for (const url of data.youtubeUrls) {
-          const videoData = await YouTubeManager.validateUrl(url);
-          if (videoData) {
-            this.#youtubeData.push(videoData);
-          } else {
-            throw new Error(`Invalid YouTube URL: ${url}`);
-          }
-        }
-
         const response = await fetch('https://messagelove-backend.onrender.com/api/cards', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...data, youtubeUrls: this.#youtubeData })
+          body: JSON.stringify(data)
         });
 
         if (!response.ok) {
@@ -161,8 +148,7 @@
         }
 
         const result = await response.json();
-        this.#showCardPreview(result.cardData, result.viewLink);
-        this.#notificationManager.show('Cartão criado com sucesso!', 'success');
+        this.#showSuccessNotification(result.viewLink);
         this.#form.reset();
         this.#resetForm();
       } catch (error) {
@@ -174,22 +160,11 @@
       }
     }
 
-    #addYoutubeUrlInput() {
-      const inputContainer = document.createElement('div');
-      inputContainer.className = 'youtube-url-input';
-      inputContainer.innerHTML = `
-        <input type="url" name="youtubeUrls[]" class="form-input" placeholder="Insira um link do YouTube">
-        <button type="button" class="remove-url-btn">Remover</button>
-      `;
-      this.#youtubeUrlsContainer.appendChild(inputContainer);
-    }
-
-    #removeYoutubeUrlInput(button) {
-      if (this.#youtubeUrlsContainer.children.length > 1) {
-        button.parentElement.remove();
-      } else {
-        button.parentElement.querySelector('input').value = '';
-      }
+    #showSuccessNotification(viewLink) {
+      const notification = document.createElement('div');
+      notification.className = 'notification notification--success';
+      this.#notificationManager.appendNotification(notification);
+      setTimeout(() => this.#notificationManager.removeNotification(notification), 10000);
     }
 
     #handleFileUpload(event) {
@@ -222,77 +197,18 @@
     #resetForm() {
       const previewContainer = document.querySelector('[data-js="preview-container"]');
       previewContainer.hidden = true;
-      while (this.#youtubeUrlsContainer.children.length > 1) {
-        this.#youtubeUrlsContainer.lastChild.remove();
-      }
-      this.#youtubeUrlsContainer.querySelector('input').value = '';
-      this.#currentVideoIndex = 0;
-      this.#youtubeData = [];
-    }
-
-    #showCardPreview(cardData, viewLink) {
-      const modal = document.createElement('div');
-      modal.className = 'card-preview-wrapper';
-      modal.innerHTML = `
-        <div class="card-preview">
-          <div class="card-preview-header">
-            <h2>Prévia do Cartão</h2>
-            <button type="button" class="close-preview-btn">&times;</button>
-          </div>
-          <p><strong>Para:</strong> ${cardData.nome}</p>
-          <p><strong>Data:</strong> ${cardData.data ? new Date(cardData.data).toLocaleDateString('pt-BR') : 'Não especificada'}</p>
-          <p><strong>Mensagem:</strong> ${cardData.mensagem.replace(/\n/g, '<br>')}</p>
-          ${cardData.fotoUrl ? `<div class="preview-image-container"><img src="${cardData.fotoUrl}" alt="Foto" class="preview-image"></div>` : ''}
-          <div id="youtube-preview"></div>
-          <div class="preview-link-info">
-            <p>Link do cartão: <a href="${viewLink}" target="_blank">${viewLink}</a></p>
-          </div>
-          <button type="button" class="btn btn--secondary close-preview-btn-bottom">Fechar</button>
-        </div>
-      `;
-      document.body.appendChild(modal);
-
-      const youtubePreview = modal.querySelector('#youtube-preview');
-      const updateVideoPreview = () => {
-        youtubePreview.innerHTML = YouTubeManager.createPlayerHtml(this.#youtubeData[this.#currentVideoIndex], this.#currentVideoIndex, this.#youtubeData.length);
-        const prevBtn = youtubePreview.querySelector('.prev-video-btn');
-        const nextBtn = youtubePreview.querySelector('.next-video-btn');
-        if (prevBtn) {
-          prevBtn.onclick = () => {
-            if (this.#currentVideoIndex > 0) {
-              this.#currentVideoIndex--;
-              updateVideoPreview();
-            }
-          };
-        }
-        if (nextBtn) {
-          nextBtn.onclick = () => {
-            if (this.#currentVideoIndex < this.#youtubeData.length - 1) {
-              this.#currentVideoIndex++;
-              updateVideoPreview();
-            }
-          };
-        }
-      };
-
-      if (this.#youtubeData.length) {
-        updateVideoPreview();
-      } else {
-        youtubePreview.innerHTML = '<div class="preview-video-container"><p>Nenhum vídeo disponível.</p></div>';
-      }
-
-      modal.querySelectorAll('.close-preview-btn, .close-preview-btn-bottom').forEach(btn => {
-        btn.onclick = () => modal.remove();
-      });
+      document.getElementById('youtubePreviewContainer').classList.remove('active');
+      document.getElementById('youtubePreviewContainer').innerHTML = '';
+      document.getElementById('youtubeUrlInput').value = '';
+      document.getElementById('youtubeVideoId').value = '';
+      document.getElementById('youtubeError').textContent = '';
     }
   }
 
   const app = {
     init() {
-      console.log('Aplicação Messagelove inicializando...');
       const formManager = new FormManager();
       formManager.init();
-      console.log('Aplicação Messagelove pronta.');
     }
   };
 

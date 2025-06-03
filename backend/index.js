@@ -57,7 +57,7 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
       nome TEXT NOT NULL,
       data TEXT,
       mensagem TEXT NOT NULL,
-      youtubeUrls TEXT, -- Armazena URLs do YouTube como JSON
+      youtubeVideoId TEXT, -- Agora armazena apenas o ID do vídeo
       fotoUrl TEXT
     )
   `, (errRun) => {
@@ -82,20 +82,10 @@ app.get('/api/status', (req, res) => {
 });
 
 app.post('/api/cards', asyncHandler(async (req, res) => {
-  const { nome, data, mensagem, youtubeUrls, fotoUrl } = req.body;
+  const { nome, data, mensagem, youtubeVideoId, fotoUrl } = req.body;
 
   if (!nome || !mensagem) {
     return res.status(400).json({ message: 'Fields "nome" and "mensagem" are required.' });
-  }
-
-  let parsedYoutubeUrls = [];
-  try {
-    parsedYoutubeUrls = typeof youtubeUrls === 'string' ? JSON.parse(youtubeUrls) : youtubeUrls || [];
-    if (!Array.isArray(parsedYoutubeUrls)) {
-      throw new Error('youtubeUrls must be an array.');
-    }
-  } catch (error) {
-    return res.status(400).json({ message: 'Invalid youtubeUrls format. Must be a JSON array.' });
   }
 
   const cardId = uuidv4();
@@ -104,15 +94,15 @@ app.post('/api/cards', asyncHandler(async (req, res) => {
     nome,
     data: data || null,
     mensagem,
-    youtubeUrls: JSON.stringify(parsedYoutubeUrls), // Armazena como JSON no banco
+    youtubeVideoId: youtubeVideoId || null,
     fotoUrl: fotoUrl || null
   };
 
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO cards (id, nome, data, mensagem, youtubeUrls, fotoUrl)
+      `INSERT INTO cards (id, nome, data, mensagem, youtubeVideoId, fotoUrl)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [cardData.id, cardData.nome, cardData.data, cardData.mensagem, cardData.youtubeUrls, cardData.fotoUrl],
+      [cardData.id, cardData.nome, cardData.data, cardData.mensagem, cardData.youtubeVideoId, cardData.fotoUrl],
       function (err) {
         if (err) {
           console.error('DATABASE ERROR: Failed to save card:', err.message);
@@ -123,10 +113,7 @@ app.post('/api/cards', asyncHandler(async (req, res) => {
         resolve(res.status(201).json({
           message: 'Card created successfully',
           viewLink,
-          cardData: {
-            ...cardData,
-            youtubeUrls: parsedYoutubeUrls // Retorna como array na resposta
-          }
+          cardData
         }));
       }
     );
@@ -145,10 +132,7 @@ app.get('/api/card/:id', asyncHandler(async (req, res) => {
         return resolve(res.status(404).json({ message: 'Card not found.' }));
       }
       console.log(`DATABASE: Fetched card with ID: ${id}`);
-      resolve(res.json({
-        ...row,
-        youtubeUrls: row.youtubeUrls ? JSON.parse(row.youtubeUrls) : [] // Converte JSON para array
-      }));
+      resolve(res.json(row));
     });
   });
 }));
@@ -173,33 +157,12 @@ app.get('/card/:id', (req, res) => {
         </div>
       </div>
       <script>
-        function getYouTubeVideoId(url) {
-          if (!url) return null;
-          const patterns = [
-            /(?:https?:\\/\\/)?(?:www\\.)?youtube\\.com\\/watch\\?v=([^&]+)/,
-            /(?:https?:\\/\\/)?(?:www\\.)?youtu\\.be\\/([^?]+)/,
-            /(?:https?:\\/\\/)?(?:www\\.)?youtube\\.com\\/embed\\/([^?]+)/,
-            /(?:https?:\\/\\/)?(?:www\\.)?youtube\\.com\\/v\\/([^?]+)/,
-            /(?:https?:\\/\\/)?(?:www\\.)?youtube\\.com\\/shorts\\/([^?]+)/
-          ];
-          for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match && match[1]) return match[1].split('&')[0];
-          }
-          return null;
-        }
-
-        function createVideoPlayerHtml(urls, currentIndex) {
-          if (!urls || !urls.length || currentIndex >= urls.length) {
-            return '<div class="preview-video-container"><p>Nenhum vídeo disponível.</p></div>';
-          }
-          const videoId = getYouTubeVideoId(urls[currentIndex]);
+        function createVideoPlayerHtml(videoId) {
           if (!videoId) {
-            return '<div class="preview-video-container"><p>Link do YouTube inválido.</p></div>';
+            return '<div class="preview-video-container"><p>Nenhum vídeo disponível.</p></div>';
           }
           return \`
             <div class="preview-video-container">
-              <h3>Vídeo \${currentIndex + 1} de \${urls.length}</h3>
               <div class="youtube-player-container">
                 <iframe
                   src="https://www.youtube.com/embed/\${videoId}?rel=0&modestbranding=1"
@@ -208,10 +171,6 @@ app.get('/card/:id', (req, res) => {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowfullscreen>
                 </iframe>
-              </div>
-              <div class="video-controls">
-                <button type="button" class="btn btn--secondary prev-video-btn" \${currentIndex === 0 ? 'disabled' : ''}>Vídeo Anterior</button>
-                <button type="button" class="btn btn--secondary next-video-btn" \${currentIndex === urls.length - 1 ? 'disabled' : ''}>Próximo Vídeo</button>
               </div>
             </div>
           \`;
@@ -250,38 +209,13 @@ app.get('/card/:id', (req, res) => {
               }
             }
 
-            let currentVideoIndex = 0;
-            const updateVideoPlayer = () => {
-              contentDiv.querySelector('.preview-video-container').outerHTML = createVideoPlayerHtml(card.youtubeUrls, currentVideoIndex);
-              const prevBtn = contentDiv.querySelector('.prev-video-btn');
-              const nextBtn = contentDiv.querySelector('.next-video-btn');
-              if (prevBtn) {
-                prevBtn.onclick = () => {
-                  if (currentVideoIndex > 0) {
-                    currentVideoIndex--;
-                    updateVideoPlayer();
-                  }
-                };
-              }
-              if (nextBtn) {
-                nextBtn.onclick = () => {
-                  if (currentVideoIndex < card.youtubeUrls.length - 1) {
-                    currentVideoIndex++;
-                    updateVideoPlayer();
-                  }
-                };
-              }
-            };
-
             contentDiv.innerHTML = \`
               <p><strong>Para:</strong> \${card.nome}</p>
               <p><strong>Data:</strong> \${dataFormatted}</p>
               <p><strong>Mensagem:</strong> \${card.mensagem.replace(/\\n/g, '<br>')}</p>
               \${card.fotoUrl ? \`<div class="preview-image-container"><img src="\${card.fotoUrl}" alt="Foto" class="preview-image"></div>\` : ''}
-              \${createVideoPlayerHtml(card.youtubeUrls, currentVideoIndex)}
+              \${createVideoPlayerHtml(card.youtubeVideoId)}
             \`;
-
-            updateVideoPlayer();
           } catch (error) {
             console.error('Erro loadCard:', error);
             loadingDiv.style.display = 'none';
