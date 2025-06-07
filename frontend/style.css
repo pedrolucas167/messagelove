@@ -1,11 +1,11 @@
-/* Import Google Font 'Inter' - Movido para o topo */
+/* Import Google Font 'Inter' */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ============================================
    🔧 CONFIGURAÇÕES GLOBAIS
    ============================================ */
-
 :root {
+  /* Cores */
   --color-primary: hsl(330, 70%, 60%);
   --color-primary-dark: hsl(313, 60%, 45%);
   --color-secondary: hsl(255, 80%, 75%);
@@ -17,10 +17,9 @@
   --color-border: hsl(240, 5%, 85%);
   --color-error: hsl(0, 70%, 55%);
   --color-success: hsl(120, 60%, 45%);
-  /* --color-spotify: hsl(141, 70%, 40%); Removido */
   --color-overlay: hsla(240, 5%, 10%, 0.15);
 
-  /* 📐 ESPAÇAMENTO */
+  /* Espaçamento */
   --space-xxs: 0.25rem; /* 4px */
   --space-xs: 0.5rem; /* 8px */
   --space-sm: 1rem; /* 16px */
@@ -29,32 +28,30 @@
   --space-xl: 3rem; /* 48px */
   --space-xxl: 4rem; /* 64px */
 
-  /* 🔄 TRANSIÇÕES */
+  /* Transições */
   --transition-fast: 150ms ease-out;
   --transition-base: 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
   --transition-medium: 350ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 500ms ease-out;
 
-  /* 🧩 BORDER RADIUS */
+  /* Border Radius */
   --radius-sm: 0.375rem; /* 6px */
   --radius-md: 0.75rem; /* 12px */
   --radius-lg: 1rem; /* 16px */
   --radius-xl: 1.5rem; /* 24px */
   --radius-pill: 9999px;
 
-  /* ☁️ SOMBRAS */
+  /* Sombras */
   --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
-  --shadow-focus: 0 0 0 4px hsla(330, 70%, 60%, 0.25); 
-  /* --shadow-focus-spotify: 0 0 0 4px hsla(141, 70%, 40%, 0.2); Removido */
+  --shadow-focus: 0 0 0 4px hsla(330, 70%, 60%, 0.25);
 }
 
 /* ============================================
    🏗️ RESET E ESTILOS BASE
    ============================================ */
-
 *,
 *::before,
 *::after {
@@ -64,10 +61,10 @@
 }
 
 html {
+  font-size: 16px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  font-size: 16px;
 }
 
 body {
@@ -84,7 +81,7 @@ body {
 
 img,
 picture,
-video, /* Adicionado para consistência, embora iframe seja mais comum para YouTube */
+video,
 canvas,
 svg {
   display: block;
@@ -114,7 +111,7 @@ select,
 textarea {
   font: inherit;
   color: inherit;
-  background-color: transparent;
+  background: none;
   border: none;
 }
 
@@ -130,8 +127,8 @@ button {
 .container {
   width: 100%;
   max-width: min(960px, 92vw);
-  margin-inline: auto;
-  padding-inline: var(--space-md);
+  margin: 0 auto;
+  padding: 0 var(--space-md);
 }
 
 .card {
@@ -147,11 +144,9 @@ button {
   box-shadow: var(--shadow-lg);
 }
 
-/* Botões */
 .btn {
   --btn-bg-color: var(--color-primary);
   --btn-text-color: var(--color-white);
-  
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -161,17 +156,13 @@ button {
   font-weight: 600;
   background-color: var(--btn-bg-color);
   color: var(--btn-text-color);
-  transition: 
-    background-color var(--transition-base),
-    color var(--transition-base),
-    transform var(--transition-base),
-    box-shadow var(--transition-base),
-    opacity var(--transition-base);
   border: 1px solid transparent;
-  letter-spacing: 0.02em;
   text-transform: uppercase;
-  text-align: center;
+  letter-spacing: 0.02em;
   white-space: nowrap;
+  transition: background-color var(--transition-base), color var(--transition-base),
+              transform var(--transition-base), box-shadow var(--transition-base),
+              opacity var(--transition-base);
 }
 
 .btn:hover:not(:disabled) {
@@ -188,14 +179,15 @@ button {
   opacity: 0.6;
   cursor: not-allowed;
   filter: grayscale(60%);
-  box-shadow: none !important;
-  transform: none !important;
+  box-shadow: none;
+  transform: none;
 }
 
 .btn--primary {
   --btn-bg-color: var(--color-primary);
   --btn-text-color: var(--color-white);
 }
+
 .btn--primary:hover:not(:disabled) {
   background-color: var(--color-primary-dark);
 }
@@ -204,17 +196,17 @@ button {
   --btn-bg-color: var(--color-muted);
   --btn-text-color: var(--color-white);
 }
+
 .btn--secondary:hover:not(:disabled) {
   background-color: hsl(240, 3%, 35%);
 }
-
-/* .btn--spotify removido */
 
 .btn--outline {
   --btn-bg-color: transparent;
   --btn-text-color: var(--color-primary);
   border-color: var(--color-primary);
 }
+
 .btn--outline:hover:not(:disabled) {
   background-color: var(--color-primary);
   color: var(--color-white);
@@ -225,11 +217,8 @@ button {
   width: 100%;
 }
 
-.btn .btn__loading {
-  display: none; 
-}
-.btn.btn--loading .btn__loading {
-  display: inline-block;
+.btn__loading {
+  display: none;
   width: 1.2em;
   height: 1.2em;
   border: 2px solid var(--btn-text-color);
@@ -238,10 +227,15 @@ button {
   animation: spin 0.8s linear infinite;
   margin-right: var(--space-xs);
 }
+
+.btn.btn--loading .btn__loading {
+  display: inline-block;
+}
+
 .btn.btn--loading > span:not(.btn__loading) {
   visibility: hidden;
   opacity: 0;
-  display:none;
+  display: none;
 }
 
 @keyframes spin {
@@ -251,26 +245,23 @@ button {
 /* ============================================
    🏛️ ESTRUTURA DO LAYOUT
    ============================================ */
-
 .main-header {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: var(--color-white);
-  padding-block: var(--space-xxl) var(--space-xl);
+  padding: var(--space-xxl) 0 var(--space-xl);
   margin-bottom: var(--space-xl);
   text-align: center;
   box-shadow: var(--shadow-md);
 }
 
-/* .spotify-auth-controls removido, pois não era usado e era específico */
-
 .main-content {
-  padding-block: var(--space-md) var(--space-xl);
+  padding: var(--space-md) 0 var(--space-xl);
 }
 
 .main-footer {
   background-color: var(--color-white);
   color: var(--color-muted);
-  padding-block: var(--space-lg);
+  padding: var(--space-lg) 0;
   border-top: 1px solid var(--color-border);
   text-align: center;
   font-size: 0.9rem;
@@ -278,32 +269,35 @@ button {
 }
 
 /* ============================================
-   ✍️ TIPOGRAFIA 
+   ✍️ TIPOGRAFIA
    ============================================ */
 h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
   font-weight: 700;
   color: var(--color-text);
-  margin-top: 0;
+  margin: 0 0 var(--space-sm);
 }
+
 h1 {
   font-size: clamp(2.2rem, 6vw, 3rem);
-  margin-bottom: var(--space-sm);
   letter-spacing: -0.02em;
 }
+
 h2 {
   font-size: clamp(1.8rem, 4.5vw, 2.2rem);
-  margin-bottom: var(--space-md);
   letter-spacing: -0.01em;
+  margin-bottom: var(--space-md);
 }
+
 .subtitle {
   font-size: clamp(1.1rem, 3.5vw, 1.3rem);
-  opacity: 0.85;
   font-weight: 400;
+  opacity: 0.85;
   max-width: 700px;
-  margin-inline: auto;
+  margin: 0 auto;
   line-height: 1.5;
 }
+
 .section-title {
   font-size: 1.3rem;
   font-weight: 600;
@@ -314,6 +308,7 @@ h2 {
   position: relative;
   display: inline-block;
 }
+
 .section-title::after {
   content: '';
   position: absolute;
@@ -336,14 +331,17 @@ h2 {
   margin-bottom: var(--space-xl);
   border: 1px solid var(--color-light);
 }
+
 .form-group {
   margin-bottom: var(--space-lg);
 }
+
 .form-section {
   border: none;
   padding: 0;
   margin: 0;
 }
+
 label {
   display: block;
   margin-bottom: var(--space-xs);
@@ -351,13 +349,14 @@ label {
   color: var(--color-muted);
   font-size: 0.95rem;
 }
+
 .required-field::after {
-  content: " *";
+  content: ' *';
   color: var(--color-error);
   font-weight: normal;
 }
-/* Aplicado a .form-input que foi adicionado ao HTML do YouTube, e outros inputs */
-.form-input, /* Adicionada classe genérica se quiser usar */
+
+.form-input,
 input[type="text"],
 input[type="date"],
 input[type="email"],
@@ -370,13 +369,12 @@ select {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-light);
-  transition: 
-    border-color var(--transition-base),
-    box-shadow var(--transition-base),
-    background-color var(--transition-base);
   color: var(--color-text);
   font-size: 1rem;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base),
+              background-color var(--transition-base);
 }
+
 .form-input:focus,
 input[type="text"]:focus,
 input[type="date"]:focus,
@@ -390,10 +388,12 @@ select:focus {
   background-color: var(--color-white);
   outline: none;
 }
+
 textarea {
   min-height: 140px;
   resize: vertical;
 }
+
 .field-hint {
   display: block;
   margin-top: var(--space-xs);
@@ -405,23 +405,26 @@ textarea {
    📁 UPLOAD DE ARQUIVOS
    ============================================ */
 .file-upload input[type="file"] {
+  width: 100%;
   padding: var(--space-lg) var(--space-sm);
   border: 2px dashed var(--color-border);
-  background-color: var(--color-light);
-  width: 100%;
-  cursor: pointer;
   border-radius: var(--radius-md);
-  font-size: 0.95rem;
+  background-color: var(--color-light);
   color: var(--color-muted);
+  font-size: 0.95rem;
   text-align: center;
-  transition: all var(--transition-base);
+  cursor: pointer;
+  transition: border-color var(--transition-base), background-color var(--transition-base),
+              color var(--transition-base);
 }
+
 .file-upload input[type="file"]:hover,
 .file-upload input[type="file"]:focus {
   border-color: var(--color-primary);
   background-color: hsla(330, 70%, 60%, 0.05);
   color: var(--color-primary-dark);
 }
+
 .preview-container {
   position: relative;
   margin-top: var(--space-md);
@@ -429,6 +432,7 @@ textarea {
   overflow: hidden;
   line-height: 0;
 }
+
 .preview {
   max-width: 100%;
   max-height: 350px;
@@ -437,6 +441,7 @@ textarea {
   box-shadow: var(--shadow-sm);
   background-color: var(--color-light);
 }
+
 .btn-remove {
   --btn-remove-size: 32px;
   position: absolute;
@@ -452,12 +457,13 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--transition-base), background-color var(--transition-base), box-shadow var(--transition-base);
-  box-shadow: var(--shadow-sm);
   border: 2px solid var(--color-white);
   padding: 0;
   z-index: 10;
+  transition: transform var(--transition-base), background-color var(--transition-base),
+              box-shadow var(--transition-base);
 }
+
 .btn-remove:hover {
   transform: scale(1.1);
   background-color: hsl(0, 70%, 50%);
@@ -465,45 +471,90 @@ textarea {
 }
 
 /* ============================================
-   🎵 SPOTIFY SEARCH - Removido
-   ============================================ */
-
-/* ============================================
    📢 FEEDBACK E NOTIFICAÇÕES
    ============================================ */
-/* .selected-track-info removido */
-.feedback { /* Mantido para feedback genérico */
+.feedback {
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-md);
   font-size: 0.95rem;
   font-weight: 500;
   box-shadow: var(--shadow-sm);
-  border-left-width: 4px;
-  border-left-style: solid;
+  border-left: 4px solid;
 }
+
 .feedback--error {
   color: var(--color-error);
   background-color: hsla(0, 70%, 55%, 0.08);
   border-left-color: var(--color-error);
 }
+
 .feedback--info {
   color: var(--color-secondary);
   background-color: hsla(255, 80%, 75%, 0.1);
   border-left-color: var(--color-secondary);
 }
+
 .feedback--success {
   color: var(--color-success);
   background-color: hsla(120, 60%, 45%, 0.1);
   border-left-color: var(--color-success);
 }
 
-/* ============================================
-   🎧 PLAYER DE ÁUDIO (usado por AudioPlayerManager) - Removido
-   ============================================ */
+#appNotificationArea {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 15px;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.9em;
+  box-shadow: var(--shadow-md);
+  opacity: 0.95;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification.notification--removing {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.notification--success {
+  background-color: var(--color-success);
+}
+
+.notification--error {
+  background-color: var(--color-error);
+}
+
+.notification--info {
+  background-color: var(--color-secondary);
+}
+
+.notification__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
 
 /* ============================================
-   🖼️ PRÉVIA DO CARTÃO (Após submit e na página /card/:id)
+   🖼️ PRÉVIA DO CARTÃO
    ============================================ */
 .card-preview-wrapper {
   position: fixed;
@@ -520,10 +571,12 @@ textarea {
   overflow-y: auto;
   animation: fadeInOverlay 0.3s ease-out;
 }
+
 @keyframes fadeInOverlay {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
 .card-preview {
   background-color: var(--color-white);
   border-radius: var(--radius-xl);
@@ -531,15 +584,17 @@ textarea {
   box-shadow: var(--shadow-lg);
   max-width: 600px;
   width: 100%;
-  animation: fadeInCardModal 0.4s ease-out 0.1s backwards;
-  position: relative;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
+  animation: fadeInCardModal 0.4s ease-out 0.1s backwards;
 }
+
 @keyframes fadeInCardModal {
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
 .card-preview-header {
   display: flex;
   justify-content: space-between;
@@ -548,11 +603,13 @@ textarea {
   border-bottom: 1px solid var(--color-border);
   padding-bottom: var(--space-md);
 }
+
 .card-preview-header h2 {
-  margin-bottom: 0;
+  margin: 0;
   color: var(--color-primary-dark);
   font-size: 1.8rem;
 }
+
 .card-preview .close-preview-btn {
   background: none;
   border: none;
@@ -563,23 +620,28 @@ textarea {
   line-height: 1;
   transition: color var(--transition-fast), transform var(--transition-fast);
 }
+
 .card-preview .close-preview-btn:hover {
   color: var(--color-error);
   transform: scale(1.1);
 }
+
 .card-preview p {
-  margin-bottom: var(--space-sm);
+  margin: 0 0 var(--space-sm);
   font-size: 1.1rem;
   line-height: 1.7;
 }
+
 .card-preview p strong {
   color: var(--color-text);
   font-weight: 600;
 }
+
 .card-preview .preview-image-container {
-  margin-block: var(--space-md);
+  margin: var(--space-md) 0;
   text-align: center;
 }
+
 .card-preview .preview-image {
   max-width: 100%;
   max-height: 300px;
@@ -588,27 +650,28 @@ textarea {
   box-shadow: var(--shadow-sm);
 }
 
-/* Estilos para o container do vídeo do YouTube na prévia do cartão */
-.card-preview .preview-video-container { /* Usado no FormManager._showCardPreview */
-  margin-block: var(--space-md);
+.card-preview .preview-video-container {
+  margin: var(--space-md) 0;
 }
+
 .card-preview .preview-video-container h3 {
   font-size: 1.2rem;
   color: var(--color-text);
-  margin-bottom: var(--space-sm);
+  margin: 0 0 var(--space-sm);
 }
-/* Estilo para o wrapper do player do YouTube (responsivo) */
-.youtube-player-wrapper, /* Usado no FormManager._showCardPreview */
-.youtube-player-container { /* Usado na página /card/:id do backend */
+
+.youtube-player-wrapper,
+.youtube-player-container {
   position: relative;
   padding-bottom: 56.25%; /* 16:9 aspect ratio */
   height: 0;
   overflow: hidden;
   max-width: 100%;
-  background: hsl(0, 0%, 10%); /* Fundo escuro para o player */
-  border-radius: var(--radius-md); /* Consistente com outras prévias */
-  margin-top: var(--space-xs); /* Espaçamento se o h3 estiver presente */
+  background: hsl(0, 0%, 10%);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-xs);
 }
+
 .youtube-player-wrapper iframe,
 .youtube-player-container iframe {
   position: absolute;
@@ -616,7 +679,7 @@ textarea {
   left: 0;
   width: 100%;
   height: 100%;
-  border: 0; /* Iframe do YouTube já tem frameborder="0" */
+  border: 0;
 }
 
 .card-preview .preview-link-info {
@@ -627,23 +690,24 @@ textarea {
   color: var(--color-muted);
   text-align: center;
 }
+
 .card-preview .preview-link-info a {
   font-weight: 600;
   word-break: break-all;
 }
+
 .card-preview .close-preview-btn-bottom {
   display: block;
-  margin-top: var(--space-lg);
-  margin-inline: auto;
+  margin: var(--space-lg) auto 0;
   --btn-bg-color: var(--color-secondary);
   --btn-text-color: var(--color-text);
 }
+
 .card-preview .close-preview-btn-bottom:hover:not(:disabled) {
   background-color: hsl(255, 75%, 70%);
 }
 
-/* Estilos para a PÁGINA DE VISUALIZAÇÃO ESTÁTICA (/card/:id) */
-#card-view-page { /* Se você tiver uma página específica /card/:id com este ID */
+#card-view-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -651,17 +715,16 @@ textarea {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   padding: var(--space-md);
 }
-#card-view-page .card-preview { /* Estilo para o cartão dentro dessa página específica */
-  margin-top: 0; /* Reset margin se necessário */
+
+#card-view-page .card-preview {
+  margin-top: 0;
 }
-#card-view-page .card-preview h1 { /* Estilo para o h1 dentro do cartão nessa página */
+
+#card-view-page .card-preview h1 {
   text-align: center;
   margin-bottom: var(--space-lg);
   color: var(--color-primary-dark);
 }
-/* O HTML da página /card/:id usa a classe .container, que já tem estilos.
-   Os estilos #card-view-page podem ser usados se você tiver um wrapper com esse ID. */
-
 
 /* ============================================
    🛠️ UTILITÁRIOS
@@ -677,36 +740,13 @@ textarea {
   white-space: nowrap;
   border-width: 0;
 }
+
 .hidden {
   display: none !important;
 }
 
 /* ============================================
-   📱 RESPONSIVIDADE
-   ============================================ */
-@media (max-width: 768px) { /* --breakpoint-md */
-  html { font-size: 15px; }
-  .card-form { padding: var(--space-lg); border-radius: var(--radius-lg); }
-  .main-header { padding-block: var(--space-xl); }
-  .section-title { font-size: 1.1rem; }
-  /* .audio-player removido */
-  .card-preview { padding: var(--space-lg); }
-  .card-preview-header h2 { font-size: 1.5rem; }
-}
-@media (max-width: 480px) { /* --breakpoint-sm */
-  html { font-size: 14px; }
-  /* .spotify-search-container removido */
-  .card-form { padding: var(--space-md); border-radius: var(--radius-md); }
-  /* .spotify-track e .track-image removidos */
-  /* .audio-player e seus filhos removidos */
-  .card-preview { padding: var(--space-md); }
-  .card-preview-header h2 { font-size: 1.3rem; }
-  .card-preview p { font-size: 1rem; }
-  .card-preview .close-preview-btn { font-size: 1.8rem; }
-}
-
-/* ============================================
-   🎨 ESTILOS PARA NO-JS E NOTIFICAÇÕES/LOADING
+   🎨 NO-JS E ALERTAS
    ============================================ */
 .no-js-alert {
   display: none;
@@ -716,56 +756,32 @@ textarea {
   text-align: center;
   font-weight: 500;
 }
+
 .no-js .no-js-alert {
   display: block;
 }
+
 .no-js .main-content {
   display: none;
 }
 
-#appNotificationArea {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 2000;
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* ============================================
+   📱 RESPONSIVIDADE
+   ============================================ */
+@media (max-width: 768px) {
+  html { font-size: 15px; }
+  .card-form { padding: var(--space-lg); border-radius: var(--radius-lg); }
+  .main-header { padding: var(--space-xl) 0; }
+  .section-title { font-size: 1.1rem; }
+  .card-preview { padding: var(--space-lg); }
+  .card-preview-header h2 { font-size: 1.5rem; }
 }
-.notification {
-  padding: 15px;
-  border-radius: var(--radius-sm); /* Usando variável de radius */
-  color: #fff;
-  font-size: 0.9em;
-  position: relative;
-  box-shadow: var(--shadow-md);
-  opacity: 0.95;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.notification.notification--removing {
-  opacity: 0;
-  transform: translateX(100%);
-}
-.notification--success {
-  background-color: var(--color-success);
-}
-.notification--error {
-  background-color: var(--color-error);
-}
-.notification--info {
-  background-color: var(--color-secondary);
-}
-.notification__close {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: inherit;
-  font-size: 22px;
-  font-weight: bold;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
+
+@media (max-width: 480px) {
+  html { font-size: 14px; }
+  .card-form { padding: var(--space-md); border-radius: var(--radius-md); }
+  .card-preview { padding: var(--space-md); }
+  .card-preview-header h2 { font-size: 1.3rem; }
+  .card-preview p { font-size: 1rem; }
+  .card-preview .close-preview-btn { font-size: 1.8rem; }
 }

@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const sqlite3 = require('sqlite3').verbose();
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const fs = require('fs');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
@@ -60,89 +61,116 @@ const configureSecurity = () => {
 // 2. Configuração do Banco de Dados
 class Database {
   constructor() {
-    this.DB_PATH = process.env.DB_SOURCE || './cards.db';
+    // Detecta ambiente automaticamente
+    const isRender = process.env.RENDER === 'true';
+    
+    // Configura caminho do banco de dados
+    this.DB_PATH = isRender 
+      ? process.env.RENDER_DB_PATH
+      : process.env.LOCAL_DB_PATH;
+    
     this.db = null;
+    this.isInitialized = false;
+    
+    // Cria diretório se necessário (apenas localmente)
+    if (!isRender) {
+      this.#ensureDatabaseDir();
+    }
   }
+
+  #ensureDatabaseDir() {
+    const dir = path.dirname(this.DB_PATH);
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true, mode: 0o755 });
+        console.log(`Created database directory: ${dir}`);
+      }
+    } catch (err) {
+      console.error(`Failed to create directory ${dir}:`, err.message);
+      throw err;
+    }
+  }
+
+  // ... restante da implementação da classe
 
   async connect() {
     return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.DB_PATH, (err) => {
-        if (err) {
-          console.error('DATABASE ERROR: Failed to connect:', err.message);
-          reject(err);
-        } else {
+      this.db = new sqlite3.Database(
+        this.DB_PATH,
+        sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+        (err) => {
+          if (err) return reject(err);
           console.log(`DATABASE: Connected to SQLite at ${this.DB_PATH}`);
           resolve(this.db);
         }
-      });
+      );
     });
   }
 
   async initialize() {
-    // Query em UMA ÚNICA LINHA para evitar problemas de formatação
-    const createTableQuery = `CREATE TABLE IF NOT EXISTS cards (id TEXT PRIMARY KEY, nome TEXT NOT NULL, data TEXT, mensagem TEXT NOT NULL, youtubeVideoId TEXT, fotoUrl TEXT, createdAt TEXT DEFAULT CURRENT_TIMESTAMP)`;
-    
-    return new Promise((resolve, reject) => {
-      this.db.run(createTableQuery, (err) => {
-        if (err) {
-          console.error('DATABASE ERROR: Failed to create table:', err.message);
-          reject(err);
-        } else {
-          console.log('DATABASE: Table "cards" created successfully');
-          resolve();
-        }
+    if (this.isInitialized) return;
+
+    try {
+      await new Promise((resolve, reject) => {
+        this.db.run(
+          `CREATE TABLE IF NOT EXISTS cards (
+            id TEXT PRIMARY KEY,
+            nome TEXT NOT NULL,
+            data TEXT,
+            mensagem TEXT NOT NULL,
+            youtubeVideoId TEXT,
+            fotoUrl TEXT,
+            createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+          )`,
+          (err) => {
+            if (err) return reject(err);
+            console.log('DATABASE: Table "cards" created successfully');
+            this.isInitialized = true;
+            resolve();
+          }
+        );
       });
-    });
+    } catch (err) {
+      console.error('DATABASE ERROR: Failed to initialize:', err.message);
+      throw err;
+    }
   }
-
-  
-
-
-  async initialize() {
-  try {
-    // Query simplificada sem quebras de linha
-    await this.db.exec(`CREATE TABLE IF NOT EXISTS cards (
-      id TEXT PRIMARY KEY,
-      nome TEXT NOT NULL,
-      data TEXT,
-      mensagem TEXT NOT NULL,
-      youtubeVideoId TEXT,
-      fotoUrl TEXT,
-      createdAt TEXT DEFAULT (datetime('now'))
-    `);
-    console.log('DATABASE: Table created successfully');
-  } catch (err) {
-    console.error('DATABASE ERROR:', err.message);
-    throw err;
-  }
-}
 
   async close() {
     return new Promise((resolve, reject) => {
-      if (this.db) {
-        this.db.close((err) => {
-          if (err) {
-            console.error('DATABASE ERROR: Failed to close SQLite connection:', err.message);
-            reject(err);
-          } else {
-            console.log('DATABASE: SQLite connection closed.');
-            resolve();
-          }
-        });
-      } else {
+      if (!this.db) return resolve();
+      
+      this.db.close((err) => {
+        if (err) {
+          console.error('DATABASE ERROR: Failed to close connection:', err.message);
+          return reject(err);
+        }
+        console.log('DATABASE: Connection closed');
         resolve();
-      }
+      });
     });
   }
 
   async insertCard(cardData) {
+    if (!this.isInitialized) await this.initialize();
+
     return new Promise((resolve, reject) => {
       this.db.run(
         `INSERT INTO cards (id, nome, data, mensagem, youtubeVideoId, fotoUrl)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [cardData.id, cardData.nome, cardData.data, cardData.mensagem, cardData.youtubeVideoId, cardData.fotoUrl],
+        [
+          cardData.id,
+          cardData.nome,
+          cardData.data,
+          cardData.mensagem,
+          cardData.youtubeVideoId,
+          cardData.fotoUrl
+        ],
         function(err) {
-          if (err) return reject(err);
+          if (err) {
+            console.error('DATABASE ERROR: Failed to insert card:', err.message);
+            return reject(err);
+          }
           resolve(this.lastID);
         }
       );
@@ -151,10 +179,17 @@ class Database {
 
   async getCard(id) {
     return new Promise((resolve, reject) => {
-      this.db.get(`SELECT * FROM cards WHERE id = ?`, [id], (err, row) => {
-        if (err) return reject(err);
-        resolve(row);
-      });
+      this.db.get(
+        `SELECT * FROM cards WHERE id = ?`,
+        [id],
+        (err, row) => {
+          if (err) {
+            console.error('DATABASE ERROR: Failed to fetch card:', err.message);
+            return reject(err);
+          }
+          resolve(row);
+        }
+      );
     });
   }
 }
@@ -170,22 +205,26 @@ const setupMiddlewares = () => {
 };
 
 // 4. Helpers
-const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch((err) => {
+    console.error('ASYNC HANDLER ERROR:', err);
+    next(err);
+  });
+};
 
 const formatDate = (dateString) => {
   if (!dateString) return 'Não especificada';
   
   try {
     const dateObj = new Date(dateString + 'T00:00:00');
-    if (!isNaN(dateObj.getTime())) {
-      return dateObj.toLocaleDateString('pt-BR', {
-        timeZone: 'UTC',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    }
-    return dateString;
+    return isNaN(dateObj.getTime()) 
+      ? dateString 
+      : dateObj.toLocaleDateString('pt-BR', {
+          timeZone: 'UTC',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
   } catch {
     return dateString;
   }
@@ -193,7 +232,6 @@ const formatDate = (dateString) => {
 
 const validateYouTubeId = (value) => {
   if (!value) return true;
-  // YouTube ID tem geralmente 11 caracteres
   return /^[a-zA-Z0-9_-]{11}$/.test(value);
 };
 
@@ -233,34 +271,26 @@ const setupRoutes = (database) => {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { nome, data, mensagem, youtubeVideoId, fotoUrl } = req.body;
-
-      const cardId = uuidv4();
       const cardData = {
-        id: cardId,
-        nome,
-        data: data || null,
-        mensagem,
-        youtubeVideoId: youtubeVideoId || null,
-        fotoUrl: fotoUrl || null
+        id: uuidv4(),
+        nome: req.body.nome,
+        data: req.body.data || null,
+        mensagem: req.body.mensagem,
+        youtubeVideoId: req.body.youtubeVideoId || null,
+        fotoUrl: req.body.fotoUrl || null
       };
 
-      try {
-        await database.insertCard(cardData);
-        
-        console.log(`DATABASE: Card saved with ID: ${cardId}`);
-        const frontendUrl = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
-        const viewLink = `${frontendUrl}/cards/view/${cardId}`;
+      await database.insertCard(cardData);
+      console.log(`DATABASE: Card saved with ID: ${cardData.id}`);
+      
+      const frontendUrl = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
+      const viewLink = `${frontendUrl}/cards/view/${cardData.id}`;
 
-        return res.status(201).json({
-          message: 'Card created successfully',
-          viewLink,
-          cardData
-        });
-      } catch (err) {
-        console.error('DATABASE ERROR: Failed to save card:', err.message);
-        throw new Error('Failed to save card to database.');
-      }
+      res.status(201).json({
+        message: 'Card created successfully',
+        viewLink,
+        cardData
+      });
     })
   );
 
@@ -274,13 +304,12 @@ const setupRoutes = (database) => {
       }
 
       const card = await database.getCard(id);
-
       if (!card) {
         return res.status(404).json({ message: 'Card not found.' });
       }
 
       console.log(`DATABASE: Fetched card with ID: ${id}`);
-      return res.json(card);
+      res.json(card);
     })
   );
 
@@ -293,25 +322,35 @@ const setupRoutes = (database) => {
 // 6. Tratamento de Erros
 const setupErrorHandling = () => {
   // Rota não encontrada
-  app.use((req, res, next) => {
-    res.status(404).json({ message: 'Route not found.' });
+  app.use((req, res) => {
+    res.status(404).json({ 
+      message: 'Route not found',
+      path: req.path,
+      method: req.method
+    });
   });
 
   // Tratamento de erros global
   app.use((err, req, res, next) => {
-    console.error('GLOBAL ERROR HANDLER:', err.name, err.message);
-    if (err.stack && process.env.NODE_ENV !== 'production') {
-      console.error(err.stack);
-    }
+    console.error('GLOBAL ERROR:', {
+      name: err.name,
+      message: err.message,
+      stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
+      path: req.path,
+      method: req.method
+    });
     
     const statusCode = err.status || 500;
-    const errorMessage = (statusCode === 500 && process.env.NODE_ENV === 'production')
+    const errorMessage = statusCode === 500 && process.env.NODE_ENV === 'production'
       ? 'Ocorreu um erro inesperado no servidor.'
       : err.message || 'Erro Interno do Servidor';
 
     res.status(statusCode).json({
       message: errorMessage,
-      ...(process.env.NODE_ENV !== 'production' && { errorName: err.name })
+      ...(process.env.NODE_ENV !== 'production' && { 
+        error: err.name,
+        details: err.details
+      })
     });
   });
 };
@@ -320,33 +359,40 @@ const setupErrorHandling = () => {
 const startServer = async (database) => {
   const server = app.listen(PORT, () => {
     console.log(`HTTP Server running on port ${PORT}`);
-    const frontendUrl = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
-    const devFrontendUrl = `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || 3000}`;
-    console.log(`Frontend esperado em: ${frontendUrl} ou ${devFrontendUrl}`);
+    console.log('Frontend URLs:', [
+      process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app',
+      `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || 3000}`
+    ].join(', '));
+  });
+
+  // Tratamento de erros do servidor
+  server.on('error', (err) => {
+    console.error('SERVER ERROR:', err);
+    process.exit(1);
   });
 
   // Encerramento gracioso
-  const shutdown = async () => {
-    console.log('\nShutting down gracefully...');
-    server.close(async () => {
-      try {
-        await database.close();
-        console.log('Server shut down.');
-        process.exit(0);
-      } catch (err) {
-        console.error('Error during shutdown:', err);
-        process.exit(1);
-      }
-    });
+  const shutdown = async (signal) => {
+    console.log(`\nReceived ${signal}, shutting down gracefully...`);
+    try {
+      await new Promise((resolve) => server.close(resolve));
+      await database.close();
+      console.log('Server shut down successfully');
+      process.exit(0);
+    } catch (err) {
+      console.error('SHUTDOWN ERROR:', err);
+      process.exit(1);
+    }
   };
 
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 };
 
 // 8. Inicialização da Aplicação
 const initializeApp = async () => {
   try {
+    console.log('Initializing application...');
     configureSecurity();
     setupMiddlewares();
     
@@ -358,7 +404,7 @@ const initializeApp = async () => {
     setupErrorHandling();
     await startServer(database);
   } catch (error) {
-    console.error('FATAL ERROR: Failed to initialize application:', error);
+    console.error('FATAL INITIALIZATION ERROR:', error);
     process.exit(1);
   }
 };
