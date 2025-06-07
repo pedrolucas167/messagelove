@@ -95,49 +95,27 @@ class Database {
     });
   }
 
-  async close() {
-    return new Promise((resolve, reject) => {
-      if (this.db) {
-        this.db.close((err) => {
-          if (err) {
-            console.error('DATABASE ERROR: Failed to close connection:', err.message);
-            reject(err);
-          } else {
-            console.log('DATABASE: SQLite connection closed successfully');
-            resolve();
-          }
-        });
-      } else {
-        console.log('DATABASE: No active connection to close');
-        resolve();
-      }
-    });
-  } // close  
+  
+
 
   async initialize() {
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS cards (
-        id TEXT PRIMARY KEY,
-        nome TEXT NOT NULL,
-        data TEXT,
-        mensagem TEXT NOT NULL,
-        youtubeVideoId TEXT,
-        fotoUrl TEXT,
-        createdAt TEXT DEFAULT (datetime('now', 'utc'))
-    `;
-
-    return new Promise((resolve, reject) => {
-      this.db.run(createTableQuery, (err) => {
-        if (err) {
-          console.error('DATABASE ERROR: Failed to create "cards" table:', err.message);
-          reject(err);
-        } else {
-          console.log('DATABASE: Table "cards" is ready.');
-          resolve();
-        }
-      });
-    });
+  try {
+    // Query simplificada sem quebras de linha
+    await this.db.exec(`CREATE TABLE IF NOT EXISTS cards (
+      id TEXT PRIMARY KEY,
+      nome TEXT NOT NULL,
+      data TEXT,
+      mensagem TEXT NOT NULL,
+      youtubeVideoId TEXT,
+      fotoUrl TEXT,
+      createdAt TEXT DEFAULT (datetime('now'))
+    `);
+    console.log('DATABASE: Table created successfully');
+  } catch (err) {
+    console.error('DATABASE ERROR:', err.message);
+    throw err;
   }
+}
 
   async close() {
     return new Promise((resolve, reject) => {
