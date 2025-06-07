@@ -60,7 +60,22 @@ const configureSecurity = () => {
 // 2. Configuração do Banco de Dados
 class Database {
   constructor() {
-    this.db = new sqlite3.Database(process.env.DB_PATH || ':memory:');
+    this.DB_PATH = process.env.DB_SOURCE || './cards.db';
+    this.db = null;
+  }
+
+  async connect() {
+    return new Promise((resolve, reject) => {
+      this.db = new sqlite3.Database(this.DB_PATH, (err) => {
+        if (err) {
+          console.error('DATABASE ERROR: Failed to connect to SQLite:', err.message);
+          reject(err);
+        } else {
+          console.log(`DATABASE: Connected to SQLite at ${this.DB_PATH}`);
+          resolve(this.db);
+        }
+      });
+    });
   }
 
   async initialize() {
@@ -73,7 +88,6 @@ class Database {
         youtubeVideoId TEXT,
         fotoUrl TEXT,
         createdAt TEXT DEFAULT (datetime('now', 'utc'))
-      )
     `;
 
     return new Promise((resolve, reject) => {
