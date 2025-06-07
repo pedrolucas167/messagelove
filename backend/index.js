@@ -4,14 +4,27 @@ const dotenv = require('dotenv');
 const sqlite3 = require('sqlite3').verbose();
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 
 // Configuração inicial
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// 1. Configuração de CORS
-const configureCors = () => {
+// Configuração de rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100 // limite de 100 requisições por IP
+});
+
+// 1. Configuração de Segurança e CORS
+const configureSecurity = () => {
+  // Middlewares de segurança
+  app.use(helmet());
+  app.use(limiter);
+  
   const frontendUrl = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
   const devFrontendLocalPort = process.env.DEV_FRONTEND_LOCAL_PORT || 3000;
   const devFrontendUrl = `http://localhost:${devFrontendLocalPort}`;
@@ -45,17 +58,27 @@ const configureCors = () => {
 };
 
 // 2. Configuração do Banco de Dados
-const setupDatabase = () => {
-  const DB_PATH = process.env.DB_SOURCE || './cards.db';
-  const db = new sqlite3.Database(DB_PATH, (err) => {
-    if (err) {
-      console.error('DATABASE ERROR: Failed to connect to SQLite:', err.message);
-      return;
-    }
-    console.log(`DATABASE: Connected to SQLite at ${DB_PATH}`);
-  });
+class Database {
+  constructor() {
+    this.DB_PATH = process.env.DB_SOURCE || './cards.db';
+    this.db = null;
+  }
 
-  const initializeDatabase = () => {
+  async connect() {
+    return new Promise((resolve, reject) => {
+      this.db = new sqlite3.Database(this.DB_PATH, (err) => {
+        if (err) {
+          console.error('DATABASE ERROR: Failed to connect to SQLite:', err.message);
+          reject(err);
+        } else {
+          console.log(`DATABASE: Connected to SQLite at ${this.DB_PATH}`);
+          resolve(this.db);
+        }
+      });
+    });
+  }
+
+  async initialize() {
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS cards (
         id TEXT PRIMARY KEY,
@@ -63,31 +86,73 @@ const setupDatabase = () => {
         data TEXT,
         mensagem TEXT NOT NULL,
         youtubeVideoId TEXT,
-        fotoUrl TEXT
-      )
+        fotoUrl TEXT,
+        createdAt TEXT DEFAULT (datetime('now', 'utc'))
     `;
 
     return new Promise((resolve, reject) => {
-      db.run(createTableQuery, (err) => {
+      this.db.run(createTableQuery, (err) => {
         if (err) {
           console.error('DATABASE ERROR: Failed to create "cards" table:', err.message);
           reject(err);
         } else {
           console.log('DATABASE: Table "cards" is ready.');
-          resolve(db);
+          resolve();
         }
       });
     });
-  };
+  }
 
-  return { db, initializeDatabase };
-};
+  async close() {
+    return new Promise((resolve, reject) => {
+      if (this.db) {
+        this.db.close((err) => {
+          if (err) {
+            console.error('DATABASE ERROR: Failed to close SQLite connection:', err.message);
+            reject(err);
+          } else {
+            console.log('DATABASE: SQLite connection closed.');
+            resolve();
+          }
+        });
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  async insertCard(cardData) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `INSERT INTO cards (id, nome, data, mensagem, youtubeVideoId, fotoUrl)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [cardData.id, cardData.nome, cardData.data, cardData.mensagem, cardData.youtubeVideoId, cardData.fotoUrl],
+        function(err) {
+          if (err) return reject(err);
+          resolve(this.lastID);
+        }
+      );
+    });
+  }
+
+  async getCard(id) {
+    return new Promise((resolve, reject) => {
+      this.db.get(`SELECT * FROM cards WHERE id = ?`, [id], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+  }
+}
 
 // 3. Middlewares
 const setupMiddlewares = () => {
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.json({ limit: '10kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+  app.use(express.static(path.join(__dirname, 'public'), {
+    dotfiles: 'ignore',
+    index: false
+  }));
 };
 
 // 4. Helpers
@@ -112,8 +177,24 @@ const formatDate = (dateString) => {
   }
 };
 
+const validateYouTubeId = (value) => {
+  if (!value) return true;
+  // YouTube ID tem geralmente 11 caracteres
+  return /^[a-zA-Z0-9_-]{11}$/.test(value);
+};
+
+const validateUrl = (value) => {
+  if (!value) return true;
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 // 5. Rotas
-const setupRoutes = (db) => {
+const setupRoutes = (database) => {
   // Health Check
   app.get('/api/status', (req, res) => {
     res.json({
@@ -124,69 +205,70 @@ const setupRoutes = (db) => {
   });
 
   // Criar novo cartão
-  app.post('/api/cards', asyncHandler(async (req, res) => {
-    const { nome, data, mensagem, youtubeVideoId, fotoUrl } = req.body;
+  app.post('/api/cards', 
+    [
+      body('nome').trim().isLength({ min: 1, max: 100 }).escape(),
+      body('data').optional().isISO8601().toDate(),
+      body('mensagem').trim().isLength({ min: 1, max: 2000 }).escape(),
+      body('youtubeVideoId').optional().custom(validateYouTubeId),
+      body('fotoUrl').optional().custom(validateUrl)
+    ],
+    asyncHandler(async (req, res) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
 
-    if (!nome || !mensagem) {
-      return res.status(400).json({ message: 'Fields "nome" and "mensagem" are required.' });
-    }
+      const { nome, data, mensagem, youtubeVideoId, fotoUrl } = req.body;
 
-    const cardId = uuidv4();
-    const cardData = {
-      id: cardId,
-      nome,
-      data: data || null,
-      mensagem,
-      youtubeVideoId: youtubeVideoId || null,
-      fotoUrl: fotoUrl || null
-    };
+      const cardId = uuidv4();
+      const cardData = {
+        id: cardId,
+        nome,
+        data: data || null,
+        mensagem,
+        youtubeVideoId: youtubeVideoId || null,
+        fotoUrl: fotoUrl || null
+      };
 
-    try {
-      await new Promise((resolve, reject) => {
-        db.run(
-          `INSERT INTO cards (id, nome, data, mensagem, youtubeVideoId, fotoUrl)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [cardData.id, cardData.nome, cardData.data, cardData.mensagem, cardData.youtubeVideoId, cardData.fotoUrl],
-          function (err) {
-            if (err) return reject(err);
-            resolve();
-          }
-        );
-      });
+      try {
+        await database.insertCard(cardData);
+        
+        console.log(`DATABASE: Card saved with ID: ${cardId}`);
+        const frontendUrl = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
+        const viewLink = `${frontendUrl}/cards/view/${cardId}`;
 
-      console.log(`DATABASE: Card saved with ID: ${cardId}`);
-      const frontendUrl = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
-      const viewLink = `${frontendUrl}/cards/view/${cardId}`;
-
-      return res.status(201).json({
-        message: 'Card created successfully',
-        viewLink,
-        cardData
-      });
-    } catch (err) {
-      console.error('DATABASE ERROR: Failed to save card:', err.message);
-      throw new Error('Failed to save card to database.');
-    }
-  }));
+        return res.status(201).json({
+          message: 'Card created successfully',
+          viewLink,
+          cardData
+        });
+      } catch (err) {
+        console.error('DATABASE ERROR: Failed to save card:', err.message);
+        throw new Error('Failed to save card to database.');
+      }
+    })
+  );
 
   // Obter dados de um cartão
-  app.get('/api/card/:id', asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  app.get('/api/card/:id', 
+    asyncHandler(async (req, res) => {
+      const { id } = req.params;
+      
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+        return res.status(400).json({ message: 'Invalid card ID format.' });
+      }
 
-    const card = await new Promise((resolve, reject) => {
-      db.get(`SELECT * FROM cards WHERE id = ?`, [id], (err, row) => {
-        if (err) return reject(err);
-        resolve(row);
-      });
-    });
+      const card = await database.getCard(id);
 
-    if (!card) {
-      return res.status(404).json({ message: 'Card not found.' });
-    }
+      if (!card) {
+        return res.status(404).json({ message: 'Card not found.' });
+      }
 
-    console.log(`DATABASE: Fetched card with ID: ${id}`);
-    return res.json(card);
-  }));
+      console.log(`DATABASE: Fetched card with ID: ${id}`);
+      return res.json(card);
+    })
+  );
 
   // Visualizar cartão
   app.get('/card/:id', (req, res) => {
@@ -196,6 +278,12 @@ const setupRoutes = (db) => {
 
 // 6. Tratamento de Erros
 const setupErrorHandling = () => {
+  // Rota não encontrada
+  app.use((req, res, next) => {
+    res.status(404).json({ message: 'Route not found.' });
+  });
+
+  // Tratamento de erros global
   app.use((err, req, res, next) => {
     console.error('GLOBAL ERROR HANDLER:', err.name, err.message);
     if (err.stack && process.env.NODE_ENV !== 'production') {
@@ -215,7 +303,7 @@ const setupErrorHandling = () => {
 };
 
 // 7. Inicialização do Servidor
-const startServer = () => {
+const startServer = async (database) => {
   const server = app.listen(PORT, () => {
     console.log(`HTTP Server running on port ${PORT}`);
     const frontendUrl = process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app';
@@ -224,32 +312,37 @@ const startServer = () => {
   });
 
   // Encerramento gracioso
-  process.on('SIGINT', () => {
-    console.log('\nSIGINT received. Shutting down gracefully...');
-    server.close(() => {
-      db.close((err) => {
-        if (err) {
-          console.error('DATABASE ERROR: Failed to close SQLite connection:', err.message);
-        } else {
-          console.log('DATABASE: SQLite connection closed.');
-        }
+  const shutdown = async () => {
+    console.log('\nShutting down gracefully...');
+    server.close(async () => {
+      try {
+        await database.close();
         console.log('Server shut down.');
         process.exit(0);
-      });
+      } catch (err) {
+        console.error('Error during shutdown:', err);
+        process.exit(1);
+      }
     });
-  });
+  };
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 };
 
 // 8. Inicialização da Aplicação
 const initializeApp = async () => {
   try {
-    configureCors();
+    configureSecurity();
     setupMiddlewares();
-    const { db, initializeDatabase } = setupDatabase();
-    await initializeDatabase();
-    setupRoutes(db);
+    
+    const database = new Database();
+    await database.connect();
+    await database.initialize();
+    
+    setupRoutes(database);
     setupErrorHandling();
-    startServer();
+    await startServer(database);
   } catch (error) {
     console.error('FATAL ERROR: Failed to initialize application:', error);
     process.exit(1);
