@@ -66,17 +66,47 @@ class Database {
 
   async connect() {
     return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.DB_PATH, (err) => {
+      this.db = new sqlite3.Database(this.DB_PATH, 
+        sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+        (err) => {
+          if (err) {
+            console.error('DATABASE ERROR: Failed to connect to SQLite:', err.message);
+            reject(err);
+          } else {
+            console.log(`DATABASE: Connected to SQLite at ${this.DB_PATH}`);
+            resolve(this.db);
+          }
+        }
+      );
+    });
+  }
+
+  async initialize() {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS cards (
+        id TEXT PRIMARY KEY,
+        nome TEXT NOT NULL,
+        data TEXT,
+        mensagem TEXT NOT NULL,
+        youtubeVideoId TEXT,
+        fotoUrl TEXT,
+        createdAt TEXT DEFAULT (datetime('now', 'utc'))
+    `;
+
+    return new Promise((resolve, reject) => {
+      this.db.run(createTableQuery, (err) => {
         if (err) {
-          console.error('DATABASE ERROR: Failed to connect to SQLite:', err.message);
+          console.error('DATABASE ERROR: Failed to create "cards" table:', err.message);
           reject(err);
         } else {
-          console.log(`DATABASE: Connected to SQLite at ${this.DB_PATH}`);
-          resolve(this.db);
+          console.log('DATABASE: Table "cards" is ready.');
+          resolve();
         }
       });
     });
   }
+
+  // ... outros métodos permanecem iguais ...
 
   async initialize() {
     const createTableQuery = `
