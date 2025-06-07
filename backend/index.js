@@ -66,47 +66,53 @@ class Database {
 
   async connect() {
     return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.DB_PATH, 
-        sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-        (err) => {
-          if (err) {
-            console.error('DATABASE ERROR: Failed to connect to SQLite:', err.message);
-            reject(err);
-          } else {
-            console.log(`DATABASE: Connected to SQLite at ${this.DB_PATH}`);
-            resolve(this.db);
-          }
+      this.db = new sqlite3.Database(this.DB_PATH, (err) => {
+        if (err) {
+          console.error('DATABASE ERROR: Failed to connect:', err.message);
+          reject(err);
+        } else {
+          console.log(`DATABASE: Connected to SQLite at ${this.DB_PATH}`);
+          resolve(this.db);
         }
-      );
+      });
     });
   }
 
   async initialize() {
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS cards (
-        id TEXT PRIMARY KEY,
-        nome TEXT NOT NULL,
-        data TEXT,
-        mensagem TEXT NOT NULL,
-        youtubeVideoId TEXT,
-        fotoUrl TEXT,
-        createdAt TEXT DEFAULT (datetime('now', 'utc'))
-    `;
-
+    // Query em UMA ÚNICA LINHA para evitar problemas de formatação
+    const createTableQuery = `CREATE TABLE IF NOT EXISTS cards (id TEXT PRIMARY KEY, nome TEXT NOT NULL, data TEXT, mensagem TEXT NOT NULL, youtubeVideoId TEXT, fotoUrl TEXT, createdAt TEXT DEFAULT CURRENT_TIMESTAMP)`;
+    
     return new Promise((resolve, reject) => {
       this.db.run(createTableQuery, (err) => {
         if (err) {
-          console.error('DATABASE ERROR: Failed to create "cards" table:', err.message);
+          console.error('DATABASE ERROR: Failed to create table:', err.message);
           reject(err);
         } else {
-          console.log('DATABASE: Table "cards" is ready.');
+          console.log('DATABASE: Table "cards" created successfully');
           resolve();
         }
       });
     });
   }
 
-  // ... outros métodos permanecem iguais ...
+  async close() {
+    return new Promise((resolve, reject) => {
+      if (this.db) {
+        this.db.close((err) => {
+          if (err) {
+            console.error('DATABASE ERROR: Failed to close connection:', err.message);
+            reject(err);
+          } else {
+            console.log('DATABASE: SQLite connection closed successfully');
+            resolve();
+          }
+        });
+      } else {
+        console.log('DATABASE: No active connection to close');
+        resolve();
+      }
+    });
+  } // close  
 
   async initialize() {
     const createTableQuery = `
