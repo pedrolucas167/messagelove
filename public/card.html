@@ -3,330 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uma Mensagem Especial Para Você!</title>
-
-    <meta name="description" content="Você recebeu uma mensagem especial, preparada com muito carinho.">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta property="og:title" content="Uma Mensagem Especial Para Você!">
-    <meta property="og:description" content="Toque para abrir e ver a surpresa que preparei para você.">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://sua-url.com/assets/og-image-preview.jpg"> <link rel="icon" href="https://raw.githubusercontent.com/google/material-design-icons/master/src/filled/favorite/materialicons/24px.svg" type="image/svg+xml">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     
+    <title>Um Cartão Especial Para Você!</title>
+    
+    <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
+    <meta name="theme-color" content="#e91e63">
+    <meta property="og:title" content="Um Cartão Especial Para Você!">
+    <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://sua-url.com/assets/og-image-default.jpg">
+    
+    <link rel="icon" href="/assets/coracao.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+
     <style>
-      /* --- Variáveis de Estilo e Reset Básico --- */
-      :root {
-        --bg-gradient-start: #1a1a2e;
-        --bg-gradient-end: #16213e;
-        --card-bg: #1f2340e1;
-        --text-color: #e0e0e0;
-        --header-color: #ffffff;
-        --accent-color: #f7b267; /* Dourado/Pêssego */
-        --heart-color: #e74c3c;
+      .loader-wrapper { text-align: center; padding: 50px; }
+      .loader {
+        display: inline-block; width: 50px; height: 50px;
+        border: 5px solid rgba(233, 30, 99, 0.2);
+        border-top-color: #e91e63;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
       }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-        color: var(--text-color);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        overflow: hidden;
-        perspective: 1000px;
-      }
-      
-      canvas#particles-js {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-      }
-
-      /* --- Estado de Abertura (Envelope) --- */
-      #envelope {
-        text-align: center;
-        cursor: pointer;
-        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-        z-index: 10;
-      }
-
-      #envelope.opened {
-        opacity: 0;
-        transform: scale(0.8);
-        pointer-events: none;
-      }
-
-      .heart-icon {
-        font-size: 60px;
-        color: var(--heart-color);
-        animation: pulse 1.5s infinite ease-in-out;
-      }
-      
-      .open-prompt {
-        margin-top: 1rem;
-        font-size: 1.2rem;
-        font-family: 'Dancing Script', cursive;
-        color: var(--header-color);
-      }
-
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.15); }
-      }
-      
-      /* --- O Cartão Principal --- */
-      .card-container {
-        display: none; /* Começa escondido */
-        z-index: 5;
-      }
-
-      .card-container.visible {
-        display: block;
-      }
-
-      .card {
-        background: var(--card-bg);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 2.5rem 2rem;
-        max-width: 500px;
-        width: 90vw;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        text-align: center;
-      }
-      
-      /* --- Animação de Revelação em Cascata --- */
-      .reveal {
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeIn 0.8s forwards ease-out;
-      }
-
-      .card-header { animation-delay: 0.2s; }
-      .card-body { animation-delay: 0.6s; }
-      .card-image-container { animation-delay: 1.0s; }
-      .card-video-container { animation-delay: 1.2s; }
-      .card-footer { animation-delay: 1.4s; }
-
-      @keyframes fadeIn {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      /* --- Estilos de Conteúdo do Cartão --- */
-      .recipient-name {
-        font-family: 'Dancing Script', cursive;
-        font-size: 2.8rem;
-        color: var(--header-color);
-        margin-bottom: 0.5rem;
-      }
-
-      .special-date {
-        font-size: 0.9rem;
-        color: var(--accent-color);
-        letter-spacing: 1px;
-        margin-bottom: 2rem;
-      }
-      
-      .card-body p {
-        font-size: 1.1rem;
-        line-height: 1.7;
-        font-weight: 300;
-      }
-
-      .card-image-container img {
-        max-width: 100%;
-        border-radius: 10px;
-        margin-top: 2rem;
-        border: 2px solid var(--accent-color);
-      }
-
-      .card-video-container iframe {
-          max-width: 100%;
-          border-radius: 10px;
-          margin-top: 2rem;
-          border: 2px solid var(--accent-color);
-      }
-      
-      /* --- Rodapé --- */
-      .page-footer {
-        position: absolute;
-        bottom: 1rem;
-        text-align: center;
-        width: 100%;
-        font-size: 0.8rem;
-        z-index: 10;
-        color: rgba(255, 255, 255, 0.5);
-      }
-      .page-footer a {
-        color: rgba(255, 255, 255, 0.7);
-        text-decoration: none;
-        font-weight: 500;
-      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .hidden { display: none !important; }
     </style>
 </head>
-<body>
+<body id="card-view-page">
 
-  <canvas id="particles-js"></canvas>
+  <header class="card-page-header">
+    <a href="/" title="Criar um novo cartão">Messagelove</a>
+  </header>
 
-  <div id="envelope">
-    <div class="heart-icon">&#10084;</div>
-    <p class="open-prompt">Um presente para você...</p>
-  </div>
+  <main>
+    <div id="loading-state" class="loader-wrapper">
+      <div class="loader"></div>
+      <p>Carregando seu cartão especial...</p>
+    </div>
 
-  <main id="card-container" class="card-container">
-    <article class="card">
-        <header class="card-header reveal">
+    <article id="card-view" class="card-preview hidden">
+        <header class="card-preview-header">
           <h1 id="card-nome" class="recipient-name"></h1>
           <p id="card-data" class="special-date"></p>
         </header>
 
-        <section class="card-body reveal">
+        <section class="card-body">
           <p id="card-mensagem"></p>
         </section>
 
-        <figure id="card-foto-container" class="card-image-container reveal"></figure>
+        <figure id="card-foto-container" class="preview-image-container"></figure>
         
-        <div id="card-video-container" class="card-video-container reveal"></div>
+        <div id="card-video-container">
+          </div>
     </article>
+
+    <div id="error-state" class="card-preview hidden">
+      <h2>Ops! Algo deu errado.</h2>
+      <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
+      <a href="/" class="btn btn--primary">Criar um novo cartão</a>
+    </div>
   </main>
-  
-  <footer class="page-footer">
-    <p>Feito com &#10084; por <a href="https://seusite.com" target="_blank">Seu Nome</a></p>
+
+  <footer class="card-page-footer">
+    <p>Gostou? <a href="/" class="btn btn--outline">Crie o seu também!</a></p>
   </footer>
 
-  <script>
-    // Partículas JS (uma implementação leve)
-    const canvas = document.getElementById('particles-js');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    let particlesArray;
+  <script src="card.js" defer></script>
 
-    class Particle {
-        constructor(x, y, directionX, directionY, size, color) {
-            this.x = x; this.y = y; this.directionX = directionX; this.directionY = directionY;
-            this.size = size; this.color = color;
-        }
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-            ctx.fillStyle = 'rgba(247, 178, 103, 0.5)';
-            ctx.fill();
-        }
-        update() {
-            if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
-            if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
-            this.x += this.directionX;
-            this.y += this.directionY;
-            this.draw();
-        }
-    }
-
-    function initParticles() {
-        particlesArray = [];
-        let numberOfParticles = (canvas.height * canvas.width) / 9000;
-        for (let i = 0; i < numberOfParticles; i++) {
-            let size = (Math.random() * 2) + 1;
-            let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
-            let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
-            let directionX = (Math.random() * .4) - .2;
-            let directionY = (Math.random() * .4) - .2;
-            particlesArray.push(new Particle(x, y, directionX, directionY, size));
-        }
-    }
-
-    function animateParticles() {
-        requestAnimationFrame(animateParticles);
-        ctx.clearRect(0, 0, innerWidth, innerHeight);
-        for (let i = 0; i < particlesArray.length; i++) {
-            particlesArray[i].update();
-        }
-    }
-
-    window.addEventListener('resize', () => {
-        canvas.width = innerWidth;
-        canvas.height = innerHeight;
-        initParticles();
-    });
-
-    initParticles();
-    animateParticles();
-
-    // --- Lógica do Cartão ---
-    document.addEventListener('DOMContentLoaded', () => {
-      
-      // --- DADOS DO CARTÃO (Simula o que viria de um banco de dados ou URL) ---
-      const cardData = {
-        recipientName: "Meu Amor",
-        specialDate: "08 de Junho de 2025",
-        message: "Cada momento ao seu lado se transforma na minha memória favorita. Este é apenas um pequeno lembrete do quanto você significa para mim. Obrigado por ser a luz dos meus dias.",
-        // Para a imagem, use um link direto. Ex: "https://i.imgur.com/your-image.jpeg"
-        imageUrl: "https://images.pexels.com/photos/36717/amazing-animal-beautiful-beautifull.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-        // Para o vídeo, use o link "embed" do YouTube/Vimeo.
-        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" // Exemplo clássico
-      };
-      // --- FIM DOS DADOS ---
-
-      const envelope = document.getElementById('envelope');
-      const cardContainer = document.getElementById('card-container');
-
-      function populateCard() {
-        document.getElementById('card-nome').textContent = cardData.recipientName;
-        document.getElementById('card-data').textContent = cardData.specialDate;
-        document.getElementById('card-mensagem').textContent = cardData.message;
-
-        if (cardData.imageUrl) {
-            const img = document.createElement('img');
-            img.src = cardData.imageUrl;
-            img.alt = "Foto especial para " + cardData.recipientName;
-            document.getElementById('card-foto-container').appendChild(img);
-        }
-        
-        if (cardData.videoUrl) {
-            const iframe = document.createElement('iframe');
-            iframe.src = cardData.videoUrl;
-            iframe.width = "560";
-            iframe.height = "315";
-            iframe.title = "Vídeo Especial";
-            iframe.frameborder = "0";
-            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-            iframe.allowfullscreen = true;
-            document.getElementById('card-video-container').appendChild(iframe);
-        }
-      }
-
-      function openCard() {
-        envelope.classList.add('opened');
-        
-        // Espera a animação do envelope terminar para mostrar o cartão
-        setTimeout(() => {
-          envelope.style.display = 'none'; // Esconde completamente
-          cardContainer.classList.add('visible');
-          populateCard();
-        }, 500); // Mesmo tempo da transição do CSS
-      }
-
-      envelope.addEventListener('click', openCard);
-    });
-  </script>
 </body>
 </html>
