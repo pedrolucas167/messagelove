@@ -825,8 +825,8 @@ textarea {
 .btn-copy-link {
     margin-left: 10px;
     padding: 4px 8px;
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
+    border: 1px solid #e05299;
+    background-color: red;
     cursor: pointer;
     border-radius: 4px;
 }
