@@ -21,12 +21,12 @@
 
   /* Espaçamento */
   --space-xxs: 0.25rem; /* 4px */
-  --space-xs: 0.5rem; /* 8px */
-  --space-sm: 1rem; /* 16px */
-  --space-md: 1.5rem; /* 24px */
-  --space-lg: 2rem; /* 32px */
-  --space-xl: 3rem; /* 48px */
-  --space-xxl: 4rem; /* 64px */
+  --space-xs: 0.5rem;  /* 8px */
+  --space-sm: 1rem;    /* 16px */
+  --space-md: 1.5rem;  /* 24px */
+  --space-lg: 2rem;    /* 32px */
+  --space-xl: 3rem;    /* 48px */
+  --space-xxl: 4rem;   /* 64px */
 
   /* Transições */
   --transition-fast: 150ms ease-out;
@@ -35,10 +35,10 @@
   --transition-slow: 500ms ease-out;
 
   /* Border Radius */
-  --radius-sm: 0.375rem; /* 6px */
-  --radius-md: 0.75rem; /* 12px */
-  --radius-lg: 1rem; /* 16px */
-  --radius-xl: 1.5rem; /* 24px */
+  --radius-sm: 0.375rem;  /* 6px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
   --radius-pill: 9999px;
 
   /* Sombras */
@@ -52,9 +52,7 @@
 /* ============================================
    🏗️ RESET E ESTILOS BASE
    ============================================ */
-*,
-*::before,
-*::after {
+:where(*, *::before, *::after) {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -79,18 +77,13 @@ body {
   min-height: 100vh;
 }
 
-img,
-picture,
-video,
-canvas,
-svg {
+:where(img, picture, video, canvas, svg) {
   display: block;
   max-width: 100%;
   height: auto;
 }
 
-ol,
-ul {
+:where(ol, ul) {
   list-style: none;
 }
 
@@ -105,10 +98,7 @@ a:hover {
   text-decoration: underline;
 }
 
-button,
-input,
-select,
-textarea {
+:where(button, input, select, textarea) {
   font: inherit;
   color: inherit;
   background: none;
@@ -127,8 +117,8 @@ button {
 .container {
   width: 100%;
   max-width: min(960px, 92vw);
-  margin: 0 auto;
-  padding: 0 var(--space-md);
+  margin-inline: auto;
+  padding-inline: var(--space-md);
 }
 
 .card {
@@ -185,7 +175,6 @@ button {
 
 .btn--primary {
   --btn-bg-color: var(--color-primary);
-  --btn-text-color: var(--color-white);
 }
 
 .btn--primary:hover:not(:disabled) {
@@ -194,7 +183,6 @@ button {
 
 .btn--secondary {
   --btn-bg-color: var(--color-muted);
-  --btn-text-color: var(--color-white);
 }
 
 .btn--secondary:hover:not(:disabled) {
@@ -232,7 +220,7 @@ button {
   display: inline-block;
 }
 
-.btn.btn--loading > span:not(.btn__loading) {
+.btn.btn--loading > :not(.btn__loading) {
   visibility: hidden;
   opacity: 0;
   display: none;
@@ -248,20 +236,20 @@ button {
 .main-header {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: var(--color-white);
-  padding: var(--space-xxl) 0 var(--space-xl);
-  margin-bottom: var(--space-xl);
+  padding-block: var(--space-xxl) var(--space-xl);
+  margin-block-end: var(--space-xl);
   text-align: center;
   box-shadow: var(--shadow-md);
 }
 
 .main-content {
-  padding: var(--space-md) 0 var(--space-xl);
+  padding-block: var(--space-md) var(--space-xl);
 }
 
 .main-footer {
   background-color: var(--color-white);
   color: var(--color-muted);
-  padding: var(--space-lg) 0;
+  padding-block: var(--space-lg);
   border-top: 1px solid var(--color-border);
   text-align: center;
   font-size: 0.9rem;
@@ -275,7 +263,7 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0 0 var(--space-sm);
+  margin-block-end: var(--space-sm);
 }
 
 h1 {
@@ -286,7 +274,7 @@ h1 {
 h2 {
   font-size: clamp(1.8rem, 4.5vw, 2.2rem);
   letter-spacing: -0.01em;
-  margin-bottom: var(--space-md);
+  margin-block-end: var(--space-md);
 }
 
 .subtitle {
@@ -294,7 +282,7 @@ h2 {
   font-weight: 400;
   opacity: 0.85;
   max-width: 700px;
-  margin: 0 auto;
+  margin-inline: auto;
   line-height: 1.5;
 }
 
@@ -302,7 +290,7 @@ h2 {
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--color-primary-dark);
-  margin-bottom: var(--space-lg);
+  margin-block-end: var(--space-lg);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
@@ -328,12 +316,12 @@ h2 {
   border-radius: var(--radius-xl);
   padding: clamp(var(--space-md), 5vw, var(--space-xl));
   box-shadow: var(--shadow-lg);
-  margin-bottom: var(--space-xl);
+  margin-block-end: var(--space-xl);
   border: 1px solid var(--color-light);
 }
 
 .form-group {
-  margin-bottom: var(--space-lg);
+  margin-block-end: var(--space-lg);
 }
 
 .form-section {
@@ -344,7 +332,7 @@ h2 {
 
 label {
   display: block;
-  margin-bottom: var(--space-xs);
+  margin-block-end: var(--space-xs);
   font-weight: 600;
   color: var(--color-muted);
   font-size: 0.95rem;
@@ -356,14 +344,7 @@ label {
   font-weight: normal;
 }
 
-.form-input,
-input[type="text"],
-input[type="date"],
-input[type="email"],
-input[type="url"],
-input[type="search"],
-textarea,
-select {
+:is(.form-input, input[type="text"], input[type="date"], input[type="email"], input[type="url"], input[type="search"], textarea, select) {
   width: 100%;
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--color-border);
@@ -375,14 +356,7 @@ select {
               background-color var(--transition-base);
 }
 
-.form-input:focus,
-input[type="text"]:focus,
-input[type="date"]:focus,
-input[type="email"]:focus,
-input[type="url"]:focus,
-input[type="search"]:focus,
-textarea:focus,
-select:focus {
+:is(.form-input, input[type="text"], input[type="date"], input[type="email"], input[type="url"], input[type="search"], textarea, select):focus {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
   background-color: var(--color-white);
@@ -476,7 +450,7 @@ textarea {
 .feedback {
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-md);
+  margin-block-end: var(--space-md);
   font-size: 0.95rem;
   font-weight: 500;
   box-shadow: var(--shadow-sm);
@@ -554,18 +528,14 @@ textarea {
 }
 
 /* ============================================
-   🖼️ PRÉVIA DO CARTÃO
+   🖼️ PRÉVIA DO CARTÃO E PÁGINA DE VISUALIZAÇÃO
    ============================================ */
 .card-preview-wrapper {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-color: hsla(0, 0%, 0%, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   padding: var(--space-md);
   z-index: 1000;
   overflow-y: auto;
@@ -599,9 +569,9 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: var(--space-md);
+  margin-block-end: var(--space-lg);
+  border-block-end: 1px solid var(--color-border);
+  padding-block-end: var(--space-md);
 }
 
 .card-preview-header h2 {
@@ -627,7 +597,7 @@ textarea {
 }
 
 .card-preview p {
-  margin: 0 0 var(--space-sm);
+  margin-block-end: var(--space-sm);
   font-size: 1.1rem;
   line-height: 1.7;
 }
@@ -638,7 +608,7 @@ textarea {
 }
 
 .card-preview .preview-image-container {
-  margin: var(--space-md) 0;
+  margin-block: var(--space-md);
   text-align: center;
 }
 
@@ -650,42 +620,10 @@ textarea {
   box-shadow: var(--shadow-sm);
 }
 
-.card-preview .preview-video-container {
-  margin: var(--space-md) 0;
-}
-
-.card-preview .preview-video-container h3 {
-  font-size: 1.2rem;
-  color: var(--color-text);
-  margin: 0 0 var(--space-sm);
-}
-
-.youtube-player-wrapper,
-.youtube-player-container {
-  position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  height: 0;
-  overflow: hidden;
-  max-width: 100%;
-  background: hsl(0, 0%, 10%);
-  border-radius: var(--radius-md);
-  margin-top: var(--space-xs);
-}
-
-.youtube-player-wrapper iframe,
-.youtube-player-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
 .card-preview .preview-link-info {
-  margin-top: var(--space-lg);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--color-light);
+  margin-block-start: var(--space-lg);
+  padding-block-start: var(--space-md);
+  border-block-start: 1px solid var(--color-light);
   font-size: 0.95rem;
   color: var(--color-muted);
   text-align: center;
@@ -696,22 +634,10 @@ textarea {
   word-break: break-all;
 }
 
-.card-preview .close-preview-btn-bottom {
-  display: block;
-  margin: var(--space-lg) auto 0;
-  --btn-bg-color: var(--color-secondary);
-  --btn-text-color: var(--color-text);
-}
-
-.card-preview .close-preview-btn-bottom:hover:not(:disabled) {
-  background-color: hsl(255, 75%, 70%);
-}
-
 #card-view-page {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   padding: var(--space-md);
 }
@@ -722,8 +648,45 @@ textarea {
 
 #card-view-page .card-preview h1 {
   text-align: center;
-  margin-bottom: var(--space-lg);
+  margin-block-end: var(--space-lg);
   color: var(--color-primary-dark);
+}
+
+/* ============================================
+   🎥 PLAYER DE VÍDEO (NOVO E CENTRALIZADO)
+   ============================================ */
+.video-player-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* Proporção 16:9 */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  border-radius: var(--radius-md); /* Raio base para o iframe */
+}
+
+.video-player-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* A MOLDURA */
+.video-frame {
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm);
+  background: linear-gradient(145deg, hsl(240, 5%, 25%), hsl(240, 5%, 15%));
+  box-shadow: var(--shadow-lg), 0 0 40px hsla(330, 70%, 60%, 0.2);
+  border: 1px solid hsl(240, 5%, 40%);
+  margin-block: var(--space-md);
+}
+
+/* Efeito de profundidade no player dentro da moldura */
+.video-frame .video-player-wrapper {
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 2px 8px hsla(0, 0%, 0%, 0.4);
 }
 
 /* ============================================
@@ -771,7 +734,7 @@ textarea {
 @media (max-width: 768px) {
   html { font-size: 15px; }
   .card-form { padding: var(--space-lg); border-radius: var(--radius-lg); }
-  .main-header { padding: var(--space-xl) 0; }
+  .main-header { padding-block: var(--space-xl); }
   .section-title { font-size: 1.1rem; }
   .card-preview { padding: var(--space-lg); }
   .card-preview-header h2 { font-size: 1.5rem; }
