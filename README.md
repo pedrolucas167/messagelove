@@ -1,8 +1,8 @@
 # MessageLove ❤️
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-f7b267?style=for-the-badge)
-![GitHub last commit](https://img.shields.io/github/last-commit/SEU-USUARIO/messagelove?style=for-the-badge&color=e74c3c)
-![Repo size](https://img.shields.io/github/repo-size/SEU-USUARIO/messagelove?style=for-the-badge&color=8e44ad)
+![GitHub last commit](https://img.shields.io/github/last-commit/pedrolucas167/messagelove?style=for-the-badge&color=e74c3c)
+![Repo size](https://img.shields.io/github/repo-size/pedrolucas167/messagelove?style=for-the-badge&color=8e44ad)
 
 
 ## ✨ Funcionalidades
