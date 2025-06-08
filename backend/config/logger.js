@@ -42,7 +42,7 @@ const transports = [
   new winston.transports.Console({
     format: consoleFormat,
   }),
-  // Em produção, salvar logs de erro em um arquivo
+ 
   new winston.transports.File({
     level: 'error',
     filename: path.join(__dirname, '..', 'logs', 'error.log'),
