@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Seletores do DOM ---
-    const API_URL = 'http://localhost:3001/api';
+    
+    const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = IS_LOCAL 
+    ? 'http://localhost:3001/api' 
+    : 'https://messagelove-backend.onrender.com/api';
 
     // --- Seletores dos Elementos do DOM ---
     const loadingStateEl = document.getElementById('loading-state');
