@@ -14,9 +14,24 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+
+
+// Isso permite que o express-rate-limit use o IP real do cliente (do header X-Forwarded-For)
+// para o controle de requisições, evitando o erro ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+app.set('trust proxy', 1);
+
+
 app.use(helmet());
 app.use(cors(corsOptions));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+
+//  rateLimit 
+app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false, 
+}));
+
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
