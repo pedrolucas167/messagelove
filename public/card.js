@@ -1,33 +1,31 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    const API_URL = 'http://localhost:3001/api'; // Mude para a URL do Render em produção
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Seletores do DOM ---
+    const API_URL = 'http://localhost:3001/api';
 
-    // Elementos da página que serão preenchidos
+    // --- Seletores dos Elementos do DOM ---
+    const loadingStateEl = document.getElementById('loading-state');
+    const errorStateEl = document.getElementById('error-state');
+    const cardViewEl = document.getElementById('card-view');
+
+    // Elementos do cartão que serão preenchidos
     const nomeEl = document.getElementById('card-nome');
-    const mensagemEl = document.getElementById('card-mensagem');
     const dataEl = document.getElementById('card-data');
+    const mensagemEl = document.getElementById('card-mensagem');
     const fotoContainerEl = document.getElementById('card-foto-container');
     const videoContainerEl = document.getElementById('card-video-container');
 
-    /**
-     * Extrai o ID do cartão da URL da página.
-     * Ex: card.html?id=123e4567-e89b-12d3-a456-426614174000
-     * @returns {string|null} O ID do cartão ou null se não for encontrado.
-     */
-    const getCardIdFromURL = () => {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('id');
-    };
+    // --- Funções Principais ---
 
     /**
      * Busca os dados de um cartão específico na API.
      * @param {string} id - O ID do cartão.
-     * @returns {object|null} Os dados do cartão ou null em caso de erro.
+     * @returns {Promise<object|null>} Os dados do cartão ou null em caso de erro.
      */
     const fetchCardData = async (id) => {
         try {
             const response = await fetch(`${API_URL}/card/${id}`);
             if (!response.ok) {
-                throw new Error(`Cartão não encontrado ou erro na API. Status: ${response.status}`);
+                throw new Error(`Cartão não encontrado (Status: ${response.status})`);
             }
             return await response.json();
         } catch (error) {
@@ -37,64 +35,107 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /**
-     * Preenche a página com os dados do cartão.
-     * @param {object} card - O objeto do cartão vindo da API.
+     * Formata a data para um formato mais legível e amigável.
+     * @param {string} dateString - A data no formato ISO (YYYY-MM-DD).
+     * @returns {string} A data formatada, ex: "7 de junho de 2025".
      */
-    const renderCard = (card) => {
-        document.title = `Um cartão para ${card.nome}`; // Atualiza o título da aba
+    const formatSpecialDate = (dateString) => {
+        if (!dateString) return 'Uma data especial';
         
+        const date = new Date(dateString);
+        // Usamos 'long' para o mês para obter o nome completo.
+        return date.toLocaleDateString('pt-BR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC' // Importante para evitar problemas de fuso horário
+        });
+    };
+
+
+    
+    const renderCard = (card) => {
+        document.title = `Um cartão para ${card.nome}`;
         nomeEl.textContent = `Para: ${card.nome}`;
         mensagemEl.textContent = card.mensagem;
-        
-        // Formata a data para o padrão brasileiro
-        dataEl.textContent = card.data 
-            ? new Date(card.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) 
-            : 'Não especificada';
+        dataEl.textContent = formatSpecialDate(card.data);
 
-        // Adiciona a imagem se a URL existir
         if (card.fotoUrl) {
             const img = document.createElement('img');
             img.src = card.fotoUrl;
             img.alt = `Foto para ${card.nome}`;
+            img.className = 'card-image';
             fotoContainerEl.appendChild(img);
         }
 
-        // Adiciona o vídeo do YouTube se o ID existir
         if (card.youtubeVideoId) {
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube-nocookie.com/embed/${card.youtubeVideoId}`;
-            iframe.title = "Player de vídeo do YouTube";
-            iframe.frameBorder = "0";
-            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-            iframe.allowFullscreen = true;
-            
-            // Wrapper para manter a proporção do vídeo responsivo
             const videoWrapper = document.createElement('div');
-            videoWrapper.className = 'youtube-player-wrapper';
-            videoWrapper.appendChild(iframe);
+            // Adicionamos as classes que criamos no CSS para a moldura e o player
+            videoWrapper.className = 'video-player-wrapper video-frame';
+            videoWrapper.innerHTML = `
+                <iframe 
+                    src="https://www.youtube-nocookie.com/embed/${card.youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${card.youtubeVideoId}"
+                    title="Player de vídeo do YouTube" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>`;
             videoContainerEl.appendChild(videoWrapper);
+        }
+    };
+    
+    /**
+     * Cria e dispara o efeito de chuva de emojis na tela.
+     */
+    const triggerEmojiRain = () => {
+        const emojiContainer = document.createElement('div');
+        emojiContainer.className = 'emoji-rain-container';
+        document.body.appendChild(emojiContainer);
+
+        const emojis = ['❤️', '💖', '✨', '🎉', '💕', '⭐', '🥰', '😍'];
+        const amount = 50; // Quantidade de emojis na chuva
+
+        for (let i = 0; i < amount; i++) {
+            const emojiSpan = document.createElement('span');
+            emojiSpan.className = 'emoji';
+            emojiSpan.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            // Estilos aleatórios para um efeito natural
+            emojiSpan.style.left = `${Math.random() * 100}vw`;
+            emojiSpan.style.fontSize = `${Math.random() * 1.5 + 0.8}rem`;
+            emojiSpan.style.animationDuration = `${Math.random() * 4 + 3}s`; // Duração entre 3s e 7s
+            emojiSpan.style.animationDelay = `${Math.random() * 5}s`;
+
+            emojiContainer.appendChild(emojiSpan);
         }
     };
 
     /**
-     * Função principal que orquestra a execução.
+     * Orquestra a exibição da página, gerenciando os estados.
      */
     const main = async () => {
-        const cardId = getCardIdFromURL();
+        const params = new URLSearchParams(window.location.search);
+        const cardId = params.get('id');
+
         if (!cardId) {
-            nomeEl.textContent = 'Erro: ID do cartão não encontrado na URL.';
+            loadingStateEl.classList.add('hidden');
+            errorStateEl.classList.remove('hidden');
             return;
         }
 
         const cardData = await fetchCardData(cardId);
-        if (!cardData) {
-            nomeEl.textContent = 'Não foi possível carregar os dados deste cartão.';
-            return;
-        }
 
-        renderCard(cardData);
+        loadingStateEl.classList.add('hidden'); // Esconde o loading
+
+        if (!cardData) {
+            errorStateEl.classList.remove('hidden'); // Mostra erro se não encontrar dados
+        } else {
+            cardViewEl.classList.remove('hidden'); // Mostra o cartão
+            renderCard(cardData);
+            triggerEmojiRain(); // Dispara a magia!
+        }
     };
 
-    // Inicia a execução
+    // Inicia a aplicação
     main();
 });

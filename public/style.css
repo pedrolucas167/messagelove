@@ -1,9 +1,8 @@
 /* Import Google Font 'Inter' */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* ============================================
-   🔧 CONFIGURAÇÕES GLOBAIS
-   ============================================ */
+/*/ root /*/
+
 :root {
   /* Cores */
   --color-primary: hsl(330, 70%, 60%);
@@ -747,4 +746,77 @@ textarea {
   .card-preview-header h2 { font-size: 1.3rem; }
   .card-preview p { font-size: 1rem; }
   .card-preview .close-preview-btn { font-size: 1.8rem; }
+}
+
+
+
+/* --- Estilos da Página de Visualização --- */
+
+#card-view-page {
+    /* Fundo gradiente suave */
+    background: linear-gradient(160deg, hsl(330, 80%, 98%), hsl(255, 100%, 98%));
+}
+
+.card-page-header, .card-page-footer {
+    text-align: center;
+    padding: var(--space-sm);
+    width: 100%;
+}
+
+.card-page-header a {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.card-preview .recipient-name {
+    color: var(--color-primary-dark);
+    font-size: clamp(2rem, 5vw, 2.8rem);
+}
+
+.card-preview .special-date {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+.card-preview .card-body p {
+    font-size: 1.2rem;
+    line-height: 1.7;
+    white-space: pre-wrap; /* Preserva quebras de linha da mensagem */
+}
+
+.card-preview .card-image {
+    width: 100%;
+    border-radius: var(--radius-md);
+    margin-block: var(--space-md);
+    box-shadow: var(--shadow-md);
+}
+
+
+/* --- EFEITO CHUVA DE EMOJIS --- */
+
+.emoji-rain-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 9999;
+    pointer-events: none; /* Permite clicar através dos emojis */
+}
+
+.emoji {
+    position: absolute;
+    top: -10%; /* Começa fora da tela */
+    user-select: none;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+    }
 }

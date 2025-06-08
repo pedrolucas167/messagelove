@@ -1,23 +1,78 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Um Cartão Especial Para Você!</title>
-    <link rel="stylesheet" href="style.css"> </head>
-<body>
-    <main class="card-container">
-        <div class="card-content">
-            <h1 id="card-nome"></h1>
-            <p id="card-mensagem"></p>
-            
-            <div id="card-foto-container" class="foto-container"></div>
-            
-            <div id="card-video-container" class="video-container"></div>
+    
+    <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
+    <meta name="theme-color" content="#e91e63">
+    <meta property="og:title" content="Um Cartão Especial Para Você!">
+    <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://sua-url.com/assets/og-image-default.jpg">
+    
+    <link rel="icon" href="/assets/coracao.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
 
-            <p class="card-date"><small>Data especial: <span id="card-data"></span></small></p>
-        </div>
-    </main>
-    <script src="card.js"></script>
+    <style>
+      .loader-wrapper { text-align: center; padding: 50px; }
+      .loader {
+        display: inline-block; width: 50px; height: 50px;
+        border: 5px solid rgba(233, 30, 99, 0.2);
+        border-top-color: #e91e63;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .hidden { display: none !important; }
+    </style>
+</head>
+<body id="card-view-page">
+
+  <header class="card-page-header">
+    <a href="/" title="Criar um novo cartão">Messagelove</a>
+  </header>
+
+  <main>
+    <div id="loading-state" class="loader-wrapper">
+      <div class="loader"></div>
+      <p>Carregando seu cartão especial...</p>
+    </div>
+
+    <article id="card-view" class="card-preview hidden">
+        <header class="card-preview-header">
+          <h1 id="card-nome" class="recipient-name"></h1>
+          <p id="card-data" class="special-date"></p>
+        </header>
+
+        <section class="card-body">
+          <p id="card-mensagem"></p>
+        </section>
+
+        <figure id="card-foto-container" class="preview-image-container"></figure>
+        
+        <div id="card-video-container">
+          </div>
+    </article>
+
+    <div id="error-state" class="card-preview hidden">
+      <h2>Ops! Algo deu errado.</h2>
+      <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
+      <a href="/" class="btn btn--primary">Criar um novo cartão</a>
+    </div>
+  </main>
+
+  <footer class="card-page-footer">
+    <p>Gostou? <a href="/" class="btn btn--outline">Crie o seu também!</a></p>
+  </footer>
+
+  <script src="card.js" defer></script>
+
 </body>
 </html>
