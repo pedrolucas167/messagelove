@@ -1,88 +1,73 @@
-// ... (funções createCard e getCardById existentes) ...
+const { v4: uuidv4 } = require('uuid');
+const db = require('../config/database');
 
-/**
- * Atualiza um cartão existente no banco de dados.
- * @param {string} id - O ID do cartão a ser atualizado.
- * @param {object} cardData - Os novos dados para o cartão.
- * @returns {Promise<object>} O objeto do cartão atualizado.
- */
-const updateCard = (id, cardData) => {
+const createCard = (cardData) => {
   return new Promise((resolve, reject) => {
-    // Pega apenas os campos que podem ser atualizados para evitar sobrescrever o ID ou createdAt
-    const { nome, data, mensagem, youtubeVideoId, fotoUrl } = cardData;
-
-    const sql = `
-      UPDATE cards 
-      SET nome = ?, data = ?, mensagem = ?, youtubeVideoId = ?, fotoUrl = ?
-      WHERE id = ?
-    `;
-    const params = [nome, data, mensagem, youtubeVideoId, fotoUrl, id];
-
+    const newCard = {
+      id: uuidv4(),
+      nome: cardData.nome,
+      data: cardData.data || null,
+      mensagem: cardData.mensagem,
+      youtubeVideoId: cardData.youtubeVideoId || null,
+      fotoUrl: cardData.fotoUrl || null,
+      createdAt: new Date().toISOString(),
+    };
+    const sql = `INSERT INTO cards (id, nome, data, mensagem, youtubeVideoId, fotoUrl, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const params = [newCard.id, newCard.nome, newCard.data, newCard.mensagem, newCard.youtubeVideoId, newCard.fotoUrl, newCard.createdAt];
     db.run(sql, params, function (err) {
-      if (err) {
-        console.error('DATABASE ERROR:', err.message);
-        return reject(new Error('Failed to update card.'));
-      }
-      // a propriedade 'this.changes' indica se alguma linha foi alterada
-      if (this.changes === 0) {
-        return resolve(null); // Retorna null se nenhum card com o ID foi encontrado
-      }
-      console.log(`SERVICE: Card updated in DB with ID: ${id}`);
-      // Após atualizar, buscamos o card com os novos dados para retornar ao cliente
-      resolve(getCardById(id));
+      if (err) return reject(new Error('Failed to create card.'));
+      resolve(newCard);
     });
   });
 };
 
-
-/**
- * Deleta um cartão do banco de dados.
- * @param {string} id - O ID do cartão a ser deletado.
- * @returns {Promise<boolean>} Retorna true se deletado com sucesso, false caso contrário.
- */
-const deleteCard = (id) => {
+const getCardById = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = 'DELETE FROM cards WHERE id = ?';
-
-    db.run(sql, [id], function (err) {
-      if (err) {
-        console.error('DATABASE ERROR:', err.message);
-        return reject(new Error('Failed to delete card.'));
-      }
-      // 'this.changes' será 1 se o card foi deletado, 0 se não foi encontrado
-      if (this.changes > 0) {
-        console.log(`SERVICE: Card deleted from DB with ID: ${id}`);
-        resolve(true);
-      } else {
-        resolve(false);
-      }
+    const sql = "SELECT * FROM cards WHERE id = ?";
+    db.get(sql, [id], (err, row) => {
+      if (err) return reject(new Error('Failed to fetch card.'));
+      resolve(row);
     });
   });
 };
 
-
-module.exports = {
-  createCard,
-  getCardById,
-  updateCard, // exportar a nova função
-  deleteCard, // exportar a nova função
-};
-
-// ...
 const getAllCards = () => {
   return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM cards ORDER BY createdAt DESC"; // Ordena pelos mais recentes
+    const sql = "SELECT * FROM cards ORDER BY createdAt DESC";
     db.all(sql, [], (err, rows) => {
-      if (err) {
-        console.error('DATABASE ERROR:', err.message);
-        return reject(new Error('Failed to fetch cards.'));
-      }
+      if (err) return reject(new Error('Failed to fetch cards.'));
       resolve(rows);
     });
   });
 };
 
+const updateCard = (id, cardData) => {
+  return new Promise((resolve, reject) => {
+    const { nome, data, mensagem, youtubeVideoId, fotoUrl } = cardData;
+    const sql = `UPDATE cards SET nome = ?, data = ?, mensagem = ?, youtubeVideoId = ?, fotoUrl = ? WHERE id = ?`;
+    const params = [nome, data, mensagem, youtubeVideoId, fotoUrl, id];
+    db.run(sql, params, function (err) {
+      if (err) return reject(new Error('Failed to update card.'));
+      if (this.changes === 0) return resolve(null);
+      resolve(getCardById(id));
+    });
+  });
+};
+
+const deleteCard = (id) => {
+  return new Promise((resolve, reject) => {
+    const sql = 'DELETE FROM cards WHERE id = ?';
+    db.run(sql, [id], function (err) {
+      if (err) return reject(new Error('Failed to delete card.'));
+      resolve(this.changes > 0);
+    });
+  });
+};
+
 module.exports = {
-  // ... funcs existentes
-  getAllCards, // exporta a nova função
+  createCard,
+  getCardById,
+  getAllCards,
+  updateCard,
+  deleteCard
 };
