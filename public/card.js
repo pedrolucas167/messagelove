@@ -1,272 +1,100 @@
-(function(window, document) {
-  'use strict';
+document.addEventListener('DOMContentLoaded', async () => {
+    const API_URL = 'http://localhost:3001/api'; // Mude para a URL do Render em produção
 
-  class YouTubeManager {
-    static #VALID_YOUTUBE_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
-    static #URL_PATTERNS = [
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
-      /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/,
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/,
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^?]+)/
-    ];
+    // Elementos da página que serão preenchidos
+    const nomeEl = document.getElementById('card-nome');
+    const mensagemEl = document.getElementById('card-mensagem');
+    const dataEl = document.getElementById('card-data');
+    const fotoContainerEl = document.getElementById('card-foto-container');
+    const videoContainerEl = document.getElementById('card-video-container');
 
-    static getVideoId(url) {
-      if (!url || typeof url !== 'string') return null;
-      
-      const sanitizedUrl = url.trim();
-      if (!sanitizedUrl) return null;
+    /**
+     * Extrai o ID do cartão da URL da página.
+     * Ex: card.html?id=123e4567-e89b-12d3-a456-426614174000
+     * @returns {string|null} O ID do cartão ou null se não for encontrado.
+     */
+    const getCardIdFromURL = () => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    };
 
-      for (const pattern of this.#URL_PATTERNS) {
-        const match = sanitizedUrl.match(pattern);
-        if (match && match[1]) {
-          const videoId = match[1].split('&')[0].split('/')[0];
-          if (this.#VALID_YOUTUBE_ID_REGEX.test(videoId)) {
-            return videoId;
-          }
+    /**
+     * Busca os dados de um cartão específico na API.
+     * @param {string} id - O ID do cartão.
+     * @returns {object|null} Os dados do cartão ou null em caso de erro.
+     */
+    const fetchCardData = async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/card/${id}`);
+            if (!response.ok) {
+                throw new Error(`Cartão não encontrado ou erro na API. Status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Erro ao buscar dados do cartão:", error);
+            return null;
         }
-      }
-      return null;
-    }
+    };
 
-    static createPlayerHtml(urls, currentIndex) {
-      if (!Array.isArray(urls) || urls.length === 0 || currentIndex >= urls.length) {
-        return this.#createErrorMessage('Nenhum vídeo disponível.');
-      }
+    /**
+     * Preenche a página com os dados do cartão.
+     * @param {object} card - O objeto do cartão vindo da API.
+     */
+    const renderCard = (card) => {
+        document.title = `Um cartão para ${card.nome}`; // Atualiza o título da aba
+        
+        nomeEl.textContent = `Para: ${card.nome}`;
+        mensagemEl.textContent = card.mensagem;
+        
+        // Formata a data para o padrão brasileiro
+        dataEl.textContent = card.data 
+            ? new Date(card.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) 
+            : 'Não especificada';
 
-      const videoId = this.getVideoId(urls[currentIndex]);
-      if (!videoId) {
-        return this.#createErrorMessage('Link do YouTube inválido.');
-      }
+        // Adiciona a imagem se a URL existir
+        if (card.fotoUrl) {
+            const img = document.createElement('img');
+            img.src = card.fotoUrl;
+            img.alt = `Foto para ${card.nome}`;
+            fotoContainerEl.appendChild(img);
+        }
 
-      return `
-        <div class="preview-video-container">
-          <h3>Vídeo ${currentIndex + 1} de ${urls.length}</h3>
-          <div class="youtube-player-container">
-            <iframe
-              src="https://www.youtube.com/embed/${this.#sanitizeInput(videoId)}?rel=0&modestbranding=1"
-              title="Vídeo do YouTube"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-              loading="lazy">
-            </iframe>
-          </div>
-          ${this.#createVideoControls(urls.length, currentIndex)}
-        </div>
-      `;
-    }
+        // Adiciona o vídeo do YouTube se o ID existir
+        if (card.youtubeVideoId) {
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube-nocookie.com/embed/${card.youtubeVideoId}`;
+            iframe.title = "Player de vídeo do YouTube";
+            iframe.frameBorder = "0";
+            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+            iframe.allowFullscreen = true;
+            
+            // Wrapper para manter a proporção do vídeo responsivo
+            const videoWrapper = document.createElement('div');
+            videoWrapper.className = 'youtube-player-wrapper';
+            videoWrapper.appendChild(iframe);
+            videoContainerEl.appendChild(videoWrapper);
+        }
+    };
 
-    static #createErrorMessage(message) {
-      return `<div class="preview-video-container"><p>${this.#sanitizeInput(message)}</p></div>`;
-    }
+    /**
+     * Função principal que orquestra a execução.
+     */
+    const main = async () => {
+        const cardId = getCardIdFromURL();
+        if (!cardId) {
+            nomeEl.textContent = 'Erro: ID do cartão não encontrado na URL.';
+            return;
+        }
 
-    static #createVideoControls(totalVideos, currentIndex) {
-      return `
-        <div class="video-controls">
-          <button type="button" class="btn btn--secondary prev-video-btn" 
-            ${currentIndex === 0 ? 'disabled aria-disabled="true"' : ''}>
-            Vídeo Anterior
-          </button>
-          <button type="button" class="btn btn--secondary next-video-btn" 
-            ${currentIndex === totalVideos - 1 ? 'disabled aria-disabled="true"' : ''}>
-            Próximo Vídeo
-          </button>
-        </div>
-      `;
-    }
+        const cardData = await fetchCardData(cardId);
+        if (!cardData) {
+            nomeEl.textContent = 'Não foi possível carregar os dados deste cartão.';
+            return;
+        }
 
-    static #sanitizeInput(input) {
-      return String(input).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-  }
+        renderCard(cardData);
+    };
 
-  class CardManager {
-    #elements;
-    #currentVideoIndex = 0;
-    #youtubeUrls = [];
-    #cardId = null;
-
-    constructor() {
-      this.#elements = this.#initializeElements();
-      this.#cardId = this.#extractCardId();
-    }
-
-    #initializeElements() {
-      return {
-        loading: document.getElementById('card-loading'),
-        error: document.getElementById('card-error'),
-        details: document.getElementById('card-details'),
-        nome: document.getElementById('nome'),
-        data: document.getElementById('data'),
-        mensagem: document.getElementById('mensagem'),
-        foto: document.getElementById('foto'),
-        youtubeContainer: document.getElementById('youtube-container'),
-        currentYear: document.getElementById('currentYear')
-      };
-    }
-
-    #extractCardId() {
-      const pathParts = window.location.pathname.split('/');
-      return pathParts[pathParts.length - 1] || null;
-    }
-
-    init() {
-      if (!this.#validateElements()) {
-        console.error('CardManager: Elementos essenciais não encontrados.');
-        return;
-      }
-      
-      this.#setCurrentYear();
-      this.#loadCard();
-    }
-
-    #validateElements() {
-      return !!this.#elements.details;
-    }
-
-    #setCurrentYear() {
-      if (this.#elements.currentYear) {
-        this.#elements.currentYear.textContent = new Date().getFullYear();
-      }
-    }
-
-    #formatDate(dateStr) {
-      if (!dateStr) return 'Não especificada';
-      try {
-        const dateObj = new Date(dateStr + 'T00:00:00');
-        return isNaN(dateObj.getTime())
-          ? dateStr
-          : dateObj.toLocaleDateString('pt-BR', { 
-              timeZone: 'UTC', 
-              day: '2-digit', 
-              month: '2-digit', 
-              year: 'numeric' 
-            });
-      } catch {
-        return dateStr;
-      }
-    }
-
-    #sanitizeMessage(message) {
-      if (!message) return 'N/A';
-      return message
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\n/g, '<br>');
-    }
-
-    async #loadCard() {
-      const { loading, error, details } = this.#elements;
-      
-      if (!this.#cardId) {
-        this.#showError('ID do cartão não encontrado na URL.');
-        return;
-      }
-
-      try {
-        const card = await this.#fetchCardData();
-        this.#displayCard(card);
-      } catch (err) {
-        console.error('CardManager: Erro ao carregar cartão:', err);
-        this.#showError(err.message || 'Erro ao carregar dados do cartão.');
-      }
-    }
-
-    async #fetchCardData() {
-      const response = await fetch(`/api/card/${encodeURIComponent(this.#cardId)}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Erro ao buscar dados.' }));
-        throw new Error(errorData.message);
-      }
-      return await response.json();
-    }
-
-    #displayCard(card) {
-      const { loading, error, details, nome, data, mensagem, foto, youtubeContainer } = this.#elements;
-      
-      loading.classList.add('hidden');
-      error.classList.add('hidden');
-      details.classList.remove('hidden');
-
-      nome.textContent = card.nome || 'N/A';
-      data.textContent = `Data: ${this.#formatDate(card.data)}`;
-      mensagem.innerHTML = this.#sanitizeMessage(card.mensagem);
-      
-      this.#handlePhoto(card.fotoUrl);
-      this.#handleVideos(card.youtubeUrls || []);
-    }
-
-    #handlePhoto(photoUrl) {
-      const { foto } = this.#elements;
-      if (photoUrl) {
-        foto.src = photoUrl;
-        foto.classList.remove('hidden');
-      } else {
-        foto.classList.add('hidden');
-      }
-    }
-
-    #handleVideos(videoUrls) {
-      this.#youtubeUrls = Array.isArray(videoUrls) ? videoUrls : [];
-      this.#currentVideoIndex = 0;
-      this.#updateVideoPlayer();
-    }
-
-    #updateVideoPlayer() {
-      const { youtubeContainer } = this.#elements;
-      youtubeContainer.innerHTML = YouTubeManager.createPlayerHtml(
-        this.#youtubeUrls, 
-        this.#currentVideoIndex
-      );
-      
-      this.#setupVideoControls();
-    }
-
-    #setupVideoControls() {
-      const prevBtn = this.#elements.youtubeContainer.querySelector('.prev-video-btn');
-      const nextBtn = this.#elements.youtubeContainer.querySelector('.next-video-btn');
-      
-      if (prevBtn) {
-        prevBtn.onclick = () => this.#navigateVideo(-1);
-      }
-      if (nextBtn) {
-        nextBtn.onclick = () => this.#navigateVideo(1);
-      }
-    }
-
-    #navigateVideo(direction) {
-      const newIndex = this.#currentVideoIndex + direction;
-      if (newIndex >= 0 && newIndex < this.#youtubeUrls.length) {
-        this.#currentVideoIndex = newIndex;
-        this.#updateVideoPlayer();
-      }
-    }
-
-    #showError(message) {
-      const { loading, error } = this.#elements;
-      loading.classList.add('hidden');
-      error.classList.remove('hidden');
-      error.textContent = `Erro: ${message}`;
-    }
-  }
-
-  class App {
-    static init() {
-      try {
-        console.log('Aplicação Messagelove Card inicializando...');
-        new CardManager().init();
-        console.log('Aplicação Messagelove Card pronta.');
-      } catch (error) {
-        console.error('Falha na inicialização do aplicativo:', error);
-      }
-    }
-  }
-
-  // Carregamento seguro
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', App.init);
-  } else {
-    setTimeout(App.init, 0);
-  }
-})(window, document);
+    // Inicia a execução
+    main();
+});

@@ -1,133 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt-BR" dir="ltr">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Um cartão especial criado com Messagelove apenas para você!">
-  <meta name="theme-color" content="#e91e63">
-  <title>Seu Cartão Especial | Messagelove</title>
-  
-  <!-- Preload de recursos importantes -->
-  <link rel="preload" href="/styles.css" as="style">
-  <link rel="preload" href="/card.js" as="script">
-  
-  <!-- Favicon e meta tags para compartilhamento -->
-  <link rel="icon" href="/assets/coracao.png" type="image/png">
-  <link rel="apple-touch-icon" href="/assets/coracao.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-  
-  <!-- Meta tags para redes sociais -->
-  <meta property="og:title" content="Seu Cartão Especial | Messagelove">
-  <meta property="og:description" content="Um cartão especial criado com Messagelove apenas para você!">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="/assets/og-image.jpg">
-  
-  <!-- Estilos -->
-  <link rel="stylesheet" href="/styles.css">
-  
-  <style>
-    /* Estilos críticos inline para melhor performance */
-    .hidden { display: none !important; }
-    #card-loading {
-      text-align: center;
-      padding: 2rem;
-      font-size: 1.2rem;
-      color: #e91e63;
-    }
-    .error-state {
-      color: #f44336;
-      padding: 2rem;
-      text-align: center;
-      font-size: 1.1rem;
-    }
-  </style>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Um Cartão Especial Para Você!</title>
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
-  <div class="card-page">
-    <header class="card-header">
-      <div class="header-content">
-        <h1>Seu Cartão Especial</h1>
-        <p class="subtitle">Criado com ❤️ usando <strong>Messagelove</strong></p>
-      </div>
-    </header>
+    <main class="card-container">
+        <div class="card-content">
+            <h1 id="card-nome"></h1>
+            <p id="card-mensagem"></p>
+            
+            <div id="card-foto-container" class="foto-container"></div>
+            
+            <div id="card-video-container" class="video-container"></div>
 
-    <main class="card-main">
-      <article class="card-container">
-        <div class="card-inner">
-          <!-- Estado de carregamento -->
-          <div id="card-loading" class="loading-state">
-            <div class="loading-spinner"></div>
-            <p>Carregando seu cartão especial...</p>
-          </div>
-          
-          <!-- Estado de erro -->
-          <div id="card-error" class="error-state hidden">
-            <p>Ocorreu um erro ao carregar o cartão. Por favor, tente novamente mais tarde.</p>
-          </div>
-          
-          <!-- Conteúdo do cartão -->
-          <div id="card-details" class="card-details hidden">
-            <div class="card-header-section">
-              <h2 id="nome" class="card-recipient">Para: <span id="recipient-name"></span></h2>
-              <p id="data" class="card-date"></p>
-            </div>
-            
-            <div class="card-message-section">
-              <div class="message-container">
-                <p id="mensagem" class="message-content"></p>
-              </div>
-            </div>
-            
-            <div class="card-media-section">
-              <!-- Imagem do cartão -->
-              <figure id="foto-container" class="hidden">
-                <img id="foto" class="card-image" src="" alt="Imagem especial do cartão" loading="lazy">
-                <figcaption class="image-caption">Uma lembrança especial</figcaption>
-              </figure>
-              
-              <!-- Player do YouTube -->
-              <div id="youtube-container" class="video-container hidden">
-                <div class="video-wrapper">
-                  <iframe id="youtube-player" class="youtube-iframe" 
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                          allowfullscreen></iframe>
-                </div>
-              </div>
-            </div>
-          </div>
+            <p class="card-date"><small>Data especial: <span id="card-data"></span></small></p>
         </div>
-      </article>
     </main>
-
-    <footer class="card-footer">
-      <div class="footer-content">
-        <p>Messagelove © <span id="currentYear"></span></p>
-        <p class="share-message">💌 Gostou? Crie o seu também e compartilhe amor!</p>
-        <button id="share-button" class="share-button" aria-label="Compartilhar cartão">
-          <span class="share-icon">📤</span> Compartilhar
-        </button>
-      </div>
-    </footer>
-  </div>
-
-  <!-- Scripts -->
-  <script src="/card.js" defer></script>
-  
-  <script>
-    // Script inline para melhorar a experiência inicial
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
-    
-    // Fallback caso o JavaScript não carregue
-    setTimeout(() => {
-      const loadingElement = document.getElementById('card-loading');
-      const errorElement = document.getElementById('card-error');
-      
-      if (loadingElement && !document.getElementById('card-details').classList.contains('hidden')) {
-        loadingElement.classList.add('hidden');
-        errorElement.classList.remove('hidden');
-        errorElement.textContent = 'O carregamento está demorando mais que o normal. Por favor, verifique sua conexão.';
-      }
-    }, 10000);
-  </script>
+    <script src="card.js"></script>
 </body>
 </html>
