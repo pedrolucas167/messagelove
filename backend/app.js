@@ -1,68 +1,41 @@
+// 1. CARREGAR VARIÁVEIS DE AMBIENTE
+// Coloque esta linha no topo de tudo para garantir que as variáveis do .env sejam carregadas
+require('dotenv').config();
+
+// 2. IMPORTAR AS DEPENDÊNCIAS
 const express = require('express');
-const dotenv = require('dotenv');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
 const cors = require('cors');
 
-const logger = require('./config/logger');
-const corsOptions = require('./config/corsOptions');
-const cardRoutes = require('./routes/cardRoutes');
-const { logErrors, globalErrorHandler } = require('./middleware/errorHandler');
+// Importa o nosso novo arquivo de rotas
+const cardRoutes = require('./routes/cardRoutes'); 
 
-dotenv.config();
+// 3. INICIALIZAR A APLICAÇÃO EXPRESS
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// 4. CONFIGURAR OS MIDDLEWARES
+// Habilita o CORS para permitir que seu frontend (em outra URL) acesse esta API
+app.use(cors());
+
+// Permite que o Express entenda requisições com corpo no formato JSON
+app.use(express.json());
+
+// Permite que o Express entenda requisições com corpos vindos de formulários
+app.use(express.urlencoded({ extended: true }));
 
 
-// Isso permite que o express-rate-limit use o IP real do cliente (do header X-Forwarded-For)
-// para o controle de requisições, evitando o erro ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
-app.set('trust proxy', 1);
+// 5. DEFINIR AS ROTAS DA APLICAÇÃO
+// Rota de "saúde" para verificar se o servidor está no ar
+app.get('/', (req, res) => {
+    res.send('API do MessageLove está funcionando!');
+});
 
-
-app.use(helmet());
-app.use(cors(corsOptions));
-
-//  rateLimit 
-app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false, 
-}));
-
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-app.get('/api/status', (req, res) => res.json({ status: 'API is running' }));
+// AQUI ESTÁ A MÁGICA:
+// Dizemos ao Express para usar nosso arquivo de rotas para qualquer requisição que comece com '/api'
 app.use('/api', cardRoutes);
 
-app.get('/card/:id', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'card.html'));
+
+// 6. INICIAR O SERVIDOR
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-app.use((req, res, next) => {
-    res.status(404).json({ message: 'Ops! A rota que você procura não foi encontrada.' });
-});
-
-app.use(logErrors);
-app.use(globalErrorHandler);
-
-const server = app.listen(PORT, () => {
-  logger.info(`🚀 Server running on port ${PORT}`);
-});
-
-const shutdown = (signal) => {
-  logger.info(`\nReceived ${signal}, shutting down gracefully...`);
-  server.close(() => {
-    logger.info('Server shut down successfully.');
-    process.exit(0);
-  });
-};
-
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
