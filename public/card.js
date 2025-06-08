@@ -56,8 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    
-    const renderCard = (card) => {
+        const renderCard = (card) => {
         document.title = `Um cartão para ${card.nome}`;
         nomeEl.textContent = `Para: ${card.nome}`;
         mensagemEl.textContent = card.mensagem;
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Orquestra a exibição da página, gerenciando os estados.
      */
-    const main = async () => {
+        const main = async () => {
         const params = new URLSearchParams(window.location.search);
         const cardId = params.get('id');
 

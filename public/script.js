@@ -14,9 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const youtubeVideoIdInput = document.getElementById('youtubeVideoId');
 
 
-    // --- Configurações ---
-    // Aponte para sua API. Se o backend estiver no Render, use a URL de lá.
-    const API_URL = 'http://localhost:3001/api';
+  // --- Configurações ---
+// Define a URL da API dinamicamente, com base no ambiente (local ou produção).
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = IS_LOCAL
+    ? 'http://localhost:3001/api'
+    : 'https://messagelove-backend.onrender.com/api'; // URL do backend em produção
 
     // --- Funções Auxiliares ---
 
