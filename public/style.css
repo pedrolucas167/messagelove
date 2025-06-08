@@ -793,6 +793,10 @@ textarea {
     box-shadow: var(--shadow-md);
 }
 
+#card-mensagem {
+  white-space: pre-wrap; /* Essencial para manter as quebras de linha */
+}
+
 
 /* --- EFEITO CHUVA DE EMOJIS --- */
 
