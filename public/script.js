@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ? 'http://localhost:3001/api'
         : 'https://messagelove-backend.onrender.com/api';
 
-    // --- Funções Auxiliares Refatoradas ---
+    // --- Funções Auxiliares (sem alterações) ---
     const showNotification = (content, { type = 'info', duration = 5000, isHtml = false } = {}) => {
         const notification = document.createElement('div');
         notification.className = `notification notification--${type}`;
@@ -49,26 +49,31 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = isLoading;
         const text = button.querySelector('.btn-text');
         const loading = button.querySelector('.btn-loading');
-        text.style.visibility = isLoading ? 'hidden' : 'visible';
-        loading.hidden = !isLoading;
+        if (text && loading) {
+            text.style.visibility = isLoading ? 'hidden' : 'visible';
+            loading.hidden = !isLoading;
+        }
     };
 
     const resetFormAndPreviews = () => {
         form.reset();
         document.querySelector('[data-js="preview-container"]')?.setAttribute('hidden', 'true');
-        document.getElementById('fotoUpload').value = '';
+        const fotoUpload = document.getElementById('fotoUpload');
+        if (fotoUpload) fotoUpload.value = '';
         document.getElementById('youtubePreviewContainer')?.classList.remove('active');
-        document.getElementById('youtubeUrlInput').value = '';
-        document.getElementById('youtubeVideoId').value = '';
+        const youtubeUrlInput = document.getElementById('youtubeUrlInput');
+        if (youtubeUrlInput) youtubeUrlInput.value = '';
+        const youtubeVideoId = document.getElementById('youtubeVideoId');
+        if (youtubeVideoId) youtubeVideoId.value = '';
     };
 
     // --- Lógica Principal ---
 
     const displaySuccessState = (result) => {
         showNotification('Cartão criado com sucesso!', { type: 'success' });
-        const viewLink = result.viewLink || `${window.location.origin}/card.html?id=${result.id}`; // Ajustado para usar result.id
+        const viewLink = result.viewLink || `${window.location.origin}/card.html?id=${result.id}`;
         const linkHtml = `
-            <span>Link para visualização: <a href="${viewLink}" target="_blank">${viewLink}</a></span>
+            <span>Link: <a href="${viewLink}" target="_blank">Clique para ver</a></span>
             <button class="btn-copy-link" style="margin-left: 10px;">Copiar</button>
         `;
         const linkNotification = showNotification(linkHtml, { type: 'info', duration: null, isHtml: true });
@@ -78,21 +83,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleFormSubmit = async (event) => {
         event.preventDefault();
-        toggleButtonLoading(submitBtn, true);
 
         const formData = new FormData(form);
+        
+        // --- NOVO: Bloco de Validação ---
+        const de = formData.get('de')?.trim();
+        const para = formData.get('para')?.trim();
+        const mensagem = formData.get('mensagem')?.trim();
 
-        // --- CÓDIGO DE DEBURAÇÃO ADICIONADO ---
-        console.log("--- Verificando os dados do FormData antes do envio ---");
-        for (const [key, value] of formData.entries()) {
-            if (value instanceof File) {
-                console.log(`Campo -> ${key}:`, `Arquivo -> ${value.name}`);
-            } else {
-                console.log(`Campo -> ${key}:`, `Valor -> "${value}"`);
-            }
+        if (!de || !para || !mensagem) {
+            showNotification('Por favor, preencha os campos "De", "Para" e "Mensagem".', { type: 'warning' });
+            return; // Interrompe a execução aqui se a validação falhar
         }
-        console.log("----------------------------------------------------");
-        // --- FIM DO CÓDIGO DE DEBURAÇÃO ---
+        // --- FIM DO Bloco de Validação ---
+
+        toggleButtonLoading(submitBtn, true);
 
         try {
             const response = await fetch(`${API_URL}/cards`, {
@@ -100,21 +105,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData,
             });
 
-            // O `response.json()` vai falhar se a resposta for um erro 500 (HTML)
-            // Precisamos verificar o status antes de tentar fazer o parse
             if (!response.ok) {
-                const errorText = await response.text(); // Pega o corpo da resposta como texto
-                throw new Error(`O servidor respondeu com erro ${response.status}. Resposta: ${errorText}`);
+                // Tenta extrair uma mensagem de erro do JSON, senão usa o texto puro
+                let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorData.error || errorMessage;
+                } catch (e) {
+                    // Se o corpo não for JSON, podemos tentar ler como texto
+                    const textError = await response.text();
+                    if(textError) errorMessage = textError;
+                }
+                throw new Error(errorMessage);
             }
 
             const result = await response.json();
-
-            console.log('Cartão criado com sucesso:', result);
             displaySuccessState(result);
 
         } catch (error) {
             console.error('Erro ao criar cartão:', error.message);
-            showNotification(`Erro: ${error.message}`, { type: 'error' });
+            // Mostra a mensagem de erro mais detalhada que pegamos no 'if (!response.ok)'
+            showNotification(`Falha ao criar o cartão: ${error.message}`, { type: 'error' });
         } finally {
             toggleButtonLoading(submitBtn, false);
         }
