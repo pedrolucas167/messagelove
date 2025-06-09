@@ -1,33 +1,40 @@
-// backend/routes/cardRoutes.js
+// backend/controllers/cardController.js
 
-const express = require('express');
-const router = express.Router();
+// Suas importações, como o service e o S3
+const cardService = require('../services/cardService');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
-const cardController = require('../controllers/cardController');
-const asyncHandler = require('../middleware/asyncHandler');
-const upload = require('../middleware/uploadMiddleware');
-// Supondo que você ainda tenha seus validadores
-const { cardCreationValidators, cardIdValidator } = require('../middleware/validators');
+// ... sua configuração do s3Client ...
 
-// CORRETO: Sem parênteses depois dos nomes das funções do controller
-router.get('/cards', asyncHandler(cardController.handleGetAllCards));
+// --- SUAS FUNÇÕES ---
 
-router.post(
-  '/cards',
-  upload.single('foto'),
-  cardCreationValidators,
-  asyncHandler(cardController.handleCreateCard)
-);
+const handleCreateCard = async (req, res) => {
+    // ... sua lógica para criar um cartão ...
+};
 
-router.get('/card/:id', cardIdValidator, asyncHandler(cardController.handleGetCard));
+const handleGetCard = async (req, res) => {
+    // ... sua lógica para buscar um cartão ...
+};
 
-router.put(
-  '/card/:id',
-  upload.single('foto'),
-  [...cardIdValidator, ...cardCreationValidators],
-  asyncHandler(cardController.handleUpdateCard)
-);
+const handleGetAllCards = async (req, res) => {
+    // ... sua lógica para buscar todos os cartões ...
+};
 
-router.delete('/card/:id', cardIdValidator, asyncHandler(cardController.handleDeleteCard));
+const handleUpdateCard = async (req, res) => {
+    // ... sua lógica para atualizar um cartão ...
+};
 
-module.exports = router;
+const handleDeleteCard = async (req, res) => {
+    // ... sua lógica para deletar um cartão ...
+};
+
+
+// --- A LINHA MAIS IMPORTANTE ---
+// Garanta que você está exportando um objeto com todas as suas funções.
+module.exports = {
+    handleCreateCard,
+    handleGetCard,
+    handleGetAllCards,
+    handleUpdateCard,
+ handleDeleteCard
+};
