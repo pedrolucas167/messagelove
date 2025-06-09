@@ -8,11 +8,6 @@ const asyncHandler = require('../middleware/asyncHandler');
 const upload = require('../middleware/uploadMiddleware');
 const { cardCreationValidators, cardIdValidator } = require('../middleware/validators');
 
-// --- LOG DE DEPURAÇÃO ---
-// Vamos verificar o que 'cardController' contém no momento da importação.
-console.log('Conteúdo de cardController em routes:', cardController);
-// -------------------------
-
 router.get('/cards', asyncHandler(cardController.handleGetAllCards));
 
 router.post(
