@@ -12,25 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
         : 'https://messagelove-backend.onrender.com/api';
 
     // --- Funções Auxiliares Refatoradas ---
-
-    /**
-     * Mostra uma notificação na tela.
-     * @param {string} content - A mensagem ou HTML a ser exibido.
-     * @param {object} options - Opções para a notificação.
-     * @param {string} [options.type='info'] - Tipo ('success', 'error', 'info').
-     * @param {number|null} [options.duration=5000] - Duração em ms para fechar. Nulo para não fechar automaticamente.
-     * @param {boolean} [options.isHtml=false] - Define se o conteúdo é HTML.
-     */
     const showNotification = (content, { type = 'info', duration = 5000, isHtml = false } = {}) => {
         const notification = document.createElement('div');
         notification.className = `notification notification--${type}`;
-
         if (isHtml) {
             notification.innerHTML = content;
         } else {
             notification.textContent = content;
         }
-
         const closeBtn = document.createElement('button');
         closeBtn.className = 'notification__close';
         closeBtn.innerHTML = '&times;';
@@ -39,22 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
             notification.addEventListener('animationend', () => notification.remove());
         };
         closeBtn.onclick = closeAction;
-
-        notification.prepend(closeBtn); // Adiciona o botão no início
+        notification.prepend(closeBtn);
         notificationArea.appendChild(notification);
-
         if (duration !== null) {
             setTimeout(closeAction, duration);
         }
-        
-        // Permite que o código externo adicione listeners ao botão de copiar, se existir
         return notification;
     };
 
-    /**
-     * Copia um texto para a área de transferência e mostra uma confirmação.
-     * @param {string} text - O texto a ser copiado.
-     */
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text).then(() => {
             showNotification('Link copiado!', { type: 'success', duration: 3000 });
@@ -64,11 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    /**
-     * Alterna o estado de carregamento de um botão.
-     * @param {HTMLButtonElement} button - O elemento do botão.
-     * @param {boolean} isLoading - True para mostrar o loading, false para esconder.
-     */
     const toggleButtonLoading = (button, isLoading) => {
         button.disabled = isLoading;
         const text = button.querySelector('.btn-text');
@@ -77,9 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loading.hidden = !isLoading;
     };
 
-    /**
-     * Reseta completamente o formulário e seus previews.
-     */
     const resetFormAndPreviews = () => {
         form.reset();
         document.querySelector('[data-js="preview-container"]')?.setAttribute('hidden', 'true');
@@ -91,48 +64,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica Principal ---
 
-    /**
-     * Exibe o estado de sucesso, mostrando o link e resetando o formulário.
-     * @param {object} result - O objeto de resultado da API.
-     */
     const displaySuccessState = (result) => {
         showNotification('Cartão criado com sucesso!', { type: 'success' });
-        
-        const viewLink = result.viewLink || `${window.location.origin}/card.html?id=${result.cardData.id}`;
-
-        // Cria uma notificação persistente com o link e um botão de copiar
+        const viewLink = result.viewLink || `${window.location.origin}/card.html?id=${result.id}`; // Ajustado para usar result.id
         const linkHtml = `
-            <span>Link para visualização: ${viewLink}</span>
-            <button class="btn-copy-link">Copiar</button>
+            <span>Link para visualização: <a href="${viewLink}" target="_blank">${viewLink}</a></span>
+            <button class="btn-copy-link" style="margin-left: 10px;">Copiar</button>
         `;
         const linkNotification = showNotification(linkHtml, { type: 'info', duration: null, isHtml: true });
-
-        // Adiciona o evento de clique ao botão "Copiar" recém-criado
         linkNotification.querySelector('.btn-copy-link').addEventListener('click', () => copyToClipboard(viewLink));
-
         resetFormAndPreviews();
     };
 
-    /**
-     * Manipula a submissão do formulário de criação de cartão.
-     * @param {Event} event - O evento de submissão.
-     */
     const handleFormSubmit = async (event) => {
         event.preventDefault();
         toggleButtonLoading(submitBtn, true);
 
+        const formData = new FormData(form);
+
+        // --- CÓDIGO DE DEBURAÇÃO ADICIONADO ---
+        console.log("--- Verificando os dados do FormData antes do envio ---");
+        for (const [key, value] of formData.entries()) {
+            if (value instanceof File) {
+                console.log(`Campo -> ${key}:`, `Arquivo -> ${value.name}`);
+            } else {
+                console.log(`Campo -> ${key}:`, `Valor -> "${value}"`);
+            }
+        }
+        console.log("----------------------------------------------------");
+        // --- FIM DO CÓDIGO DE DEBURAÇÃO ---
+
         try {
             const response = await fetch(`${API_URL}/cards`, {
                 method: 'POST',
-                body: new FormData(form),
+                body: formData,
             });
 
-            const result = await response.json();
-
+            // O `response.json()` vai falhar se a resposta for um erro 500 (HTML)
+            // Precisamos verificar o status antes de tentar fazer o parse
             if (!response.ok) {
-                const errorMessage = result.errors ? result.errors.map(e => e.msg).join(', ') : 'Falha ao criar o cartão.';
-                throw new Error(errorMessage);
+                const errorText = await response.text(); // Pega o corpo da resposta como texto
+                throw new Error(`O servidor respondeu com erro ${response.status}. Resposta: ${errorText}`);
             }
+
+            const result = await response.json();
 
             console.log('Cartão criado com sucesso:', result);
             displaySuccessState(result);
