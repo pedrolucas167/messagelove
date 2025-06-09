@@ -1,8 +1,6 @@
-// 1. IMPORTAR AS DEPENDÊNCIAS
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
-const { Card } = require('../models'); // Importa o modelo Card do Sequelize
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { Card } = require('../models');
 
-// 2. CONFIGURAR O CLIENTE S3 (fora das funções para ser reutilizado)
 const s3Client = new S3Client({
     region: process.env.AWS_BUCKET_REGION,
     credentials: {
@@ -11,137 +9,54 @@ const s3Client = new S3Client({
     }
 });
 
-// --- FUNÇÕES DO CONTROLLER ---
-
-/**
- * Cria um novo cartão, faz o upload da foto para o S3 e salva os dados no PostgreSQL.
- */
 const handleCreateCard = async (req, res) => {
-    const { nome, data, mensagem, youtubeVideoId } = req.body;
-    let fotoUrl = null;
+    // Adicionamos um try...catch aqui dentro para um erro mais detalhado
+    try {
+        console.log("--- CONTROLLER INICIADO ---");
+        console.log("req.body recebido:", req.body);
+        console.log("req.file recebido:", req.file ? req.file.originalname : "Nenhum arquivo");
 
-    // Se um arquivo de foto foi enviado, faça o upload para o S3 primeiro
-    if (req.file) {
-        const fileName = `messagelove/foto-${Date.now()}-${req.file.originalname}`;
-        const params = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: fileName,
-            Body: req.file.buffer,
-            ContentType: req.file.mimetype
-        };
-        const command = new PutObjectCommand(params);
-        await s3Client.send(command);
-        fotoUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;
-    }
+        const { nome, data, mensagem, youtubeVideoId } = req.body;
+        let fotoUrl = null;
 
-    // Agora, crie a entrada no banco de dados com a URL da foto (se houver)
-    const novoCartao = await Card.create({
-        nome,
-        data,
-        mensagem,
-        youtubeVideoId,
-        fotoUrl // Será a URL do S3 ou null
-    });
-
-    res.status(201).json(novoCartao);
-};
-
-/**
- * Busca um cartão específico pelo seu ID.
- */
-const handleGetCard = async (req, res) => {
-    const { id } = req.params;
-    const card = await Card.findByPk(id);
-
-    if (!card) {
-        return res.status(404).json({ message: 'Cartão não encontrado.' });
-    }
-
-    res.status(200).json(card);
-};
-
-/**
- * Lista todos os cartões. (Opcional, mas útil para gerenciamento)
- */
-const handleGetAllCards = async (req, res) => {
-    const cards = await Card.findAll({ order: [['createdAt', 'DESC']] });
-    res.status(200).json(cards);
-};
-
-/**
- * Atualiza um cartão. Se uma nova foto for enviada, apaga a antiga do S3.
- */
-const handleUpdateCard = async (req, res) => {
-    const { id } = req.params;
-    const card = await Card.findByPk(id);
-
-    if (!card) {
-        return res.status(404).json({ message: 'Cartão não encontrado.' });
-    }
-
-    let fotoUrl = card.fotoUrl; // Mantém a URL antiga por padrão
-
-    // Se uma nova foto foi enviada...
-    if (req.file) {
-        // ...primeiro, apague a foto antiga do S3, se ela existir.
-        if (card.fotoUrl) {
-            const oldKey = card.fotoUrl.split('.amazonaws.com/')[1];
-            const deleteCommand = new DeleteObjectCommand({
+        if (req.file) {
+            console.log("Iniciando upload para o S3...");
+            const fileName = `messagelove/foto-${Date.now()}-${req.file.originalname}`;
+            const params = {
                 Bucket: process.env.AWS_BUCKET_NAME,
-                Key: oldKey
-            });
-            await s3Client.send(deleteCommand);
+                Key: fileName,
+                Body: req.file.buffer,
+                ContentType: req.file.mimetype
+            };
+            const command = new PutObjectCommand(params);
+            await s3Client.send(command);
+
+            fotoUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;
+            console.log("Upload para o S3 concluído com sucesso. URL:", fotoUrl);
         }
 
-        // ...depois, faça o upload da nova foto.
-        const fileName = `messagelove/foto-${Date.now()}-${req.file.originalname}`;
-        const putCommand = new PutObjectCommand({
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: fileName,
-            Body: req.file.buffer,
-            ContentType: req.file.mimetype
+        console.log("Iniciando criação no banco de dados...");
+        const novoCartao = await Card.create({
+            nome,
+            data: data || null, // Garante que a data seja nula se vazia
+            mensagem,
+            youtubeVideoId,
+            fotoUrl
         });
-        await s3Client.send(putCommand);
-        fotoUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;
-    }
+        console.log("Registro criado no banco de dados com sucesso.");
 
-    // Atualiza os dados do cartão no banco de dados
-    const updatedCard = await card.update({ ...req.body, fotoUrl });
-    res.status(200).json(updatedCard);
+        res.status(201).json(novoCartao);
+
+    } catch (error) {
+        // Este log vai nos dar o erro exato do S3 ou do Sequelize
+        console.error("### ERRO DETALHADO NO CONTROLLER ###:", error);
+        res.status(500).send("Internal Server Error");
+    }
 };
 
-/**
- * Deleta um cartão e sua foto correspondente no S3.
- */
-const handleDeleteCard = async (req, res) => {
-    const { id } = req.params;
-    const card = await Card.findByPk(id);
+// ... suas outras funções de controller (handleGetCard, etc.) ...
 
-    if (!card) {
-        return res.status(404).json({ message: 'Cartão não encontrado.' });
-    }
-
-    // Se o cartão tiver uma foto, apague-a do S3 primeiro
-    if (card.fotoUrl) {
-        const key = card.fotoUrl.split('.amazonaws.com/')[1];
-        const command = new DeleteObjectCommand({
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: key,
-        });
-        await s3Client.send(command);
-    }
-
-    // Agora, apague o registro do cartão do banco de dados
-    await card.destroy();
-    res.status(204).send(); // 204 No Content - sucesso, mas sem corpo de resposta
-};
-
-
-// 3. EXPORTAR TODAS AS FUNÇÕES
 module.exports = {
     handleCreateCard,
-    handleGetCard,
-    handleGetAllCards,
-    handleUpdateCard,
-    handleDeleteCard
+    // ... exporte as outras funções aqui ...
 };
