@@ -1,67 +1,51 @@
-const { v4: uuidv4 } = require('uuid');
-const db = require('../config/database');
+// backend/services/cardService.js
 
-const createCard = (cardData) => {
-  return new Promise((resolve, reject) => {
-    const newCard = {
-      id: uuidv4(),
-      nome: cardData.nome,
-      data: cardData.data || null,
-      mensagem: cardData.mensagem,
-      youtubeVideoId: cardData.youtubeVideoId || null,
-      fotoUrl: cardData.fotoUrl || null,
-      createdAt: new Date().toISOString(),
-    };
-    const sql = `INSERT INTO cards (id, nome, data, mensagem, youtubeVideoId, fotoUrl, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const params = [newCard.id, newCard.nome, newCard.data, newCard.mensagem, newCard.youtubeVideoId, newCard.fotoUrl, newCard.createdAt];
-    db.run(sql, params, function (err) {
-      if (err) return reject(new Error('Failed to create card.'));
-      resolve(newCard);
-    });
+// 1. Importar o modelo 'Card' do Sequelize, e não a conexão antiga.
+const { Card } = require('../models');
+
+// As funções agora serão 'async' para usar o Sequelize de forma moderna.
+
+const createCard = async (cardData) => {
+  // O Sequelize lida com a criação do ID e do createdAt/updatedAt automaticamente.
+  const novoCartao = await Card.create({
+    nome: cardData.nome,
+    data: cardData.data || null,
+    mensagem: cardData.mensagem,
+    youtubeVideoId: cardData.youtubeVideoId || null,
+    fotoUrl: cardData.fotoUrl || null,
   });
+  return novoCartao;
 };
 
-const getCardById = (id) => {
-  return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM cards WHERE id = ?";
-    db.get(sql, [id], (err, row) => {
-      if (err) return reject(new Error('Failed to fetch card.'));
-      resolve(row);
-    });
-  });
+const getCardById = async (id) => {
+  const card = await Card.findByPk(id); // findByPk = "Find by Primary Key"
+  return card;
 };
 
-const getAllCards = () => {
-  return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM cards ORDER BY createdAt DESC";
-    db.all(sql, [], (err, rows) => {
-      if (err) return reject(new Error('Failed to fetch cards.'));
-      resolve(rows);
-    });
+const getAllCards = async () => {
+  const cards = await Card.findAll({
+    order: [['createdAt', 'DESC']] // Ordena pelos mais recentes
   });
+  return cards;
 };
 
-const updateCard = (id, cardData) => {
-  return new Promise((resolve, reject) => {
-    const { nome, data, mensagem, youtubeVideoId, fotoUrl } = cardData;
-    const sql = `UPDATE cards SET nome = ?, data = ?, mensagem = ?, youtubeVideoId = ?, fotoUrl = ? WHERE id = ?`;
-    const params = [nome, data, mensagem, youtubeVideoId, fotoUrl, id];
-    db.run(sql, params, function (err) {
-      if (err) return reject(new Error('Failed to update card.'));
-      if (this.changes === 0) return resolve(null);
-      resolve(getCardById(id));
-    });
-  });
+const updateCard = async (id, cardData) => {
+  const card = await Card.findByPk(id);
+  if (!card) {
+    return null; // Retorna nulo se o cartão não for encontrado
+  }
+  // O método 'update' do Sequelize altera apenas os campos fornecidos
+  const updatedCard = await card.update(cardData);
+  return updatedCard;
 };
 
-const deleteCard = (id) => {
-  return new Promise((resolve, reject) => {
-    const sql = 'DELETE FROM cards WHERE id = ?';
-    db.run(sql, [id], function (err) {
-      if (err) return reject(new Error('Failed to delete card.'));
-      resolve(this.changes > 0);
-    });
-  });
+const deleteCard = async (id) => {
+  const card = await Card.findByPk(id);
+  if (!card) {
+    return false; // Retorna falso se não havia nada para deletar
+  }
+  await card.destroy(); // Deleta a linha do banco de dados
+  return true; // Retorna verdadeiro para indicar sucesso
 };
 
 module.exports = {
