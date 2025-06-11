@@ -1,179 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-BR" dir="ltr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
-  <meta name="theme-color" content="#e91e63" />
-  <title>Messagelove - Crie Cartões Especiais Personalizados</title>
-  
-  <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  
-  <link rel="icon" href="coracao.png" type="image/png" />
-  <link rel="shortcut icon" href="coracao.png" type="image/png" />
-  
-
-  <link rel="stylesheet" href="style.css" />
-
-  <style>
-    .no-js-alert {
-      display: none; padding: var(--space-md, 1em); background-color: var(--color-error, #d9534f);
-      color: var(--color-white, #fff); text-align: center; border-radius: var(--radius-md, 4px);
-    }
-    .no-js .no-js-alert { display: block; }
-    .no-js .main-content { display: none; }
-
-    .btn {
-      padding: 0.75em 1.5em; border: 1px solid transparent; border-radius: var(--radius-md, 4px);
-      cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0.25em;
-    }
-    .btn--primary {
-      background-color: #e91e63; color: white;
-    }
-    .btn--primary:hover {
-      background-color: #c2185b;
-    }
-    .btn--secondary {
-      background-color: #6c757d; color: white;
-    }
-    .btn--secondary:hover {
-      background-color: #5a6268;
-    }
-    .btn--loading {
-      position: relative;
-    }
-    .btn--loading .btn-text {
-      visibility: hidden;
-    }
-    .btn--loading .btn-loading {
-      visibility: visible; position: absolute; left: 50%; transform: translateX(-50%);
-    }
-    .btn-spinner::before {
-      content: ''; display: inline-block; width: 16px; height: 16px;
-      border: 2px solid #fff; border-top-color: transparent; border-radius: 50%;
-      animation: spin 1s linear infinite; margin-right: 8px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .notification {
-      padding: 10px; margin: 10px 0; border-radius: var(--radius-md, 4px);
-      position: relative; animation: slideIn 0.5s ease-in;
-    }
-    .notification--success { background: #4caf50; color: white; }
-    .notification--error { background: #f44336; color: white; }
-    .notification--info { background: #2196f3; color: white; }
-    .notification--removing { animation: slideOut 0.5s ease-out forwards; }
-    .notification__close {
-      position: absolute; right: 10px; top: 10px; background: none;
-      border: none; color: white; font-size: 16px; cursor: pointer;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-      from { transform: translateY(0); opacity: 1; }
-      to { transform: translateY(-20px); opacity: 0; }
-    }
-
-    .preview-video-container {
-      margin-top: 15px;
-    }
-    .youtube-player-wrapper {
-      position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-      max-width: 100%; background: #000; margin-top: 15px;
-    }
-    .youtube-player-wrapper iframe {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      border: none;
-    }
-    .card-preview {
-      max-width: 600px; margin: 20px auto; padding: 20px; background: #fff;
-      border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    .card-preview-header {
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .close-preview-btn, .close-preview-btn-bottom {
-      cursor: pointer; background: #f44336; color: white; border: none;
-      padding: 5px 10px; border-radius: 4px;
-    }
-    .preview-link-info a {
-      color: #1a73e8; text-decoration: none;
-    }
-    .preview-link-info a:hover {
-      text-decoration: underline;
-    }
-    .preview-image-container img {
-      max-width: 100%; border-radius: 4px; margin-top: 15px;
-    }
-
-    .form-group {
-      margin-bottom: 1em;
-    }
-    .form-input, textarea, input[type="file"] {
-      width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: var(--radius-md, 4px);
-      font-size: 1em;
-    }
-    textarea {
-      resize: vertical; min-height: 100px;
-    }
-    .field-hint {
-      font-size: 0.85em; color: #666; display: block; margin-top: 0.25em;
-    }
-    .required-field::after {
-      content: '*'; color: #d9534f; margin-left: 0.25em;
-    }
-    .sr-only {
-      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-      overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
-    }
-    .preview-container {
-      margin-top: 0.5em;
-    }
-    .preview-container img {
-      max-width: 100%; border-radius: 4px;
-    }
-    .btn-remove {
-      background: #f44336; color: white; border: none; padding: 0.25em 0.5em;
-      border-radius: 4px; cursor: pointer; margin-top: 0.5em;
-    }
-    
-    /* Estilos para o player de YouTube */
-    .youtube-preview-container {
-      margin-top: 20px;
-      display: none;
-    }
-    .youtube-preview-container.active {
-      display: block;
-    }
-    .youtube-preview-actions {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
-    .youtube-preview-actions button {
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-    .youtube-error {
-      color: #f44336;
-      margin-top: 5px;
-      font-size: 14px;
-    }
-  </style>
-  
-  <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
-  <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://messagelove.app" />
-  <meta property="og:image" content="/assets/og-image.jpg" />
-  <meta property="og:locale" content="pt_BR" />
-</head>
 <body class="no-js">
   <div class="no-js-alert" role="alert">
     <p>Este site requer JavaScript para funcionar corretamente. Por favor, ative-o em suas configurações do navegador.</p>
@@ -188,181 +12,82 @@
 
   <main class="main-content" role="main">
     <div class="container">
-      <form id="cardForm" class="card-form" novalidate data-js="card-form">
+      <form id="cardForm" class="card-form" novalidate>
         <fieldset class="form-section">
           <legend class="section-title"><h2>Informações do Cartão</h2></legend>
           
           <div class="form-group">
-            <label for="nome" class="required-field">Nome do Destinatário<span class="sr-only">(obrigatório)</span></label>
-            <input type="text" id="nome" name="nome" required placeholder="Para quem é este cartão?" aria-required="true" data-js="nome-input" />
-            <small class="field-hint">Obrigatório</small>
+            <label for="de" class="required-field">De:</label>
+            <input type="text" id="de" name="de" required placeholder="Seu nome" aria-required="true" />
+          </div>
+          
+          <div class="form-group">
+            <label for="para" class="required-field">Para:</label>
+            <input type="text" id="para" name="para" required placeholder="Nome de quem vai receber" aria-required="true" />
           </div>
 
           <div class="form-group">
-            <label for="data">Data Especial</label>
-            <input type="date" id="data" name="data" aria-describedby="dataHelp" data-js="data-input" />
-            <small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
+            <label for="mensagem" class="required-field">Sua Mensagem:</label>
+            <textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem especial..."></textarea>
           </div>
 
-          <div class="form-group">
-            <label for="mensagem" class="required-field">Sua Mensagem<span class="sr-only">(obrigatório)</span></label>
-            <textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem especial..." aria-required="true" data-js="mensagem-input"></textarea>
-            <small class="field-hint">Obrigatório</small>
-          </div>
-
-          <div class="form-group file-upload" data-js="file-upload">
+          <div class="form-group file-upload">
             <label for="fotoUpload">Adicionar Foto (Opcional)</label>
-            <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" aria-describedby="fotoHelp" data-js="foto-input" />
-            <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
-            <div class="preview-container" hidden data-js="preview-container">
-              <img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada" data-js="foto-preview" />
-              <button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto selecionada" data-js="remove-foto">×</button>
+            <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" />
+            <small class="field-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
+            
+            <div id="fotoPreviewContainer" class="preview-container" hidden>
+              <img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada" />
+              <button type="button" class="btn-remove" id="removeFotoBtn" aria-label="Remover foto">Remover Foto</button>
             </div>
           </div>
 
-          <!-- Seção para adicionar URL do YouTube -->
           <div class="form-group">
             <label for="youtubeUrlInput">Link do YouTube (Opcional)</label>
             <div class="input-container" style="display: flex; gap: 10px;">
-              <input type="url" id="youtubeUrlInput" name="youtubeUrl" class="form-input" placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp" aria-required="false" />
+              <input type="url" id="youtubeUrlInput" class="form-input" placeholder="Cole o link do vídeo aqui" />
               <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary" style="white-space: nowrap;">Adicionar</button>
             </div>
-            <small id="youtubeUrlHelp" class="field-hint">Se desejar, adicione um vídeo do YouTube ao seu cartão.</small>
             <div id="youtubeError" class="youtube-error"></div>
           </div>
           
-          <!-- Container para pré-visualização do vídeo -->
-          <div id="youtubePreviewContainer" class="youtube-preview-container">
+          <div id="youtubePreviewContainer" class="youtube-preview-container" hidden>
             <div class="youtube-player-wrapper">
-              <iframe id="youtubePlayer" allowfullscreen></iframe>
+              <iframe id="youtubePlayer" allowfullscreen title="Player de vídeo do YouTube"></iframe>
             </div>
             <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
+             <button type="button" id="removeYoutubeBtn" class="btn-remove" style="margin-top: 10px;">Remover Vídeo</button>
           </div>
-          <!-- Fim da seção YouTube -->
 
           <div class="form-group form-actions">
-            <button type="submit" class="btn btn-submit btn--primary" id="submitBtn" data-js="submit-btn">
+            <button type="submit" class="btn btn-submit btn--primary" id="submitBtn">
               <span class="btn-text">Criar Cartão</span>
               <span class="btn-loading" aria-hidden="true" hidden>
                 <span class="btn-spinner" aria-hidden="true"></span> Processando...
               </span>
             </button>
-            <small class="form-note">Seu cartão será gerado e você receberá um link único para compartilhar.</small>
           </div>
         </fieldset>
       </form>
+      
+      <div id="appNotificationArea" style="margin-top: 20px;"></div>
+
     </div>
   </main>
 
   <footer class="main-footer" role="contentinfo">
     <div class="container">
       <p>
-        <span>Messagelove © <span id="currentYear" data-js="current-year">2025</span></span>
+        <span>Messagelove © <span id="currentYear"></span></span>
         <span>Feito com <span aria-label="coração">❤️</span> por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Pedro Marques</a></span>
       </p>
     </div>
   </footer>
 
-  <div id="appNotificationArea"></div>
-
   <script>
     document.body.classList.remove('no-js');
-    
-    // Função para extrair o ID do vídeo do YouTube
-    function extractYouTubeId(url) {
-      if (!url) return null;
-      
-      const patterns = [
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
-        /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/,
-        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^?]+)/
-      ];
-      
-      for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match && match[1]) {
-          return match[1].split('&')[0];
-        }
-      }
-      
-      return null;
-    }
-
-    // Função para validar e mostrar o player do YouTube
-    function handleYouTubeUrl() {
-      const urlInput = document.getElementById('youtubeUrlInput');
-      const errorElement = document.getElementById('youtubeError');
-      const previewContainer = document.getElementById('youtubePreviewContainer');
-      const playerIframe = document.getElementById('youtubePlayer');
-      const videoIdInput = document.getElementById('youtubeVideoId');
-      
-      const url = urlInput.value.trim();
-      const videoId = extractYouTubeId(url);
-      
-      if (videoId) {
-        errorElement.textContent = '';
-        playerIframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
-        videoIdInput.value = videoId;
-        previewContainer.classList.add('active');
-      } else {
-        errorElement.textContent = 'Por favor, insira um link válido do YouTube.';
-        previewContainer.classList.remove('active');
-        videoIdInput.value = '';
-      }
-    }
-
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-      // Atualizar ano no footer
-      document.getElementById('currentYear').textContent = new Date().getFullYear();
-      
-      // Botão para adicionar URL do YouTube
-      document.getElementById('addYoutubeUrlBtn').addEventListener('click', handleYouTubeUrl);
-      
-      // Permitir que o Enter também dispare a validação do YouTube
-      document.getElementById('youtubeUrlInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleYouTubeUrl();
-        }
-      });
-      
-      // Upload de foto
-      const fotoUpload = document.getElementById('fotoUpload');
-      const fotoPreview = document.getElementById('fotoPreview');
-      const previewContainer = document.querySelector('[data-js="preview-container"]');
-      const removeFotoBtn = document.getElementById('removeFoto');
-      
-      if (fotoUpload) {
-        fotoUpload.addEventListener('change', function(e) {
-          const file = e.target.files[0];
-          if (file) {
-            if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
-              alert('Por favor, selecione uma imagem válida (máx. 5MB).');
-              e.target.value = '';
-              return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              fotoPreview.src = e.target.result;
-              previewContainer.hidden = false;
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-      }
-      
-      if (removeFotoBtn) {
-        removeFotoBtn.addEventListener('click', function() {
-          fotoUpload.value = '';
-          previewContainer.hidden = true;
-        });
-      }
-    });
+    document.querySelector('.main-content').style.display = 'block';
   </script>
-    <script src="script.js" defer></script>
+  
+  <script src="script.js" defer></script>
 </body>
-</html>
