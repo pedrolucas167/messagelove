@@ -144,16 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // =========================================================================
-    // --- 7. INICIALIZAÇÃO ---
-    // =========================================================================
-    // Executa códigos que precisam rodar assim que o script é carregado,
-    // como definir o ano atual no rodapé.
     
     if (currentYearSpan) {
         currentYearSpan.textContent = new Date().getFullYear();
     }
 
-    // (As implementações das funções foram omitidas com '/* ... */' para focar na estrutura,
-    // mas devem ser mantidas como na versão anterior do seu código).
+
 });
