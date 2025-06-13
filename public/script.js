@@ -2,7 +2,7 @@
  * @file script.js
  * @description Script principal para a criação e manipulação de cartões personalizados no Messagelove.
  * @author Pedro Marques
- * @version 2.1.2
+ * @version 2.1.3
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = IS_LOCAL 
         ? 'http://localhost:3001/api' 
-        : 'https://messagelove-backend.onrender.com/api'; // Corrigido: removido /cards
+        : 'https://messagelove-backend.onrender.com/api';
     console.log(`API_URL: ${API_URL}`);
 
     // Verifica se a API_URL é válida
@@ -171,10 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData,
             });
             let result;
-            try {
+            if (response.headers.get('content-type')?.includes('application/json')) {
                 result = await response.json();
-            } catch (jsonError) {
-                console.error('Resposta não é JSON:', await response.text());
+            } else {
+                const text = await response.text();
+                console.error('Resposta não é JSON:', text);
                 throw new Error(`Resposta inválida do servidor: ${response.status} ${response.statusText}`);
             }
             if (!response.ok) {
