@@ -2,7 +2,7 @@
  * @file script.js
  * @description Script principal para a criação e manipulação de cartões personalizados no Messagelove.
  * @author Pedro Marques
- * @version 2.1.0
+ * @version 2.1.2
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,24 +10,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = IS_LOCAL 
         ? 'http://localhost:3001/api' 
-        : 'https://messagelove-backend.onrender.com/api/cards';
-    console.log(`API URL: ${API_URL}`);
-    // Verifica se o script está sendo executado no ambiente correto
+        : 'https://messagelove-backend.onrender.com/api'; // Corrigido: removido /cards
+    console.log(`API_URL: ${API_URL}`);
+
+    // Verifica se a API_URL é válida
     if (!API_URL.startsWith('http')) {
-        console.error('API URL inválida:', API_URL);
+        console.error('API_URL inválida:', API_URL);
+        showNotification('Erro: Configuração de API inválida.', { type: 'error' });
         return;
     }
+
     // Verifica se a API está acessível
-    fetch(API_URL)
+    fetch(`${API_URL}/`, { method: 'GET' })
         .then(response => {
             if (!response.ok) {
-                throw new Error(`Erro ao acessar a API: ${response.statusText}`);
+                throw new Error(`Erro ao acessar a API: ${response.status} ${response.statusText}`);
             }
+            console.log('API acessível');
         })
         .catch(error => {
             console.error('Erro ao verificar a API:', error);
-            alert('Não foi possível acessar a API. Verifique sua conexão ou tente novamente mais tarde.');
-        });     
+            showNotification('Não foi possível acessar a API. Verifique sua conexão ou tente novamente mais tarde.', { type: 'error' });
+        });
 
     // Seleção de Elementos do DOM
     const elements = {
@@ -156,17 +160,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Lógica Principal
     const handleFormSubmit = async (event) => {
         event.preventDefault();
-        console.log('Enviando formulário...');
+        const url = `${API_URL}/cards`;
+        console.log('URL da requisição:', url);
+        console.log('Enviando formulário:', [...new FormData(elements.form).entries()]);
         toggleButtonLoading(true);
         try {
             const formData = new FormData(elements.form);
-            const response = await fetch(`${API_URL}/cards`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 body: formData,
             });
-            const result = await response.json();
+            let result;
+            try {
+                result = await response.json();
+            } catch (jsonError) {
+                console.error('Resposta não é JSON:', await response.text());
+                throw new Error(`Resposta inválida do servidor: ${response.status} ${response.statusText}`);
+            }
             if (!response.ok) {
-                throw new Error(result.error || `Erro na API: ${response.statusText}`);
+                throw new Error(result.error || result.errors?.join(', ') || `Erro na API: ${response.status} ${response.statusText}`);
             }
             displaySuccessState(result);
             showNotification('Cartão criado com sucesso!', { type: 'success' });
