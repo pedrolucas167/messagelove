@@ -3,9 +3,8 @@ const router = express.Router();
 const cardController = require('../controllers/cardController');
 const asyncHandler = require('../middleware/asyncHandler');
 const upload = require('../middleware/uploadMiddleware');
-const cardCreationValidators = require('../middleware/validators');
+const { cardCreationValidators, cardIdValidator } = require('../middleware/validators');
 
-// Log para depuração
 console.log('Configurando rotas de cartões...');
 
 router.get('/', asyncHandler(cardController.handleGetAllCards));
