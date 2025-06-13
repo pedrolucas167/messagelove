@@ -10,7 +10,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = IS_LOCAL 
         ? 'http://localhost:3001/api' 
-        : 'https://messagelove-backend.onrender.com/api';
+        : 'https://messagelove-backend.onrender.com/api/cards';
+    console.log(`API URL: ${API_URL}`);
+    // Verifica se o script está sendo executado no ambiente correto
+    if (!API_URL.startsWith('http')) {
+        console.error('API URL inválida:', API_URL);
+        return;
+    }
+    // Verifica se a API está acessível
+    fetch(API_URL)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ao acessar a API: ${response.statusText}`);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao verificar a API:', error);
+            alert('Não foi possível acessar a API. Verifique sua conexão ou tente novamente mais tarde.');
+        });     
 
     // Seleção de Elementos do DOM
     const elements = {
