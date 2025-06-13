@@ -2,7 +2,7 @@
  * @file script.js
  * @description Script principal para a criação e manipulação de cartões personalizados no Messagelove.
  * @author Pedro Marques
- * @version 2.1.3
+ * @version 2.1.4
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -60,6 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Botão #submitBtn não encontrado.');
         return;
     }
+    if (!elements.fotoPreviewContainer) {
+        console.error('Elemento #fotoPreviewContainer não encontrado.');
+    }
 
     // Funções Auxiliares
     const showNotification = (content, { type = 'info', duration = 5000 } = {}) => {
@@ -96,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const resetFormAndPreviews = () => {
         elements.form.reset();
-        elements.fotoPreviewContainer.hidden = true;
-        elements.youtubePreviewContainer.classList.remove('active');
+        if (elements.fotoPreviewContainer) elements.fotoPreviewContainer.hidden = true;
+        if (elements.youtubePreviewContainer) elements.youtubePreviewContainer.classList.remove('active');
         elements.youtubeVideoId.value = '';
         elements.youtubePlayer.src = '';
     };
@@ -126,10 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.youtubeError.textContent = '';
             elements.youtubePlayer.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
             elements.youtubeVideoId.value = videoId;
-            elements.youtubePreviewContainer.classList.add('active');
+            if (elements.youtubePreviewContainer) elements.youtubePreviewContainer.classList.add('active');
         } else {
             elements.youtubeError.textContent = 'Link do YouTube inválido.';
-            elements.youtubePreviewContainer.classList.remove('active');
+            if (elements.youtubePreviewContainer) elements.youtubePreviewContainer.classList.remove('active');
             elements.youtubeVideoId.value = '';
         }
     };
@@ -144,15 +147,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const reader = new FileReader();
             reader.onload = (e) => {
-                elements.fotoPreview.src = e.target.result;
-                elements.fotoPreviewContainer.hidden = false;
+                if (elements.fotoPreview) elements.fotoPreview.src = e.target.result;
+                if (elements.fotoPreviewContainer) elements.fotoPreviewContainer.hidden = false;
+                else console.warn('Não foi possível exibir a prévia da foto: #fotoPreviewContainer não encontrado.');
             };
             reader.readAsDataURL(file);
         }
     };
 
     const displaySuccessState = (result) => {
-        const cardUrl = `${window.location.origin}/card/${result.id}`;
+        const cardUrl = `${window.location.origin}/card?id=${result.id}`; // Ajustado para query string
         showNotification(`Cartão criado! Link: ${cardUrl}`, { type: 'success', duration: 10000 });
         copyToClipboard(cardUrl);
     };
@@ -203,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.fotoUpload?.addEventListener('change', handleFotoUpload);
     elements.removeFotoBtn?.addEventListener('click', () => {
         elements.fotoUpload.value = '';
-        elements.fotoPreviewContainer.hidden = true;
+        if (elements.fotoPreviewContainer) elements.fotoPreviewContainer.hidden = true;
     });
 
     elements.currentYearSpan && (elements.currentYearSpan.textContent = new Date().getFullYear());
