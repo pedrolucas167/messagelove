@@ -1,8 +1,8 @@
 /**
  * @file card.js
- * @description Script para carregar e exibir um cartão personalizado com efeitos visuais e sonoros.
+ * @description Script para carregar e exibir um cartão personalizado usando um gerenciador de estado.
  * @author Pedro Marques
- * @version 3.0.1
+ * @version 4.0.0
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,21 +13,23 @@ document.addEventListener('DOMContentLoaded', () => {
         : 'https://messagelove-backend.onrender.com/api';
 
     const ELEMENTS = {
-        loadingState: document.getElementById('loading-state'),
-        errorState: document.getElementById('error-state'),
-        cardView: document.getElementById('card-view'),
+        // O novo container principal que gerencia os estados
+        stateManager: document.getElementById('card-state-manager'),
+        
+        // Elementos dentro do cartão
         nome: document.getElementById('card-nome'),
         data: document.getElementById('card-data'),
         mensagem: document.getElementById('card-mensagem'),
         fotoContainer: document.getElementById('card-foto-container'),
         videoContainer: document.getElementById('card-video-container'),
-        errorText: document.getElementById('error-text'),
         likeBtn: document.getElementById('likeBtn'),
+        
+        // Elemento para a mensagem de erro
+        errorText: document.getElementById('error-text'),
     };
 
     // --- 2. EFEITOS ESPECIAIS (ÁUDIO E ANIMAÇÕES) ---
 
-    // Prepara o sintetizador de áudio para um efeito sonoro mágico
     const synth = window.Tone ? new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine' },
         envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
@@ -35,24 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const playSoundEffect = () => {
         if (!synth) return;
-        // Garante que o contexto de áudio seja iniciado por um gesto do usuário
         if (Tone.context.state !== 'running') {
             Tone.context.resume();
         }
         const now = Tone.now();
         synth.triggerAttackRelease(['C5', 'E5', 'G5'], '8n', now);
-        synth.triggerAttackRelease(['E5', 'G5', 'B5'], '8n', now + 0.2);
     };
 
     const triggerEmojiRain = () => {
-        if (document.querySelector('.emoji-rain-container')) return; // Evita múltiplas chuvas
+        if (document.querySelector('.emoji-rain-container')) return;
         const container = document.createElement('div');
         container.className = 'emoji-rain-container';
-        
-        // --- CORREÇÃO APLICADA AQUI ---
-        // Força o contêiner de emojis a aparecer na frente de outros elementos.
-        container.style.zIndex = '999';
-
         document.body.appendChild(container);
         
         const emojis = ['❤️', '💖', '✨', '🎉', '💕', '⭐', '🥰'];
@@ -68,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         setTimeout(() => container.remove(), 10000);
     };
-    
+
     // --- 3. LÓGICA DA API ---
 
     const fetchCardData = async (id) => {
@@ -95,14 +90,17 @@ document.addEventListener('DOMContentLoaded', () => {
         ELEMENTS.nome.textContent = card.para || 'Pessoa Especial';
         ELEMENTS.mensagem.textContent = card.mensagem || 'Uma mensagem especial para você.';
 
+        // Limpa os containers antes de adicionar novo conteúdo
+        ELEMENTS.data.textContent = '';
+        ELEMENTS.fotoContainer.innerHTML = '';
+        ELEMENTS.videoContainer.innerHTML = '';
+
         if (card.data) {
             ELEMENTS.data.textContent = formatSpecialDate(card.data);
-            ELEMENTS.data.hidden = false;
         }
 
         if (card.fotoUrl) {
             ELEMENTS.fotoContainer.innerHTML = `<img src="${card.fotoUrl}" alt="Foto para ${card.para}" class="card-image">`;
-            ELEMENTS.fotoContainer.hidden = false;
         }
 
         if (card.youtubeVideoId) {
@@ -113,16 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <iframe src="${videoSrc}" title="Vídeo do YouTube" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
                 </div>`;
-            ELEMENTS.videoContainer.hidden = false;
         }
-
-        // Revela o cartão com animação
-        ELEMENTS.cardView.classList.remove('hidden');
-        setTimeout(() => {
-            ELEMENTS.cardView.classList.add('visible');
-            playSoundEffect();
-            triggerEmojiRain();
-        }, 100); // Pequeno delay para garantir a transição
     };
 
     // --- 5. FUNÇÃO PRINCIPAL (INICIALIZAÇÃO) ---
@@ -137,13 +126,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const cardData = await fetchCardData(cardId);
             renderCardContent(cardData);
 
+            // Muda o estado para exibir o cartão e os efeitos
+            ELEMENTS.stateManager.dataset.state = 'card-content';
+            playSoundEffect();
+            triggerEmojiRain();
+
         } catch (error) {
             console.error('Não foi possível carregar o cartão:', error);
             if (ELEMENTS.errorText) ELEMENTS.errorText.textContent = error.message;
-            ELEMENTS.errorState.classList.remove('hidden');
-            ELEMENTS.errorState.classList.add('visible');
-        } finally {
-            ELEMENTS.loadingState.classList.add('hidden');
+            // Muda o estado para exibir a mensagem de erro
+            ELEMENTS.stateManager.dataset.state = 'error';
         }
     };
 
@@ -152,9 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ELEMENTS.likeBtn?.addEventListener('click', (e) => {
         const btn = e.currentTarget;
         btn.classList.toggle('liked');
-        playSoundEffect(); // Toca o som de novo ao curtir
+        playSoundEffect();
         if (btn.classList.contains('liked')) {
-            triggerEmojiRain(); // Lança mais emojis ao curtir
+            triggerEmojiRain();
         }
     });
 
