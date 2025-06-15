@@ -2,7 +2,7 @@
  * @file card.js
  * @description Script para carregar e exibir um cartão personalizado com efeitos visuais e sonoros.
  * @author Pedro Marques
- * @version 3.0.0
+ * @version 3.0.1
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.querySelector('.emoji-rain-container')) return; // Evita múltiplas chuvas
         const container = document.createElement('div');
         container.className = 'emoji-rain-container';
+        
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Força o contêiner de emojis a aparecer na frente de outros elementos.
+        container.style.zIndex = '999';
+
         document.body.appendChild(container);
         
         const emojis = ['❤️', '💖', '✨', '🎉', '💕', '⭐', '🥰'];
