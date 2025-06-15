@@ -2,7 +2,7 @@
  * @file script.js
  * @description Script principal para o Messagelove.
  * @author Pedro Marques
- * @version 3.0.0
+ * @version 3.0.1
  */
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. CONFIGURAÇÕES ---
@@ -73,7 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const videoId = extractYouTubeId(url);
         elements.youtube.error.textContent = '';
         if (videoId) {
-            elements.youtube.player.src = `https://www.youtube.com/embed/$${videoId}?rel=0`;
+            // CORRIGIDO: Sintaxe do template literal
+            elements.youtube.player.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
             elements.youtube.videoIdInput.value = videoId;
             elements.youtube.previewContainer.classList.add('active');
         } else if (url) {
