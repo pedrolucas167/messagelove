@@ -1,22 +1,27 @@
-// Arquivo: models/index.js
+// Arquivo: models/index.js (Versão Refatorada)
 
 'use strict';
 
 const { Sequelize, DataTypes } = require('sequelize');
-const path = require('path'); // Adicionado para lidar com caminhos de arquivo
-const process = require('process');
-const env = process.env.NODE_ENV || 'development';
 
-// CORRIGIDO: Usa path.join para encontrar o config.json de forma segura
-const configPath = path.join(__dirname, '..', 'config', 'config.json');
-const config = require(configPath)[env];
-
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+// Pega a URL do banco de dados das variáveis de ambiente
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error("A variável de ambiente DATABASE_URL não foi definida.");
 }
+
+// Cria a instância do Sequelize diretamente da DATABASE_URL,
+// que é a prática recomendada para ambientes como a Render.
+const sequelize = new Sequelize(databaseUrl, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false // Necessário para a Render
+        }
+    }
+});
 
 const db = {};
 
