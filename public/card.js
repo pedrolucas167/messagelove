@@ -1,8 +1,8 @@
 /**
  * @file card.js
- * @description Script para carregar e exibir um cartão personalizado usando um gerenciador de estado.
+ * @description Script para carregar e exibir um cartão personalizado com efeitos visuais e sonoros.
  * @author Pedro Marques
- * @version 4.0.0
+ * @version 4.1.0
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,23 +13,19 @@ document.addEventListener('DOMContentLoaded', () => {
         : 'https://messagelove-backend.onrender.com/api';
 
     const ELEMENTS = {
-        // O novo container principal que gerencia os estados
         stateManager: document.getElementById('card-state-manager'),
-        
-        // Elementos dentro do cartão
         nome: document.getElementById('card-nome'),
         data: document.getElementById('card-data'),
         mensagem: document.getElementById('card-mensagem'),
         fotoContainer: document.getElementById('card-foto-container'),
         videoContainer: document.getElementById('card-video-container'),
         likeBtn: document.getElementById('likeBtn'),
-        
-        // Elemento para a mensagem de erro
         errorText: document.getElementById('error-text'),
     };
 
     // --- 2. EFEITOS ESPECIAIS (ÁUDIO E ANIMAÇÕES) ---
 
+    // Inicializa o sintetizador de áudio, se a biblioteca Tone.js estiver disponível.
     const synth = window.Tone ? new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine' },
         envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
@@ -37,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const playSoundEffect = () => {
         if (!synth) return;
+        // Garante que o contexto de áudio seja iniciado por um gesto do usuário.
         if (Tone.context.state !== 'running') {
             Tone.context.resume();
         }
@@ -45,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const triggerEmojiRain = () => {
+        // Evita criar múltiplas "chuvas" de emojis ao mesmo tempo.
         if (document.querySelector('.emoji-rain-container')) return;
+        
         const container = document.createElement('div');
         container.className = 'emoji-rain-container';
         document.body.appendChild(container);
@@ -61,9 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
             emojiEl.style.animationDelay = `${Math.random() * 5}s`;
             container.appendChild(emojiEl);
         }
+        // Limpa o container da chuva de emojis após a animação para manter a performance.
         setTimeout(() => container.remove(), 10000);
     };
-
+    
     // --- 3. LÓGICA DA API ---
 
     const fetchCardData = async (id) => {
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formatSpecialDate = (dateString) => {
         if (!dateString) return '';
-        const date = new Date(`${dateString}T00:00:00`);
+        const date = new Date(`${dateString}T00:00:00`); // Evita problemas de fuso horário.
         return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
     };
 
@@ -89,11 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.title = `Uma mensagem para ${card.para || 'Você'}`;
         ELEMENTS.nome.textContent = card.para || 'Pessoa Especial';
         ELEMENTS.mensagem.textContent = card.mensagem || 'Uma mensagem especial para você.';
-
-        // Limpa os containers antes de adicionar novo conteúdo
-        ELEMENTS.data.textContent = '';
-        ELEMENTS.fotoContainer.innerHTML = '';
-        ELEMENTS.videoContainer.innerHTML = '';
 
         if (card.data) {
             ELEMENTS.data.textContent = formatSpecialDate(card.data);
@@ -117,6 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 5. FUNÇÃO PRINCIPAL (INICIALIZAÇÃO) ---
 
     const main = async () => {
+        // Garante que o gerenciador de estado exista antes de continuar.
+        if (!ELEMENTS.stateManager) {
+            console.error("Elemento #card-state-manager não encontrado. A página não pode ser carregada.");
+            return;
+        }
+
         try {
             const cardId = new URLSearchParams(window.location.search).get('id');
             if (!cardId) {
@@ -126,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cardData = await fetchCardData(cardId);
             renderCardContent(cardData);
 
-            // Muda o estado para exibir o cartão e os efeitos
+            // Muda o estado para exibir o cartão e os efeitos.
             ELEMENTS.stateManager.dataset.state = 'card-content';
             playSoundEffect();
             triggerEmojiRain();
@@ -134,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Não foi possível carregar o cartão:', error);
             if (ELEMENTS.errorText) ELEMENTS.errorText.textContent = error.message;
-            // Muda o estado para exibir a mensagem de erro
+            // Muda o estado para exibir a mensagem de erro.
             ELEMENTS.stateManager.dataset.state = 'error';
         }
     };
@@ -144,12 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ELEMENTS.likeBtn?.addEventListener('click', (e) => {
         const btn = e.currentTarget;
         btn.classList.toggle('liked');
-        playSoundEffect();
+        playSoundEffect(); // Toca o som de novo ao curtir.
         if (btn.classList.contains('liked')) {
-            triggerEmojiRain();
+            triggerEmojiRain(); // Lança mais emojis ao curtir.
         }
     });
 
-    // Inicia a aplicação
+    // Inicia a aplicação.
     main();
 });
