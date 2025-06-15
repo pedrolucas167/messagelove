@@ -3,16 +3,19 @@
 'use strict';
 const { Model } = require('sequelize');
 
+// A função recebe 'sequelize' e 'DataTypes' como argumentos
 module.exports = (sequelize, DataTypes) => {
-  class Card extends Model {}
+  class Card extends Model {
+    static associate(models) {
+      // Defina associações aqui, se houver.
+    }
+  }
   Card.init({
     id: {
       type: DataTypes.STRING,
       primaryKey: true,
       allowNull: false,
     },
-    // ---- VERIFICAÇÃO CRÍTICA ----
-    // Garanta que os campos abaixo substituíram o campo 'nome'.
     de: {
       type: DataTypes.STRING,
       allowNull: false
@@ -21,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    // ----------------------------
     mensagem: {
       type: DataTypes.TEXT,
       allowNull: false
