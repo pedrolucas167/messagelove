@@ -1,4 +1,12 @@
 require('dotenv').config();
+
+// ----- INÍCIO DO TESTE DE DEPURACAO -----
+console.log("--- INICIANDO TESTE ---");
+console.log("Porta lida do .env:", process.env.PORT);
+console.log("URL do Banco de Dados lida do .env:", process.env.DATABASE_URL);
+console.log("--- FIM DO TESTE ---");
+// ----- FIM DO TESTE DE DEPURACAO -----
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
