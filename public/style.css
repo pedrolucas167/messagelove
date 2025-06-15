@@ -1,8 +1,8 @@
 /* ---
  * Messagelove - Stylesheet Principal
- * Versão: 5.0.0
- * Descrição: CSS refatorado com foco na visualização do cartão,
- * usando o novo design system.
+ * Versão: 6.0.0
+ * Descrição: CSS unificado, incluindo design system, layout,
+ * componentes e todas as animações da aplicação.
  * --- */
 
 /* --- 1. IMPORTAÇÃO E VARIÁVEIS GLOBAIS (ROOT) --- */
@@ -22,7 +22,7 @@
   --color-border: hsl(240, 10%, 90%);
   --color-error: hsl(0, 70%, 55%);
   --color-success: hsl(120, 60%, 45%);
-  
+
   /* Espaçamento */
   --space-xs: 0.5rem;
   --space-sm: 1rem;
@@ -250,6 +250,9 @@ textarea {
   backdrop-filter: blur(4px);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
+  display: flex; /* Adicionado para centralizar */
+  align-items: center; /* Adicionado para centralizar */
+  justify-content: center; /* Adicionado para centralizar */
 }
 .btn-remove:hover {
   background-color: var(--color-error);
@@ -272,10 +275,6 @@ textarea {
   border-top-color: transparent;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* --- 6. PREVIEWS E NOTIFICAÇÕES --- */
@@ -376,7 +375,7 @@ textarea {
   color: var(--color-success);
 }
 
-/* --- 7. PÁGINA DE VISUALIZAÇÃO DO CARTÃO (Refatorada) --- */
+/* --- 7. PÁGINA DE VISUALIZAÇÃO DO CARTÃO --- */
 
 #card-view-page {
   background: linear-gradient(160deg, hsl(330, 80%, 98%), hsl(255, 100%, 98%));
@@ -422,8 +421,105 @@ textarea {
   box-shadow: var(--shadow-md);
 }
 
-/* --- 8. UTILITÁRIOS --- */
+/* --- 8. ANIMAÇÕES E ESTADOS ESPECIAIS --- */
 
+/* Loader */
+.loader-wrapper {
+  text-align: center;
+  padding: 50px;
+  color: var(--color-muted);
+}
+.loader {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 5px solid hsla(330, 70%, 60%, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Controle de Estado da Visualização */
+#card-state-manager .card-state {
+  display: none;
+}
+#card-state-manager[data-state="loading"] [data-view="loading"],
+#card-state-manager[data-state="error"] [data-view="error"] {
+  display: block;
+}
+#card-state-manager[data-state="card-content"] [data-view="card-content"] {
+  display: block;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.error-box {
+  text-align: center;
+}
+
+/* Botão de Coração Interativo */
+.card-actions {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.like-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #e0e0e0; /* Cinza claro inicial */
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.like-button svg {
+  width: 50px;
+  height: 50px;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+}
+.like-button:hover {
+  color: #ff8fab; /* Rosa claro no hover */
+}
+.like-button.liked {
+  color: #f43f5e; /* Vermelho/rosa forte quando clicado */
+  animation: pulse 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* Chuva de Emojis */
+.emoji-rain-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 999; /* Garante que fique na frente */
+  pointer-events: none;
+}
+.emoji {
+  position: absolute;
+  top: -10%;
+  user-select: none;
+  animation: fall linear forwards;
+  opacity: 0.7;
+}
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* --- 9. UTILITÁRIOS --- */
 .sr-only {
   position: absolute;
   width: 1px;
