@@ -1,17 +1,15 @@
-// frontend/script.js
-
 /**
  * @file script.js
  * @description Script principal para o Messagelove.
  * @author Pedro Marques
- * @version 4.0.0
+ * @version 4.0.1
  */
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURAÇÕES ---
     const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3001/api'
-        : 'https://messagelove-backend.onrender.com';
+        : 'https://messagelove-backend.onrender.com/api'; // CORRIGIDO: Adicionado /api
 
     // --- 2. SELEÇÃO DE ELEMENTOS DO DOM ---
     const elements = {
@@ -126,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!formData.get('de')?.trim() || !formData.get('para')?.trim() || !formData.get('mensagem')?.trim()) {
                 throw new Error('Por favor, preencha os campos obrigatórios.');
             }
+            // A chamada agora estará correta: https://.../api/cards
             const response = await fetch(`${API_URL}/cards`, { method: 'POST', body: formData });
             const result = await response.json().catch(() => ({ message: 'A resposta do servidor não é um JSON válido.' }));
 
