@@ -1,13 +1,11 @@
 /* ---
  * Messagelove - Stylesheet Principal
- * Versão: 4.0.0
- * Descrição: CSS unificado com base no novo design system,
- * incluindo reset, variáveis, componentes e layout.
-
+ * Versão: 5.0.0
+ * Descrição: CSS refatorado com foco na visualização do cartão,
+ * usando o novo design system.
  * --- */
 
 /* --- 1. IMPORTAÇÃO E VARIÁVEIS GLOBAIS (ROOT) --- */
-
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
@@ -16,32 +14,31 @@
   --color-primary: hsl(330, 70%, 60%);
   --color-primary-dark: hsl(313, 60%, 45%);
   --color-secondary: hsl(255, 80%, 75%);
-  --color-bg: hsl(210, 20%, 98%);
-
+  --color-bg: hsl(210, 30%, 98%);
   --color-surface: hsl(0, 0%, 100%);
   --color-text: hsl(240, 5%, 20%);
   --color-muted: hsl(240, 3%, 45%);
-  --color-light: hsl(240, 10%, 93%);
-  --color-border: hsl(240, 5%, 85%);
+  --color-light: hsl(240, 20%, 96%);
+  --color-border: hsl(240, 10%, 90%);
   --color-error: hsl(0, 70%, 55%);
-
   --color-success: hsl(120, 60%, 45%);
-
+  
   /* Espaçamento */
-  --space-xs: 0.5rem;  /* 8px */
-  --space-sm: 1rem;    /* 16px */
-  --space-md: 1.5rem;  /* 24px */
-  --space-lg: 2rem;    /* 32px */
-  --space-xl: 3rem;    /* 48px */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
 
   /* Transições e Bordas */
   --transition-base: 250ms cubic-bezier(0.25, 0.8, 0.25, 1);
-  --radius-md: 0.75rem;   /* 12px */
-  --radius-lg: 1rem;      /* 16px */
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
   --radius-pill: 9999px;
 
   /* Sombras */
-  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.07);
   --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
   --shadow-focus: 0 0 0 4px hsla(330, 70%, 60%, 0.25);
@@ -57,7 +54,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--color-text);
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
@@ -75,11 +72,11 @@ button, input, select, textarea {
   border: none;
 }
 
-/* --- 3. ESTRUTURA DO LAYOUT --- */
+/* --- 3. ESTRUTURA E LAYOUT --- */
 
 .container {
   width: 100%;
-  max-width: min(800px, 90vw);
+  max-width: min(800px, 92vw);
   margin-inline: auto;
 }
 
@@ -93,11 +90,7 @@ button, input, select, textarea {
 .main-header h1 {
   color: inherit;
   font-size: clamp(2rem, 6vw, 2.8rem);
-}
-
-.main-header p {
-  opacity: 0.9;
-  font-size: clamp(1rem, 3vw, 1.2rem);
+  letter-spacing: -0.02em;
 }
 
 .main-content {
@@ -113,15 +106,19 @@ button, input, select, textarea {
 }
 
 .main-footer a {
-    color: var(--color-primary);
-    font-weight: 600;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.main-footer a:hover {
+  text-decoration: underline;
 }
 
 /* --- 4. FORMULÁRIO --- */
 
 #cardForm {
   background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: clamp(var(--space-md), 5vw, var(--space-xl));
   box-shadow: var(--shadow-md);
 }
@@ -152,13 +149,14 @@ input[type="text"], input[type="url"], textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-light);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition: all var(--transition-base);
 }
 
 input[type="text"]:focus, input[type="url"]:focus, textarea:focus {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
   outline: none;
+  background-color: var(--color-surface);
 }
 
 input[type="file"] {
@@ -174,8 +172,8 @@ input[type="file"] {
 }
 
 input[type="file"]:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 textarea {
@@ -189,7 +187,8 @@ textarea {
 }
 
 .form-actions {
-    text-align: center;
+  text-align: center;
+  margin-top: var(--space-lg);
 }
 
 /* --- 5. BOTÕES --- */
@@ -204,6 +203,7 @@ textarea {
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-base);
+  border: 1px solid transparent;
 }
 
 .btn-primary {
@@ -218,76 +218,87 @@ textarea {
 }
 
 .btn-secondary {
-    background-color: var(--color-muted);
-    color: var(--color-surface);
+  background-color: var(--color-muted);
+  color: var(--color-surface);
 }
 .btn-secondary:hover:not(:disabled) {
-    background-color: var(--color-text);
-}
-
-.btn-remove {
-    position: absolute;
-    top: var(--space-sm);
-    right: var(--space-sm);
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-pill);
-    background-color: var(--color-error);
-    color: var(--color-surface);
-    font-size: 1.2rem;
-    padding: 0;
-}
-.btn-remove:hover {
-    transform: scale(1.1);
+  background-color: var(--color-text);
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   filter: grayscale(60%);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Botão de Remover (Refatorado) */
+.btn-remove {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background-color: hsla(0, 0%, 100%, 0.7);
+  color: var(--color-error);
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 0;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+.btn-remove:hover {
+  background-color: var(--color-error);
+  color: var(--color-surface);
+  transform: scale(1.1) rotate(90deg);
+}
+.btn-remove::before {
+  content: '×'; /* Caractere de multiplicação para um 'X' mais elegante */
 }
 
 .btn.btn--loading .btn-text {
-    visibility: hidden;
+  visibility: hidden;
 }
-
 .btn.btn--loading::after {
-    content: '';
-    position: absolute;
-    width: 1.2em;
-    height: 1.2em;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+  content: '';
+  position: absolute;
+  width: 1.2em;
+  height: 1.2em;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* --- 6. PREVIEWS & NOTIFICAÇÕES --- */
+/* --- 6. PREVIEWS E NOTIFICAÇÕES --- */
 
 .preview-container {
   position: relative;
   margin-top: var(--space-md);
   border-radius: var(--radius-md);
   overflow: hidden;
+  background: var(--color-light);
 }
 
 .preview-container img {
   width: 100%;
   max-height: 300px;
   object-fit: contain;
-  background-color: var(--color-light);
 }
 
 .youtube-preview-container {
-    display: none;
+  display: none;
 }
-
 .youtube-preview-container.active {
-    display: block;
+  display: block;
 }
 
 .video-wrapper {
@@ -297,8 +308,8 @@ textarea {
   overflow: hidden;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  background-color: #000;
 }
-
 .video-wrapper iframe {
   position: absolute;
   top: 0;
@@ -315,7 +326,7 @@ textarea {
 }
 
 .notification-area {
-    margin-top: var(--space-lg);
+  margin-top: var(--space-lg);
 }
 
 .notification {
@@ -341,32 +352,77 @@ textarea {
   opacity: 0.7;
 }
 .notification__close:hover {
-    opacity: 1;
+  opacity: 1;
 }
 
 .success-actions {
-    display: flex;
-    gap: var(--space-sm);
-    margin-top: var(--space-sm);
-    align-items: center;
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  align-items: center;
 }
 .success-actions input {
-    flex-grow: 1;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--color-surface);
-    border-radius: var(--radius-md);
-    padding: var(--space-xs);
+  flex-grow: 1;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-xs);
 }
 .success-actions .btn {
-    padding: 0.5em 1em;
-    font-weight: 600;
-    background: var(--color-surface);
-    color: var(--color-success);
-    border-radius: var(--radius-pill);
+  padding: 0.5em 1em;
+  font-weight: 600;
+  background: var(--color-surface);
+  color: var(--color-success);
 }
 
-/* --- 7. UTILITÁRIOS --- */
+/* --- 7. PÁGINA DE VISUALIZAÇÃO DO CARTÃO (Refatorada) --- */
+
+#card-view-page {
+  background: linear-gradient(160deg, hsl(330, 80%, 98%), hsl(255, 100%, 98%));
+  padding: var(--space-md) 0;
+  min-height: 100vh;
+}
+
+.card-preview {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: clamp(var(--space-md), 5vw, var(--space-xl));
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+  max-width: min(700px, 90vw);
+  margin-inline: auto;
+}
+
+.card-preview .recipient-name {
+  color: var(--color-primary-dark);
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  text-align: center;
+  margin-bottom: var(--space-xs);
+}
+
+.card-preview .special-date {
+  color: var(--color-muted);
+  font-style: italic;
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+.card-preview .card-body p {
+  font-size: 1.15rem;
+  line-height: 1.75;
+  white-space: pre-wrap; /* Preserva quebras de linha da mensagem */
+  color: var(--color-text);
+}
+
+.card-preview .card-image {
+  width: 100%;
+  border-radius: var(--radius-md);
+  margin-block: var(--space-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- 8. UTILITÁRIOS --- */
 
 .sr-only {
   position: absolute;
@@ -379,6 +435,3 @@ textarea {
   white-space: nowrap;
   border-width: 0;
 }
-
-
-
