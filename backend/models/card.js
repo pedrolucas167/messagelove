@@ -1,37 +1,42 @@
-const { DataTypes } = require('sequelize');
+// Arquivo: models/card.js
 
-// Exportamos uma função que define o modelo
-// e que recebe a instância do sequelize como argumento
-module.exports = (sequelize) => {
-  const Card = sequelize.define('Card', {
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class Card extends Model {}
+  Card.init({
     id: {
-      type: DataTypes.UUID, // Um tipo de ID universal e único, melhor prática
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      type: DataTypes.STRING,
+      primaryKey: true,
+      allowNull: false,
     },
-    nome: {
+    // ---- VERIFICAÇÃO CRÍTICA ----
+    // Garanta que os campos abaixo substituíram o campo 'nome'.
+    de: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    data: {
-      type: DataTypes.DATEONLY // Armazena apenas a data, sem hora
+    para: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
+    // ----------------------------
     mensagem: {
-      type: DataTypes.TEXT, // Melhor para textos longos
+      type: DataTypes.TEXT,
       allowNull: false
-    },
-    youtubeVideoId: {
-      type: DataTypes.STRING,
-      allowNull: true
     },
     fotoUrl: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    youtubeVideoId: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
-    // O Sequelize já cria os campos `createdAt` e `updatedAt` automaticamente
   }, {
-    tableName: 'cards' // Força o nome da tabela a ser 'cards'
+    sequelize,
+    modelName: 'Card',
   });
-
   return Card;
 };

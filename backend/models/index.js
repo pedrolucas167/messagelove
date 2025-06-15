@@ -1,4 +1,9 @@
-const { Sequelize } = require('sequelize');
+// models/index.js
+
+'use strict';
+
+// 1. Importar DataTypes junto com Sequelize
+const { Sequelize, DataTypes } = require('sequelize'); 
 
 // Pega a URL do banco de dados das variáveis de ambiente
 const databaseUrl = process.env.DATABASE_URL;
@@ -18,14 +23,13 @@ const sequelize = new Sequelize(databaseUrl, {
     }
 });
 
-// Cria um objeto para guardar nossos modelos e a conexão
 const db = {};
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// Importa nosso modelo Card e o inicializa com a conexão
-db.Card = require('./card.js')(sequelize);
+// 2. Passar o 'DataTypes' ao inicializar o modelo
+db.Card = require('./card.js')(sequelize, DataTypes);
 
-// Exporta o objeto db, que agora contém tudo que precisamos
+// Exporta o objeto db, pronto para ser usado no seu app
 module.exports = db;
