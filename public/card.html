@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" dir="ltr">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,27 +10,37 @@
     <meta name="theme-color" content="#e91e63">
     <meta property="og:title" content="Um Cartão Especial Para Você!">
     <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://sua-url.com/assets/og-image-default.jpg">
     
     <link rel="icon" href="/assets/coracao.png" type="image/png">
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
 
     <style>
-      .loader-wrapper { text-align: center; padding: 50px; }
+      /* Estilos básicos de carregamento e estado oculto */
+      .loader-wrapper {
+        text-align: center;
+        padding: 50px;
+        color: var(--color-muted, #6c757d);
+      }
       .loader {
-        display: inline-block; width: 50px; height: 50px;
-        border: 5px solid rgba(233, 30, 99, 0.2);
-        border-top-color: #e91e63;
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border: 5px solid hsla(330, 70%, 60%, 0.2);
+        border-top-color: var(--color-primary, #e91e63);
         border-radius: 50%;
         animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
       }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .hidden { display: none !important; }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .hidden {
+        display: none !important;
+      }
     </style>
 </head>
 <body id="card-view-page">
@@ -39,41 +49,46 @@
     <a href="/" title="Criar um novo cartão">Messagelove</a>
   </header>
 
-  <main>
+  <main class="container">
+    <!-- Estado de Carregamento -->
     <div id="loading-state" class="loader-wrapper">
       <div class="loader"></div>
       <p>Carregando seu cartão especial...</p>
     </div>
 
+    <!-- Conteúdo do Cartão (inicialmente oculto) -->
     <article id="card-view" class="card-preview hidden">
         <header class="card-preview-header">
-          <h1 id="card-nome" class="recipient-name"></h1>
-          <p id="card-data" class="special-date"></p>
+          <div>
+            <h1 id="card-nome" class="recipient-name"></h1>
+            <p id="card-data" class="special-date" hidden></p>
+          </div>
         </header>
 
         <section class="card-body">
           <p id="card-mensagem"></p>
         </section>
 
-        <figure id="card-foto-container" class="preview-image-container"></figure>
+        <!-- Container da Foto (oculto se não houver foto) -->
+        <figure id="card-foto-container" class="preview-image-container" hidden></figure>
         
-        <div id="card-video-container">
-          </div>
+        <!-- Container do Vídeo (oculto se não houver vídeo) -->
+        <div id="card-video-container" hidden></div>
     </article>
 
+    <!-- Estado de Erro (inicialmente oculto) -->
     <div id="error-state" class="card-preview hidden">
       <h2>Ops! Algo deu errado.</h2>
-      <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
-      <a href="/" class="btn btn--primary">Criar um novo cartão</a>
+      <!-- O elemento 'error-text' que o JS precisa -->
+      <p id="error-text">Não foi possível carregar o cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
+      <a href="/" class="btn btn-primary">Criar um novo cartão</a>
     </div>
   </main>
 
   <footer class="card-page-footer">
-    <p>Gostou? <a href="/" class="btn btn--outline">Crie o seu também!</a></p>
+    <p>Gostou? <a href="/">Crie o seu também!</a></p>
   </footer>
 
- 
-  <script src="https://www.youtube.com/iframe_api"></script>
   <script src="card.js" defer></script>
 
 </body>
