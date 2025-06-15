@@ -1,5 +1,7 @@
 // app.js
 
+console.log('Iniciando app.js...'); // DEBUG
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -31,13 +33,19 @@ app.get('/', (req, res) => {
     res.status(200).json({ message: 'API do MessageLove está funcionando!' });
 });
 
-// **CORREÇÃO APLICADA AQUI**
-// Apenas o prefixo da rota é definido. O middleware de upload foi movido.
+// Apenas o prefixo da rota é definido.
 app.use('/api', cardRoutes);
+console.log('Rotas de /api anexadas a partir de cardRoutes.'); // DEBUG
+
+// Rota "catch-all" para depurar rotas não encontradas
+app.use((req, res, next) => {
+    console.log(`ROTA NÃO ENCONTRADA: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ message: `A rota ${req.method} ${req.originalUrl} não existe no servidor.` });
+});
 
 // Tratamento de erros global
 app.use((err, req, res, next) => {
-    console.error('Erro:', err.message);
+    console.error('ERRO GLOBAL:', err.stack);
     res.status(500).json({ message: err.message || 'Erro interno do servidor' });
 });
 
