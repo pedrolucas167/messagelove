@@ -12,6 +12,8 @@
     <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
     
     <link rel="icon" href="/assets/coracao.png" type="image/png">
+    
+    <!-- Pré-conexão com o Google Fonts para melhor performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -19,76 +21,9 @@
     <!-- Biblioteca de áudio para os efeitos sonoros -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 
+    <!-- Folha de estilos principal -->
     <link rel="stylesheet" href="style.css">
 
-    <style>
-      /* --- Estilos de Base e Animações --- */
-
-      /* Loader */
-      .loader-wrapper {
-        text-align: center;
-        padding: 50px;
-        color: var(--color-muted, #6c757d);
-      }
-      .loader {
-        display: inline-block;
-        width: 50px;
-        height: 50px;
-        border: 5px solid hsla(330, 70%, 60%, 0.2);
-        border-top-color: var(--color-primary, #e91e63);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-bottom: 1rem;
-      }
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      .hidden {
-        display: none !important;
-      }
-
-      /* Animação de entrada do cartão */
-      .card-preview {
-        transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-        opacity: 0;
-        transform: translateY(20px) scale(0.98);
-      }
-      .card-preview.visible {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-      
-      /* Animação do botão de coração */
-      .card-actions {
-        text-align: center;
-        margin-top: 1.5rem;
-      }
-      .like-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        color: #e0e0e0; /* Cinza claro inicial */
-        transition: color 0.3s ease, transform 0.3s ease;
-      }
-      .like-button svg {
-        width: 50px;
-        height: 50px;
-        filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
-      }
-      .like-button:hover {
-        color: #ff8fab; /* Rosa claro no hover */
-      }
-      .like-button.liked {
-        color: #f43f5e; /* Vermelho/rosa forte quando clicado */
-        animation: pulse 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-      }
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.35); }
-        100% { transform: scale(1); }
-      }
-    </style>
 </head>
 <body id="card-view-page">
 
@@ -98,7 +33,7 @@
 
   <main class="container">
     <!-- Estado de Carregamento -->
-    <div id="loading-state" class="loader-wrapper">
+    <div id="loading-state" class="loader-wrapper" role="status" aria-live="polite">
       <div class="loader"></div>
       <p>Carregando seu cartão especial...</p>
     </div>
@@ -125,7 +60,7 @@
         <!-- Botão de Coração Interativo -->
         <div class="card-actions">
             <button id="likeBtn" class="like-button" aria-label="Gostei">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             </button>
         </div>
     </article>
