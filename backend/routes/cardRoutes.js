@@ -1,11 +1,11 @@
 // ./routes/cardRoutes.js
-console.log('Arquivo cardRoutes.js carregado.'); // DEBUG
+console.log('Arquivo cardRoutes.js carregado.');
 
 const express = require('express');
 const router = express.Router();
-const multer = require('multer'); // Importe o multer aqui
+const multer = require('multer');
 const { nanoid } = require('nanoid');
-const db = require('../models');
+// const db = require('../models'); // DEBUG: Desabilitado temporariamente
 
 // Configuração do Multer
 const storage = multer.memoryStorage();
@@ -23,35 +23,29 @@ const upload = multer({
 
 // A rota é apenas '/cards' e o middleware de upload está aplicado nela.
 router.post('/cards', upload.single('foto'), async (req, res, next) => {
-    console.log('Requisição recebida em POST /api/cards'); // DEBUG
+    console.log('Requisição recebida em POST /api/cards');
     try {
         const { de, para, mensagem, youtubeVideoId } = req.body;
-        const foto = req.file; // O arquivo da foto estará disponível aqui
+        const foto = req.file;
 
         if (!de || !para || !mensagem) {
             return res.status(400).json({ message: 'Campos "De", "Para" e "Mensagem" são obrigatórios.' });
         }
 
         const cardId = nanoid(10);
-        
-        // Exemplo de como você salvaria no banco de dados
-        // await db.Card.create({ ... });
 
-        console.log(`Cartão criado com ID: ${cardId}`);
+        console.log(`Cartão criado (simulado) com ID: ${cardId}`);
         console.log('Arquivo recebido:', foto ? foto.originalname : 'Nenhuma foto');
 
         res.status(201).json({
             success: true,
-            message: 'Cartão criado com sucesso!',
+            message: 'Cartão criado com sucesso! (Modo de Debug)',
             cardId: cardId,
         });
 
     } catch (error) {
-        next(error); // Passa o erro para o handler global
+        next(error);
     }
 });
-
-// Você pode adicionar outras rotas aqui, como a de buscar um cartão por ID
-// router.get('/cards/:id', async (req, res, next) => { ... });
 
 module.exports = router;
