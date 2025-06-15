@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. CONFIGURAÇÕES ---
     const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3001/api'
-        : 'https://messagelove-backend.onrender.com/api';
+        : 'https://messagelove-backend.onrender.com';
 
     // --- 2. SELEÇÃO DE ELEMENTOS DO DOM ---
     const elements = {
