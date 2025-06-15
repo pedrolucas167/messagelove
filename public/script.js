@@ -1,211 +1,161 @@
 /**
  * @file script.js
- * @description Script principal para a criação e manipulação de cartões personalizados no Messagelove.
+ * @description Script principal para o Messagelove.
  * @author Pedro Marques
- * @version 2.1.3
+ * @version 3.0.0
  */
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Configurações e Constantes
-    const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = IS_LOCAL 
-        ? 'http://localhost:3001/api' 
+    // --- 1. CONFIGURAÇÕES ---
+    const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3001/api'
         : 'https://messagelove-backend.onrender.com/api';
-    console.log(`API_URL: ${API_URL}`);
 
-    // Verifica se a API_URL é válida
-    if (!API_URL.startsWith('http')) {
-        console.error('API_URL inválida:', API_URL);
-        showNotification('Erro: Configuração de API inválida.', { type: 'error' });
-        return;
-    }
-
-    // Verifica se a API está acessível
-    fetch(`${API_URL}/`, { method: 'GET' })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Erro ao acessar a API: ${response.status} ${response.statusText}`);
-            }
-            console.log('API acessível');
-        })
-        .catch(error => {
-            console.error('Erro ao verificar a API:', error);
-            showNotification('Não foi possível acessar a API. Verifique sua conexão ou tente novamente mais tarde.', { type: 'error' });
-        });
-
-    // Seleção de Elementos do DOM
+    // --- 2. SELEÇÃO DE ELEMENTOS DO DOM ---
     const elements = {
         form: document.getElementById('cardForm'),
         submitBtn: document.getElementById('submitBtn'),
         notificationArea: document.getElementById('appNotificationArea'),
         currentYearSpan: document.getElementById('currentYear'),
-        fotoUpload: document.getElementById('fotoUpload'),
-        fotoPreviewContainer: document.getElementById('fotoPreviewContainer'),
-        fotoPreview: document.getElementById('fotoPreview'),
-        removeFotoBtn: document.getElementById('removeFotoBtn'),
-        youtubeUrlInput: document.getElementById('youtubeUrlInput'),
-        addYoutubeUrlBtn: document.getElementById('addYoutubeUrlBtn'),
-        youtubeError: document.getElementById('youtubeError'),
-        youtubePreviewContainer: document.getElementById('youtubePreviewContainer'),
-        youtubePlayer: document.getElementById('youtubePlayer'),
-        youtubeVideoId: document.getElementById('youtubeVideoId'),
-        removeYoutubeBtn: document.getElementById('removeYoutubeBtn'),
+        foto: {
+            upload: document.getElementById('fotoUpload'),
+            previewContainer: document.getElementById('fotoPreviewContainer'),
+            preview: document.getElementById('fotoPreview'),
+            removeBtn: document.getElementById('removeFotoBtn'),
+        },
+        youtube: {
+            urlInput: document.getElementById('youtubeUrlInput'),
+            addBtn: document.getElementById('addYoutubeUrlBtn'),
+            error: document.getElementById('youtubeError'),
+            previewContainer: document.getElementById('youtubePreviewContainer'),
+            player: document.getElementById('youtubePlayer'),
+            videoIdInput: document.getElementById('youtubeVideoId'),
+            removeBtn: document.getElementById('removeYoutubeBtn'),
+        }
     };
+    if (!elements.form) return console.error('Formulário principal não encontrado.');
 
-    if (!elements.form) {
-        console.error('Formulário #cardForm não encontrado.');
-        return;
-    }
-    if (!elements.submitBtn) {
-        console.error('Botão #submitBtn não encontrado.');
-        return;
-    }
-
-    // Funções Auxiliares
-    const showNotification = (content, { type = 'info', duration = 5000 } = {}) => {
+    // --- 3. FUNÇÕES AUXILIARES ---
+    const showNotification = (message, type = 'info', duration = 5000) => {
         const notification = document.createElement('div');
         notification.className = `notification notification--${type}`;
-        notification.textContent = content;
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'notification__close';
-        closeBtn.textContent = '×';
-        closeBtn.addEventListener('click', () => notification.remove());
-        notification.appendChild(closeBtn);
+        notification.innerHTML = `<span>${message}</span><button class="notification__close" onclick="this.parentElement.remove()">×</button>`;
+        elements.notificationArea.innerHTML = '';
         elements.notificationArea.appendChild(notification);
-        setTimeout(() => {
-            notification.classList.add('notification--removing');
-            setTimeout(() => notification.remove(), 500);
-        }, duration);
+        if (duration) setTimeout(() => notification.remove(), duration);
     };
 
     const copyToClipboard = async (text) => {
         try {
             await navigator.clipboard.writeText(text);
-            showNotification('Link copiado!', { type: 'success' });
+            showNotification('Link copiado!', 'success', 3000);
         } catch (error) {
-            showNotification('Erro ao copiar o link.', { type: 'error' });
+            showNotification('Erro ao copiar.', 'error');
         }
     };
 
     const toggleButtonLoading = (isLoading) => {
         elements.submitBtn.disabled = isLoading;
         elements.submitBtn.classList.toggle('btn--loading', isLoading);
-        elements.submitBtn.querySelector('.btn-text').hidden = isLoading;
-        elements.submitBtn.querySelector('.btn-loading').hidden = !isLoading;
     };
 
     const resetFormAndPreviews = () => {
         elements.form.reset();
-        elements.fotoPreviewContainer.hidden = true;
-        elements.youtubePreviewContainer.classList.remove('active');
-        elements.youtubeVideoId.value = '';
-        elements.youtubePlayer.src = '';
+        elements.foto.previewContainer.hidden = true;
+        elements.youtube.previewContainer.classList.remove('active');
+        elements.youtube.player.src = 'about:blank';
     };
 
-    const extractYouTubeId = (url) => {
-        if (!url) return null;
-        const patterns = [
-            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
-            /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/,
-            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
-            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/,
-            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^?]+)/
-        ];
-        for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match && match[1]) return match[1].split('&')[0];
-        }
-        return null;
-    };
+    const extractYouTubeId = (url) => url.match(/(?:v=|\/embed\/|\.be\/|shorts\/)([^?&]+)/)?.[1] || null;
 
-    // Lógica de Manipulação da UI
+    // --- 4. LÓGICA DA UI ---
     const handleYouTubeUrl = () => {
-        const url = elements.youtubeUrlInput.value.trim();
+        const url = elements.youtube.urlInput.value;
         const videoId = extractYouTubeId(url);
+        elements.youtube.error.textContent = '';
         if (videoId) {
-            elements.youtubeError.textContent = '';
-            elements.youtubePlayer.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
-            elements.youtubeVideoId.value = videoId;
-            elements.youtubePreviewContainer.classList.add('active');
-        } else {
-            elements.youtubeError.textContent = 'Link do YouTube inválido.';
-            elements.youtubePreviewContainer.classList.remove('active');
-            elements.youtubeVideoId.value = '';
+            elements.youtube.player.src = `https://www.youtube.com/embed/$${videoId}?rel=0`;
+            elements.youtube.videoIdInput.value = videoId;
+            elements.youtube.previewContainer.classList.add('active');
+        } else if (url) {
+            elements.youtube.error.textContent = 'Link do YouTube inválido.';
+            elements.youtube.previewContainer.classList.remove('active');
         }
     };
 
     const handleFotoUpload = (event) => {
         const file = event.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
-                showNotification('Imagem inválida (máx. 5MB, JPG/PNG/GIF).', { type: 'error' });
-                event.target.value = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                elements.fotoPreview.src = e.target.result;
-                elements.fotoPreviewContainer.hidden = false;
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+        if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
+            return showNotification('Imagem inválida (máx. 5MB).', 'error');
         }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            elements.foto.preview.src = e.target.result;
+            elements.foto.previewContainer.hidden = false;
+        };
+        reader.readAsDataURL(file);
     };
 
     const displaySuccessState = (result) => {
-        const cardUrl = `${window.location.origin}/card/${result.id}`;
-        showNotification(`Cartão criado! Link: ${cardUrl}`, { type: 'success', duration: 10000 });
-        copyToClipboard(cardUrl);
+        const cardUrl = new URL(`card.html?id=${result.cardId}`, window.location.origin).href;
+        elements.notificationArea.innerHTML = `
+            <div class="notification notification--success">
+                <span>Cartão criado com sucesso!</span>
+                <div class="success-actions">
+                    <input type="text" value="${cardUrl}" readonly onclick="this.select()" />
+                    <button id="copyUrlBtn" class="btn">Copiar</button>
+                </div>
+                <button class="notification__close" onclick="this.parentElement.remove()">×</button>
+            </div>
+        `;
+        document.getElementById('copyUrlBtn').addEventListener('click', () => copyToClipboard(cardUrl));
     };
 
-    // Lógica Principal
+    // --- 5. LÓGICA PRINCIPAL ---
     const handleFormSubmit = async (event) => {
         event.preventDefault();
-        const url = `${API_URL}/cards`;
-        console.log('URL da requisição:', url);
-        console.log('Enviando formulário:', [...new FormData(elements.form).entries()]);
         toggleButtonLoading(true);
+
         try {
             const formData = new FormData(elements.form);
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-            });
-            let result;
-            if (response.headers.get('content-type')?.includes('application/json')) {
-                result = await response.json();
-            } else {
-                const text = await response.text();
-                console.error('Resposta não é JSON:', text);
-                throw new Error(`Resposta inválida do servidor: ${response.status} ${response.statusText}`);
+            if (!formData.get('de') || !formData.get('para') || !formData.get('mensagem')) {
+                throw new Error('Por favor, preencha os campos obrigatórios.');
             }
+
+            const response = await fetch(`${API_URL}/cards`, { method: 'POST', body: formData });
+            const result = await response.json().catch(() => response.text());
+
             if (!response.ok) {
-                throw new Error(result.error || result.errors?.join(', ') || `Erro na API: ${response.status} ${response.statusText}`);
+                const errorMessage = result?.message || (typeof result === 'string' ? result : 'Erro desconhecido no servidor.');
+                throw new Error(errorMessage);
             }
+
             displaySuccessState(result);
-            showNotification('Cartão criado com sucesso!', { type: 'success' });
             resetFormAndPreviews();
         } catch (error) {
             console.error('Erro ao enviar:', error);
-            showNotification(`Erro: ${error.message}`, { type: 'error' });
+            showNotification(error.message, 'error');
         } finally {
             toggleButtonLoading(false);
         }
     };
 
-    // Registro de Event Listeners
+    // --- 6. REGISTRO DE EVENTOS ---
     elements.form.addEventListener('submit', handleFormSubmit);
-    elements.addYoutubeUrlBtn?.addEventListener('click', handleYouTubeUrl);
-    elements.youtubeUrlInput?.addEventListener('keypress', (e) => e.key === 'Enter' && (e.preventDefault(), handleYouTubeUrl()));
-    elements.removeYoutubeBtn?.addEventListener('click', () => {
-        elements.youtubeUrlInput.value = '';
-        handleYouTubeUrl();
+    elements.foto.upload.addEventListener('change', handleFotoUpload);
+    elements.foto.removeBtn.addEventListener('click', () => {
+        elements.foto.upload.value = '';
+        elements.foto.previewContainer.hidden = true;
     });
-    elements.fotoUpload?.addEventListener('change', handleFotoUpload);
-    elements.removeFotoBtn?.addEventListener('click', () => {
-        elements.fotoUpload.value = '';
-        elements.fotoPreviewContainer.hidden = true;
+    elements.youtube.addBtn.addEventListener('click', handleYouTubeUrl);
+    elements.youtube.urlInput.addEventListener('keypress', (e) => e.key === 'Enter' && (e.preventDefault(), handleYouTubeUrl()));
+    elements.youtube.removeBtn.addEventListener('click', () => {
+        elements.youtube.urlInput.value = '';
+        elements.youtube.previewContainer.classList.remove('active');
+        elements.youtube.player.src = 'about:blank';
     });
-
-    elements.currentYearSpan && (elements.currentYearSpan.textContent = new Date().getFullYear());
+    
+    // --- 7. INICIALIZAÇÃO ---
+    if (elements.currentYearSpan) elements.currentYearSpan.textContent = new Date().getFullYear();
     document.body.classList.remove('no-js');
 });

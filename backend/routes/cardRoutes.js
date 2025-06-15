@@ -1,24 +1,28 @@
-// ./routes/cardRoutes.js
-
+// cardRoutes.js (JEITO CORRETO)
 const express = require('express');
 const router = express.Router();
-const { nanoid } = require('nanoid'); // Assumindo que você usa nanoid
-const db = require('../models'); // Ajuste o caminho se necessário
+const { nanoid } = require('nanoid');
+const db = require('../models');
 
-// ROTA CORRETA: POST /cards
-// O caminho completo se torna /api/cards por causa da configuração no server.js
-router.post('/cards', (req, res, next) => {
+// O middleware de upload é importado ou definido aqui
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage }); // Use a mesma config do seu server.js
+
+// O middleware 'upload.single('foto')' é aplicado aqui!
+router.post('/cards', upload.single('foto'), (req, res, next) => {
     try {
         const { de, para, mensagem, youtubeVideoId } = req.body;
 
-        if (!de || !para || !mensagem) {
-            // É melhor retornar um erro 400 (Bad Request) para validação
-            return res.status(400).json({ message: 'Campos "De", "Para" e "Mensagem" são obrigatórios.' });
-        }
+        // O arquivo da foto estará em req.file, se enviado
+        console.log('Arquivo recebido:', req.file ? req.file.originalname : 'Nenhum arquivo');
 
+        if (!de || !para || !mensagem) {
+            return res.status(400).json({ message: 'Campos obrigatórios faltando.' });
+        }
+        
         const cardId = nanoid(10);
         
-        // AQUI você faria a lógica para salvar no banco de dados com db.Card.create({...})
         console.log(`Dados para o novo cartão ${cardId}:`, { de, para, mensagem });
 
         res.status(201).json({
@@ -28,10 +32,8 @@ router.post('/cards', (req, res, next) => {
         });
 
     } catch (error) {
-        // Passa o erro para o middleware de tratamento de erros global
         next(error);
     }
 });
-
 
 module.exports = router;
