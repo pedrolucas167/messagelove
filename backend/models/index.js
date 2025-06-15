@@ -2,11 +2,14 @@
 
 'use strict';
 
-// 1. Importar DataTypes junto com Sequelize
 const { Sequelize, DataTypes } = require('sequelize');
+const path = require('path'); // Adicionado para lidar com caminhos de arquivo
 const process = require('process');
 const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
+
+// CORRIGIDO: Usa path.join para encontrar o config.json de forma segura
+const configPath = path.join(__dirname, '..', 'config', 'config.json');
+const config = require(configPath)[env];
 
 let sequelize;
 if (config.use_env_variable) {
@@ -17,8 +20,7 @@ if (config.use_env_variable) {
 
 const db = {};
 
-// 2. Passar o 'DataTypes' ao inicializar o modelo
-// Esta é a correção principal: passamos (sequelize, DataTypes)
+// Passa 'sequelize' e 'DataTypes' ao inicializar o modelo
 db.Card = require('./card.js')(sequelize, DataTypes);
 
 db.sequelize = sequelize;
