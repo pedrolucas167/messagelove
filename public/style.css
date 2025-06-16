@@ -1,7 +1,7 @@
 /* ---
  * Messagelove - Stylesheet Principal
- * Versão: 7.1.0
- * Descrição: CSS final com alinhamento de layout corrigido e melhorias visuais.
+ * Versão: 7.2.0
+ * Descrição: CSS final com alinhamento de layout e animação de overlay corrigidos.
  * --- */
 
 /* --- 1. IMPORTAÇÃO E VARIÁVEIS GLOBAIS (ROOT) --- */
@@ -80,8 +80,8 @@ button, input, select, textarea {
 }
 
 .card-page-header {
-  text-align: center;
   padding: var(--space-md) 0;
+  text-align: center;
 }
 
 .card-page-header a {
@@ -109,10 +109,10 @@ button, input, select, textarea {
 }
 
 .card-page-footer {
+  padding: var(--space-lg) 0;
   text-align: center;
   font-size: 0.9rem;
   color: var(--color-muted);
-  padding: var(--space-lg) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -396,10 +396,10 @@ textarea {
 }
 
 #card-view-page .main-content {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-preview {
@@ -408,7 +408,7 @@ textarea {
   padding: clamp(var(--space-md), 5vw, var(--space-xl));
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--color-border);
-  width: 100%; /* Ocupa a largura do .container */
+  width: 100%;
 }
 
 .card-preview .recipient-name {
@@ -488,9 +488,9 @@ textarea {
   animation: bounce 2s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-20px); }
-    60% { transform: translateY(-10px); }
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-20px); }
+  60% { transform: translateY(-10px); }
 }
 .reveal-box h2 {
   font-size: 1.8rem;
@@ -503,7 +503,7 @@ textarea {
   margin-block: var(--space-sm) var(--space-lg);
 }
 
-/* Animação de Overlay */
+/* Animação de Overlay (Corrigida) */
 .reveal-overlay {
   position: fixed;
   inset: 0;
@@ -512,11 +512,22 @@ textarea {
   transform: scale(0);
   border-radius: 50%;
   pointer-events: none;
-  transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1), border-radius 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+  opacity: 1; /* Inicia opaco */
 }
 .reveal-overlay.active {
-  transform: scale(2.5);
-  border-radius: 0;
+  animation: reveal-and-hide 1.2s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+@keyframes reveal-and-hide {
+  50% {
+    transform: scale(2.5);
+    border-radius: 0;
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    border-radius: 0;
+    opacity: 0;
+  }
 }
 
 /* Controle de Estado da Visualização */
@@ -560,10 +571,10 @@ textarea {
   filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
 }
 .like-button:hover {
-  color: #ff8fab; /* Rosa claro no hover */
+  color: #ff8fab;
 }
 .like-button.liked {
-  color: #f43f5e; /* Vermelho/rosa forte quando clicado */
+  color: #f43f5e;
   animation: pulse 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 @keyframes pulse {
@@ -609,51 +620,3 @@ textarea {
   white-space: nowrap;
   border-width: 0;
 }
-
-/* --- 3. ESTRUTURA E LAYOUT (Com correções) --- */
-
-.container {
-  width: 100%;
-  max-width: min(800px, 92vw);
-  margin-inline: auto;
-}
-
-/* Garante que o cabeçalho e rodapé também usem a largura do container */
-.card-page-header,
-.card-page-footer {
-  padding: var(--space-lg) var(--space-md);
-  text-align: center;
-  max-width: min(800px, 92vw);
-  margin-inline: auto;
-  width: 100%;
-}
-
-.card-page-header {
-  padding-top: var(--space-md);
-}
-
-.main-header {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: var(--color-surface);
-  padding: var(--space-xl) var(--space-md);
-  text-align: center;
-}
-
-/* ... (Restante do CSS) ... */
-
-.card-page-footer {
-  font-size: 0.9rem;
-  color: var(--color-muted);
-  border-top: 1px solid var(--color-border);
-}
-
-.card-page-footer a {
-  color: var(--color-primary);
-  font-weight: 600;
-  text-decoration: none;
-}
-.card-page-footer a:hover {
-  text-decoration: underline;
-}
-
-/* ... (Restante do CSS) ... */
