@@ -7,15 +7,20 @@
     <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
     <meta name="theme-color" content="#e91e63">
     <link rel="icon" href="/assets/coracao.png" type="image/png">
+    
+    <!-- Pré-conexão com o Google Fonts para melhor performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Biblioteca de áudio para os efeitos sonoros -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+
+    <!-- Folha de estilos principal -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="card-view-page">
 
-  <!-- CORREÇÃO: Adicionada a classe .container para alinhar o conteúdo -->
   <header class="card-page-header container">
     <a href="/" title="Criar um novo cartão">Messagelove</a>
   </header>
@@ -23,6 +28,7 @@
   <main class="container">
     <div id="card-state-manager" data-state="reveal">
     
+      <!-- Estado de Revelação Inicial -->
       <div class="card-state" data-view="reveal">
         <div class="reveal-box">
             <div class="reveal-icon">💌</div>
@@ -32,6 +38,7 @@
         </div>
       </div>
 
+      <!-- Estado de Carregamento -->
       <div class="card-state" data-view="loading">
         <div class="loader-wrapper">
           <div class="loader"></div>
@@ -39,6 +46,7 @@
         </div>
       </div>
 
+      <!-- Conteúdo do Cartão -->
       <div class="card-state" data-view="card-content">
         <article class="card-preview">
             <header class="card-preview-header">
@@ -48,8 +56,13 @@
             <section class="card-body">
               <p id="card-mensagem"></p>
             </section>
+            
+            <!-- Adicionado o elemento para o remetente -->
+            <p id="card-de" class="sender-name"></p>
+            
             <figure id="card-foto-container" class="preview-image-container"></figure>
             <div id="card-video-container"></div>
+            
             <div class="card-actions">
                 <button id="likeBtn" class="like-button" aria-label="Gostei">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
@@ -58,6 +71,7 @@
         </article>
       </div>
 
+      <!-- Estado de Erro -->
       <div class="card-state" data-view="error">
         <div class="card-preview error-box">
           <h2>Ops! Algo deu errado.</h2>
@@ -65,11 +79,9 @@
           <a href="/" class="btn btn-primary">Criar um novo cartão</a>
         </div>
       </div>
-
     </div>
   </main>
 
-  <!-- CORREÇÃO: Adicionada a classe .container para alinhar o conteúdo -->
   <footer class="card-page-footer container">
     <p>Gostou? <a href="/">Crie o seu também!</a></p>
   </footer>
