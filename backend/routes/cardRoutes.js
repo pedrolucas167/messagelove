@@ -13,7 +13,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // --- Rota para CRIAR um Cartão ---
-// CORREÇÃO: Adicionada a palavra 'async' aqui
 router.post('/cards', upload.single('foto'), async (req, res, next) => {
     console.log('>>> Rota POST /api/cards ATINGIDA <<<');
     try {
@@ -32,9 +31,9 @@ router.post('/cards', upload.single('foto'), async (req, res, next) => {
                 Key: fotoKey,
                 Body: foto.buffer,
                 ContentType: foto.mimetype,
-                ACL: 'public-read' // Garante que a imagem seja pública
+                // ACL: 'public-read' // REMOVIDO: ACLs estão desabilitadas no seu bucket. O acesso público será controlado pela Bucket Policy.
             });
-            await s3Client.send(command); // 'await' agora é válido
+            await s3Client.send(command);
             fotoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fotoKey}`;
             console.log(`Foto enviada para o S3: ${fotoUrl}`);
         }
