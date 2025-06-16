@@ -3,13 +3,13 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const cardRoutes = require('./routes/cardRoutes'); // Importa o arquivo de rotas
+const cardRoutes = require('./routes/cardRoutes');
 const db = require('./models');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- Configuração do CORS ---
+// Configuração do CORS
 const corsOptions = {
     origin: [
         'http://localhost:5500',
@@ -21,26 +21,25 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// --- Middlewares ---
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- Rota de Saúde ---
+// Rota de Saúde
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'API do MessageLove está no ar!' });
 });
 
-// --- Roteador Principal ---
-// Todas as requisições para /api serão gerenciadas pelo cardRoutes
+// Roteador Principal
 app.use('/api', cardRoutes);
 
-// --- Tratamento de Erro Global ---
+// Tratamento de Erro Global
 app.use((err, req, res, next) => {
     console.error('ERRO GLOBAL:', err.stack);
     res.status(500).json({ message: err.message || 'Ocorreu um erro interno no servidor.' });
 });
 
-// --- Inicialização do Servidor ---
+// Inicialização do Servidor
 const startServer = async () => {
     try {
         await db.sequelize.sync({ alter: true });

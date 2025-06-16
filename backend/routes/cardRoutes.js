@@ -6,20 +6,14 @@ const multer = require('multer');
 const { nanoid } = require('nanoid');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const db = require('../models');
-const command = new PutObjectCommand({
-    Bucket: process.env.S3_BUCKET_NAME,
-    Key: fotoKey,
-    Body: foto.buffer,
-    ContentType: foto.mimetype,
-    ACL: 'public-read' // <--- Garanta que esta linha exista!
-});
-await s3Client.send(command);
+
 // --- Configuração do S3 e Multer ---
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // --- Rota para CRIAR um Cartão ---
+// CORREÇÃO: Adicionada a palavra 'async' aqui
 router.post('/cards', upload.single('foto'), async (req, res, next) => {
     console.log('>>> Rota POST /api/cards ATINGIDA <<<');
     try {
@@ -38,8 +32,9 @@ router.post('/cards', upload.single('foto'), async (req, res, next) => {
                 Key: fotoKey,
                 Body: foto.buffer,
                 ContentType: foto.mimetype,
+                ACL: 'public-read' // Garante que a imagem seja pública
             });
-            await s3Client.send(command);
+            await s3Client.send(command); // 'await' agora é válido
             fotoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fotoKey}`;
             console.log(`Foto enviada para o S3: ${fotoUrl}`);
         }
