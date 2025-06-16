@@ -3,25 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>Um Cartão Especial Para Você!</title>
-    
     <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
     <meta name="theme-color" content="#e91e63">
-    
     <link rel="icon" href="/assets/coracao.png" type="image/png">
-    
-    <!-- Pré-conexão com o Google Fonts para melhor performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Biblioteca de áudio para os efeitos sonoros -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-
-    <!-- Folha de estilos principal -->
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body id="card-view-page">
 
@@ -30,20 +20,17 @@
   </header>
 
   <main class="container">
-    <!-- Container principal que gerencia o estado da visualização -->
     <div id="card-state-manager" data-state="reveal">
     
-      <!-- NOVO: Estado Inicial de Revelação -->
       <div class="card-state" data-view="reveal">
         <div class="reveal-box">
             <div class="reveal-icon">💌</div>
-            <h2>Você recebeu um cartão especial!</h2>
-            <p>Alguém pensou em você e preparou uma mensagem com muito carinho.</p>
-            <button id="revealBtn" class="btn btn-primary">Abrir o cartão</button>
+            <h2>Você recebeu uma mensagem!</h2>
+            <p>Alguém especial preparou um cartão com muito carinho para você.</p>
+            <button id="revealBtn" class="btn btn-primary">Revelar Cartão</button>
         </div>
       </div>
 
-      <!-- Estado de Carregamento -->
       <div class="card-state" data-view="loading">
         <div class="loader-wrapper">
           <div class="loader"></div>
@@ -51,14 +38,11 @@
         </div>
       </div>
 
-      <!-- Conteúdo do Cartão -->
       <div class="card-state" data-view="card-content">
         <article class="card-preview">
             <header class="card-preview-header">
-              <div>
-                <h1 id="card-nome" class="recipient-name"></h1>
-                <p id="card-data" class="special-date"></p>
-              </div>
+              <h1 id="card-nome" class="recipient-name"></h1>
+              <p id="card-data" class="special-date"></p>
             </header>
             <section class="card-body">
               <p id="card-mensagem"></p>
@@ -73,7 +57,6 @@
         </article>
       </div>
 
-      <!-- Estado de Erro -->
       <div class="card-state" data-view="error">
         <div class="card-preview error-box">
           <h2>Ops! Algo deu errado.</h2>
@@ -89,9 +72,7 @@
     <p>Gostou? <a href="/">Crie o seu também!</a></p>
   </footer>
 
-  <!-- NOVO: Overlay para a animação de tela cheia -->
   <div id="reveal-overlay" class="reveal-overlay"></div>
-
   <script src="card.js" defer></script>
 
 </body>
