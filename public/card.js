@@ -2,7 +2,7 @@
  * @file card.js
  * @description Script para carregar e exibir um cartão personalizado com um fluxo de revelação.
  * @author Pedro Marques
- * @version 5.2.0
+ * @version 5.3.0
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,7 +41,38 @@ document.addEventListener('DOMContentLoaded', () => {
         synth.triggerAttackRelease([note, Tone.Frequency(note).transpose(4), Tone.Frequency(note).transpose(7)], '8n', now);
     };
 
-    const triggerEmojiRain = () => { /* ... (função sem alterações) ... */ };
+    const triggerEmojiRain = () => {
+        // Evita criar múltiplas "chuvas" de emojis ao mesmo tempo.
+        if (document.querySelector('.emoji-rain-container')) return;
+        
+        const container = document.createElement('div');
+        container.className = 'emoji-rain-container';
+        document.body.appendChild(container);
+        
+        const EMOJIS = ['❤️', '💖', '✨', '🎉', '💕', '⭐', '🥰', '😍', '🥳'];
+        const EMOJI_COUNT = 60;
+
+        for (let i = 0; i < EMOJI_COUNT; i++) {
+            const emojiEl = document.createElement('span');
+            emojiEl.className = 'emoji';
+            emojiEl.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+            // Estilos para uma animação mais rica e variada
+            emojiEl.style.left = `${Math.random() * 100}vw`;
+            emojiEl.style.fontSize = `${Math.random() * 1.5 + 0.8}rem`; // Tamanhos variados
+            emojiEl.style.animationDuration = `${Math.random() * 4 + 5}s`; // Duração entre 5s e 9s
+            emojiEl.style.animationDelay = `${Math.random() * 4}s`; // Atraso de até 4s
+            
+            container.appendChild(emojiEl);
+        }
+
+        // Limpa o container da chuva de emojis após a animação para manter a performance.
+        setTimeout(() => {
+            if (container) {
+                container.remove();
+            }
+        }, 10000); // Tempo suficiente para a animação mais longa terminar
+    };
     
     const triggerFullscreenReveal = () => {
         if (!ELEMENTS.revealOverlay) return;
@@ -61,13 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderCardContent = (card) => {
-        // CORREÇÃO: Garante que 'card' seja um objeto válido antes de tentar usá-lo.
         if (!card || typeof card !== 'object') {
             throw new Error("Os dados recebidos do cartão são inválidos.");
         }
 
         document.title = `Uma mensagem para ${card.para || 'Você'}`;
-        ELEMENTS.nome.textContent = card.para || 'Pessoa Especial';
+        
+        // CORREÇÃO: Adicionado o rótulo "Para:" antes do nome.
+        ELEMENTS.nome.innerHTML = `<span class="card-label">Para:</span> ${card.para || 'Pessoa Especial'}`;
+        
         ELEMENTS.mensagem.textContent = card.mensagem || 'Uma mensagem especial para você.';
         
         ELEMENTS.data.hidden = true;
