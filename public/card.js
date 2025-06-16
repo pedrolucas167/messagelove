@@ -2,7 +2,7 @@
  * @file card.js
  * @description Script para carregar e exibir um cartão personalizado com arquitetura modular.
  * @author Pedro Marques
- * @version 6.0.0
+ * @version 6.1.0
  */
 
 // Módulo principal do aplicativo do Cartão
@@ -90,16 +90,22 @@ const CardApp = {
             this.renderMedia('fotoContainer', card.fotoUrl, 'image', card.para);
             this.renderMedia('videoContainer', card.youtubeVideoId, 'youtube');
         },
-        setText(elementId, text) {
-            if (CardApp.elements[elementId]) {
-                CardApp.elements[elementId].textContent = text;
+        setText(elementKey, text) {
+            if (CardApp.elements[elementKey]) {
+                CardApp.elements[elementKey].textContent = text;
             }
         },
-        renderMedia(containerId, data, type, altText = '') {
-            const container = CardApp.elements[containerId];
-            if (!container || !data) return;
+        renderMedia(containerKey, data, type, altText = '') {
+            const container = CardApp.elements[containerKey];
+            if (!container || !data) {
+                // Esconde o container se não houver dados
+                if(container) container.style.display = 'none';
+                return;
+            }
 
+            container.style.display = ''; // Garante que o container esteja visível
             let mediaElement;
+
             if (type === 'image') {
                 mediaElement = new Image();
                 mediaElement.src = data;
@@ -112,7 +118,6 @@ const CardApp = {
                 mediaElement.innerHTML = `<div class="video-player-wrapper"><iframe src="${videoSrc}" title="Vídeo do YouTube" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`;
             }
 
-            // Garante que a imagem carregue antes de ser exibida para evitar "pulos" na tela
             const showMedia = () => {
                 container.innerHTML = '';
                 container.appendChild(mediaElement);
@@ -180,12 +185,19 @@ const CardApp = {
     },
 
     init() {
-        const elementIds = ['stateManager', 'revealBtn', 'revealOverlay', 'nome', 'data', 'mensagem', 'fotoContainer', 'videoContainer', 'likeBtn', 'errorText'];
-        elementIds.forEach(id => {
-            // Converte camelCase para kebab-case para buscar o ID no DOM
-            const elementId = id.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
-            this.elements[id] = document.getElementById(elementId);
-        });
+        // CORREÇÃO: Mapeamento explícito e correto dos seletores do DOM
+        this.elements = {
+            stateManager: document.getElementById('card-state-manager'),
+            revealBtn: document.getElementById('revealBtn'),
+            revealOverlay: document.getElementById('reveal-overlay'),
+            nome: document.getElementById('card-nome'),
+            data: document.getElementById('card-data'),
+            mensagem: document.getElementById('card-mensagem'),
+            fotoContainer: document.getElementById('card-foto-container'),
+            videoContainer: document.getElementById('card-video-container'),
+            likeBtn: document.getElementById('likeBtn'),
+            errorText: document.getElementById('error-text'),
+        };
 
         if (!this.StateManager.init(this.elements.stateManager)) return;
 
