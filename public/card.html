@@ -31,13 +31,23 @@
 
   <main class="container">
     <!-- Container principal que gerencia o estado da visualização -->
-    <div id="card-state-manager" data-state="loading">
+    <div id="card-state-manager" data-state="reveal">
     
+      <!-- NOVO: Estado Inicial de Revelação -->
+      <div class="card-state" data-view="reveal">
+        <div class="reveal-box">
+            <div class="reveal-icon">💌</div>
+            <h2>Você recebeu um cartão especial!</h2>
+            <p>Alguém pensou em você e preparou uma mensagem com muito carinho.</p>
+            <button id="revealBtn" class="btn btn-primary">Abrir o cartão</button>
+        </div>
+      </div>
+
       <!-- Estado de Carregamento -->
       <div class="card-state" data-view="loading">
         <div class="loader-wrapper">
           <div class="loader"></div>
-          <p>Carregando seu cartão especial...</p>
+          <p>Carregando sua surpresa...</p>
         </div>
       </div>
 
@@ -78,6 +88,9 @@
   <footer class="card-page-footer">
     <p>Gostou? <a href="/">Crie o seu também!</a></p>
   </footer>
+
+  <!-- NOVO: Overlay para a animação de tela cheia -->
+  <div id="reveal-overlay" class="reveal-overlay"></div>
 
   <script src="card.js" defer></script>
 
