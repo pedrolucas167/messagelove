@@ -1,120 +1,200 @@
 /**
  * @file card.js
- * @description Script para carregar e exibir um cartão personalizado com um fluxo de revelação.
+ * @description Script para carregar e exibir um cartão personalizado com arquitetura modular.
  * @author Pedro Marques
- * @version 5.1.0
+ * @version 6.0.0
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+// Módulo principal do aplicativo do Cartão
+const CardApp = {
+    // --- 1. CONFIGURAÇÕES E ESTADO INICIAL ---
+    config: {
+        apiUrl: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3001/api'
+            : 'https://messagelove-backend.onrender.com/api',
+    },
 
-    // --- 1. CONFIGURAÇÕES E SELETORES ---
-    const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3001/api'
-        : 'https://messagelove-backend.onrender.com/api';
-
-    const ELEMENTS = {
-        stateManager: document.getElementById('card-state-manager'),
-        revealBtn: document.getElementById('revealBtn'),
-        revealOverlay: document.getElementById('reveal-overlay'),
-        nome: document.getElementById('card-nome'),
-        data: document.getElementById('card-data'),
-        mensagem: document.getElementById('card-mensagem'),
-        fotoContainer: document.getElementById('card-foto-container'),
-        videoContainer: document.getElementById('card-video-container'),
-        likeBtn: document.getElementById('likeBtn'),
-        errorText: document.getElementById('error-text'),
-    };
-
-    // --- 2. EFEITOS ESPECIAIS (ÁUDIO E ANIMAÇÕES) ---
-
-    const synth = window.Tone ? new Tone.PolySynth(Tone.Synth, {
-        oscillator: { type: 'sine' },
-        envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
-    }).toDestination() : null;
-
-    const playSoundEffect = (note = 'C5') => {
-        if (!synth) return;
-        if (Tone.context.state !== 'running') {
-            Tone.context.resume().catch(e => console.error("Erro ao iniciar o áudio:", e));
-        }
-        const now = Tone.now();
-        synth.triggerAttackRelease([note, Tone.Frequency(note).transpose(4), Tone.Frequency(note).transpose(7)], '8n', now);
-    };
-
-    const triggerEmojiRain = () => { /* ... (função sem alterações) ... */ };
-    const triggerFullscreenReveal = () => { /* ... (função sem alterações) ... */ };
+    elements: {}, // Cache de elementos do DOM
     
-    // --- 3. LÓGICA DA API E RENDERIZAÇÃO ---
-
-    const fetchCardData = async (id) => { /* ... (função sem alterações) ... */ };
-
-    const renderCardContent = (card) => {
-        document.title = `Uma mensagem para ${card.para || 'Você'}`;
-        ELEMENTS.nome.textContent = card.para || 'Pessoa Especial';
-        ELEMENTS.mensagem.textContent = card.mensagem || 'Uma mensagem especial para você.';
-        
-        // Garante que os containers comecem limpos e ocultos
-        ELEMENTS.data.hidden = true;
-        ELEMENTS.fotoContainer.hidden = true;
-        ELEMENTS.videoContainer.hidden = true;
-        
-        if (card.data) {
-            ELEMENTS.data.textContent = new Date(`${card.data}T00:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
-            ELEMENTS.data.hidden = false;
+    // --- 2. MÓDULO DE GERENCIAMENTO DE ESTADO ---
+    StateManager: {
+        managerEl: null,
+        setState(state) {
+            if (this.managerEl) {
+                this.managerEl.dataset.state = state;
+            }
+        },
+        init(managerElement) {
+            this.managerEl = managerElement;
+            if (!this.managerEl) {
+                console.error("Gerenciador de estado (#card-state-manager) não encontrado.");
+                return false;
+            }
+            return true;
         }
+    },
 
-        // CORREÇÃO: Torna o contêiner visível se houver foto
-        if (card.fotoUrl) {
-            ELEMENTS.fotoContainer.innerHTML = `<img src="${card.fotoUrl}" alt="Foto para ${card.para}" class="card-image">`;
-            ELEMENTS.fotoContainer.hidden = false;
+    // --- 3. MÓDULO DE EFEITOS ESPECIAIS ---
+    Effects: {
+        synth: null,
+        initAudio() {
+            if (window.Tone) {
+                this.synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
+                }).toDestination();
+            }
+        },
+        playSound(note = 'C5') {
+            if (!this.synth) return;
+            if (Tone.context.state !== 'running') {
+                Tone.context.resume().catch(e => console.error("Áudio:", e));
+            }
+            const now = Tone.now();
+            this.synth.triggerAttackRelease([note, Tone.Frequency(note).transpose(4)], '8n', now);
+        },
+        triggerEmojiRain() {
+            if (document.querySelector('.emoji-rain-container')) return;
+            const container = document.createElement('div');
+            container.className = 'emoji-rain-container';
+            document.body.appendChild(container);
+            const emojis = ['❤️', '💖', '✨', '🎉', '💕'];
+            for (let i = 0; i < 50; i++) {
+                const emojiEl = document.createElement('span');
+                emojiEl.className = 'emoji';
+                emojiEl.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                Object.assign(emojiEl.style, {
+                    left: `${Math.random() * 100}vw`,
+                    fontSize: `${Math.random() * 1.5 + 0.8}rem`,
+                    animationDuration: `${Math.random() * 4 + 4}s`,
+                    animationDelay: `${Math.random() * 5}s`,
+                });
+                container.appendChild(emojiEl);
+            }
+            setTimeout(() => container.remove(), 10000);
+        },
+        triggerFullscreenReveal() {
+            if (CardApp.elements.revealOverlay) {
+                CardApp.elements.revealOverlay.classList.add('active');
+                this.playSound('C4');
+            }
+        },
+    },
+
+    // --- 4. MÓDULO DE MANIPULAÇÃO DA UI ---
+    UI: {
+        render(card) {
+            document.title = `Uma mensagem para ${card.para || 'Você'}`;
+            this.setText('nome', card.para || 'Pessoa Especial');
+            this.setText('mensagem', card.mensagem || 'Uma mensagem especial para você.');
+            this.renderMedia('fotoContainer', card.fotoUrl, 'image', card.para);
+            this.renderMedia('videoContainer', card.youtubeVideoId, 'youtube');
+        },
+        setText(elementId, text) {
+            if (CardApp.elements[elementId]) {
+                CardApp.elements[elementId].textContent = text;
+            }
+        },
+        renderMedia(containerId, data, type, altText = '') {
+            const container = CardApp.elements[containerId];
+            if (!container || !data) return;
+
+            let mediaElement;
+            if (type === 'image') {
+                mediaElement = new Image();
+                mediaElement.src = data;
+                mediaElement.alt = `Foto para ${altText}`;
+                mediaElement.className = 'card-image';
+            } else if (type === 'youtube') {
+                const videoSrc = `https://www.youtube.com/embed/${data}?autoplay=1&mute=1&loop=1&playlist=${data}&controls=0&rel=0`;
+                mediaElement = document.createElement('div');
+                mediaElement.className = 'video-frame';
+                mediaElement.innerHTML = `<div class="video-player-wrapper"><iframe src="${videoSrc}" title="Vídeo do YouTube" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`;
+            }
+
+            // Garante que a imagem carregue antes de ser exibida para evitar "pulos" na tela
+            const showMedia = () => {
+                container.innerHTML = '';
+                container.appendChild(mediaElement);
+            };
+            
+            if (type === 'image') {
+                mediaElement.onload = showMedia;
+                mediaElement.onerror = () => console.error('Erro ao carregar a imagem.');
+            } else {
+                showMedia();
+            }
         }
+    },
 
-        // CORREÇÃO: Torna o contêiner visível se houver vídeo
-        if (card.youtubeVideoId) {
-            const videoSrc = `https://www.youtube.com/embed/${card.youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${card.youtubeVideoId}&controls=0&rel=0`;
-            ELEMENTS.videoContainer.innerHTML = `<div class="video-frame"><div class="video-player-wrapper"><iframe src="${videoSrc}" title="Vídeo do YouTube" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div></div>`;
-            ELEMENTS.videoContainer.hidden = false;
+    // --- 5. MÓDULO DA API ---
+    API: {
+        async fetchCard(id) {
+            try {
+                const response = await fetch(`${CardApp.config.apiUrl}/cards/${id}`);
+                if (!response.ok) {
+                    throw new Error(response.status === 404 ? 'Cartão não encontrado.' : 'Erro no servidor.');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Falha na API:', error);
+                throw new Error('Falha de conexão com o servidor.');
+            }
         }
-    };
+    },
 
-    // --- 4. FLUXO PRINCIPAL ---
-
-    const loadCard = async () => {
-        ELEMENTS.stateManager.dataset.state = 'loading';
+    // --- 6. FLUXO PRINCIPAL E INICIALIZAÇÃO ---
+    async loadCard() {
+        CardApp.StateManager.setState('loading');
         try {
             const cardId = new URLSearchParams(window.location.search).get('id');
             if (!cardId) throw new Error('O link está incompleto.');
-            const cardData = await fetchCardData(cardId);
-            renderCardContent(cardData);
-            ELEMENTS.stateManager.dataset.state = 'card-content';
-            playSoundEffect('E5');
-            triggerEmojiRain();
+
+            const cardData = await CardApp.API.fetchCard(cardId);
+            CardApp.UI.render(cardData);
+            
+            CardApp.StateManager.setState('card-content');
+            CardApp.Effects.playSound('E5');
+            CardApp.Effects.triggerEmojiRain();
+
         } catch (error) {
             console.error('Não foi possível carregar o cartão:', error);
-            if (ELEMENTS.errorText) ELEMENTS.errorText.textContent = error.message;
-            ELEMENTS.stateManager.dataset.state = 'error';
+            if (CardApp.elements.errorText) CardApp.elements.errorText.textContent = error.message;
+            CardApp.StateManager.setState('error');
         }
-    };
+    },
 
-    // --- 5. INICIALIZAÇÃO E EVENTOS ---
-
-    const init = () => {
-        if (!ELEMENTS.stateManager) {
-            console.error("Elemento #card-state-manager não encontrado.");
-            return;
-        }
-        ELEMENTS.revealBtn?.addEventListener('click', () => {
-            triggerFullscreenReveal();
-            setTimeout(loadCard, 500);
+    bindEvents() {
+        this.elements.revealBtn?.addEventListener('click', () => {
+            this.Effects.triggerFullscreenReveal();
+            setTimeout(() => this.loadCard(), 500);
         }, { once: true });
-        ELEMENTS.likeBtn?.addEventListener('click', (e) => {
+
+        this.elements.likeBtn?.addEventListener('click', (e) => {
             e.currentTarget.classList.toggle('liked');
-            playSoundEffect('G5');
+            this.Effects.playSound('G5');
             if (e.currentTarget.classList.contains('liked')) {
-                triggerEmojiRain();
+                this.Effects.triggerEmojiRain();
             }
         });
-    };
+    },
 
-    init();
-});
+    init() {
+        const elementIds = ['stateManager', 'revealBtn', 'revealOverlay', 'nome', 'data', 'mensagem', 'fotoContainer', 'videoContainer', 'likeBtn', 'errorText'];
+        elementIds.forEach(id => {
+            // Converte camelCase para kebab-case para buscar o ID no DOM
+            const elementId = id.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
+            this.elements[id] = document.getElementById(elementId);
+        });
+
+        if (!this.StateManager.init(this.elements.stateManager)) return;
+
+        this.Effects.initAudio();
+        this.bindEvents();
+
+        console.log("Messagelove Card Viewer inicializado.");
+    }
+};
+
+// Inicia a aplicação quando o DOM estiver pronto.
+document.addEventListener('DOMContentLoaded', () => CardApp.init());
