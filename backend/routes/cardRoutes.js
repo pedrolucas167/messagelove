@@ -6,7 +6,14 @@ const multer = require('multer');
 const { nanoid } = require('nanoid');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const db = require('../models');
-
+const command = new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fotoKey,
+    Body: foto.buffer,
+    ContentType: foto.mimetype,
+    ACL: 'public-read' // <--- Garanta que esta linha exista!
+});
+await s3Client.send(command);
 // --- Configuração do S3 e Multer ---
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 const storage = multer.memoryStorage();
