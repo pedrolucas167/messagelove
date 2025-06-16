@@ -8,8 +8,6 @@
     
     <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
     <meta name="theme-color" content="#e91e63">
-    <meta property="og:title" content="Um Cartão Especial Para Você!">
-    <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
     
     <link rel="icon" href="/assets/coracao.png" type="image/png">
     
@@ -32,44 +30,48 @@
   </header>
 
   <main class="container">
-    <!-- Estado de Carregamento -->
-    <div id="loading-state" class="loader-wrapper" role="status" aria-live="polite">
-      <div class="loader"></div>
-      <p>Carregando seu cartão especial...</p>
-    </div>
-
-    <!-- Conteúdo do Cartão (inicialmente oculto) -->
-    <article id="card-view" class="card-preview hidden">
-        <header class="card-preview-header">
-          <div>
-            <h1 id="card-nome" class="recipient-name"></h1>
-            <p id="card-data" class="special-date" hidden></p>
-          </div>
-        </header>
-
-        <section class="card-body">
-          <p id="card-mensagem"></p>
-        </section>
-
-        <!-- Container da Foto -->
-        <figure id="card-foto-container" class="preview-image-container" hidden></figure>
-        
-        <!-- Container do Vídeo -->
-        <div id="card-video-container" hidden></div>
-
-        <!-- Botão de Coração Interativo -->
-        <div class="card-actions">
-            <button id="likeBtn" class="like-button" aria-label="Gostei">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            </button>
+    <!-- Container principal que gerencia o estado da visualização -->
+    <div id="card-state-manager" data-state="loading">
+    
+      <!-- Estado de Carregamento -->
+      <div class="card-state" data-view="loading">
+        <div class="loader-wrapper">
+          <div class="loader"></div>
+          <p>Carregando seu cartão especial...</p>
         </div>
-    </article>
+      </div>
 
-    <!-- Estado de Erro (inicialmente oculto) -->
-    <div id="error-state" class="card-preview hidden">
-      <h2>Ops! Algo deu errado.</h2>
-      <p id="error-text">Não foi possível carregar o cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
-      <a href="/" class="btn btn-primary">Criar um novo cartão</a>
+      <!-- Conteúdo do Cartão -->
+      <div class="card-state" data-view="card-content">
+        <article class="card-preview">
+            <header class="card-preview-header">
+              <div>
+                <h1 id="card-nome" class="recipient-name"></h1>
+                <p id="card-data" class="special-date"></p>
+              </div>
+            </header>
+            <section class="card-body">
+              <p id="card-mensagem"></p>
+            </section>
+            <figure id="card-foto-container" class="preview-image-container"></figure>
+            <div id="card-video-container"></div>
+            <div class="card-actions">
+                <button id="likeBtn" class="like-button" aria-label="Gostei">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </button>
+            </div>
+        </article>
+      </div>
+
+      <!-- Estado de Erro -->
+      <div class="card-state" data-view="error">
+        <div class="card-preview error-box">
+          <h2>Ops! Algo deu errado.</h2>
+          <p id="error-text">Não foi possível carregar o cartão.</p>
+          <a href="/" class="btn btn-primary">Criar um novo cartão</a>
+        </div>
+      </div>
+
     </div>
   </main>
 

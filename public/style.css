@@ -1,4 +1,4 @@
-/* ---
+* ---
  * Messagelove - Stylesheet Principal
  * Versão: 6.0.0
  * Descrição: CSS unificado, incluindo design system, layout,
@@ -421,7 +421,7 @@ textarea {
   box-shadow: var(--shadow-md);
 }
 
-/* --- 8. ANIMAÇÕES E ESTADOS ESPECIAIS (Novo) --- */
+/* --- 8. ANIMAÇÕES E ESTADOS ESPECIAIS --- */
 
 /* Loader */
 .loader-wrapper {
@@ -520,7 +520,6 @@ textarea {
 }
 
 /* --- 9. UTILITÁRIOS --- */
-
 .sr-only {
   position: absolute;
   width: 1px;
