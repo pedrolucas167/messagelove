@@ -2,7 +2,7 @@
  * @file card.js
  * @description Script para carregar e exibir um cartão personalizado com arquitetura modular.
  * @author Pedro Marques
- * @version 6.1.0
+ * @version 6.2.0
  */
 
 // Módulo principal do aplicativo do Cartão
@@ -84,9 +84,16 @@ const CardApp = {
     // --- 4. MÓDULO DE MANIPULAÇÃO DA UI ---
     UI: {
         render(card) {
+            // CORREÇÃO: Adicionada verificação para garantir que 'card' é um objeto válido.
+            if (!card || typeof card !== 'object') {
+                throw new Error("Os dados recebidos do cartão são inválidos.");
+            }
+
             document.title = `Uma mensagem para ${card.para || 'Você'}`;
             this.setText('nome', card.para || 'Pessoa Especial');
             this.setText('mensagem', card.mensagem || 'Uma mensagem especial para você.');
+
+            // CORREÇÃO: A lógica de exibição da mídia foi movida para dentro de renderMedia
             this.renderMedia('fotoContainer', card.fotoUrl, 'image', card.para);
             this.renderMedia('videoContainer', card.youtubeVideoId, 'youtube');
         },
@@ -97,11 +104,13 @@ const CardApp = {
         },
         renderMedia(containerKey, data, type, altText = '') {
             const container = CardApp.elements[containerKey];
-            if (!container || !data) {
-                // Esconde o container se não houver dados
-                if(container) container.style.display = 'none';
-                return;
-            }
+            if (!container) return;
+
+            // Esconde o container por padrão e só mostra se houver dados
+            container.style.display = 'none';
+            container.innerHTML = '';
+
+            if (!data) return; // Se não houver dados, o container permanece escondido.
 
             container.style.display = ''; // Garante que o container esteja visível
             let mediaElement;
@@ -119,13 +128,12 @@ const CardApp = {
             }
 
             const showMedia = () => {
-                container.innerHTML = '';
                 container.appendChild(mediaElement);
             };
             
             if (type === 'image') {
                 mediaElement.onload = showMedia;
-                mediaElement.onerror = () => console.error('Erro ao carregar a imagem.');
+                mediaElement.onerror = () => console.error('Erro ao carregar a imagem. Verifique as permissões e CORS do bucket S3.');
             } else {
                 showMedia();
             }
@@ -185,7 +193,6 @@ const CardApp = {
     },
 
     init() {
-        // CORREÇÃO: Mapeamento explícito e correto dos seletores do DOM
         this.elements = {
             stateManager: document.getElementById('card-state-manager'),
             revealBtn: document.getElementById('revealBtn'),
@@ -208,5 +215,4 @@ const CardApp = {
     }
 };
 
-// Inicia a aplicação quando o DOM estiver pronto.
 document.addEventListener('DOMContentLoaded', () => CardApp.init());
