@@ -1,8 +1,8 @@
 /* ---
  * Messagelove - Stylesheet Principal
- * Versão: 7.0.0
- * Descrição: CSS unificado, incluindo design system, layout,
- * componentes e todas as animações da aplicação.
+ * Versão: 8.0.0
+ * Descrição: CSS final com layout alinhado, componentes aprimorados e
+ * animações integradas.
  * --- */
 
 /* --- 1. IMPORTAÇÃO E VARIÁVEIS GLOBAIS (ROOT) --- */
@@ -80,24 +80,33 @@ button, input, select, textarea {
   margin-inline: auto;
 }
 
-.main-header {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: var(--color-surface);
+/* Layout para as páginas de formulário e de visualização */
+.main-header, .card-page-header {
   padding: var(--space-xl) var(--space-md);
   text-align: center;
 }
-
+.main-header {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: var(--color-surface);
+}
 .main-header h1 {
   color: inherit;
   font-size: clamp(2rem, 6vw, 2.8rem);
   letter-spacing: -0.02em;
 }
 
+.card-page-header a {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
 .main-content {
   padding-block: var(--space-lg);
 }
 
-.main-footer {
+.main-footer, .card-page-footer {
   padding: var(--space-lg) 0;
   text-align: center;
   font-size: 0.9rem;
@@ -105,12 +114,12 @@ button, input, select, textarea {
   border-top: 1px solid var(--color-border);
 }
 
-.main-footer a {
+.main-footer a, .card-page-footer a {
   color: var(--color-primary);
   font-weight: 600;
   text-decoration: none;
 }
-.main-footer a:hover {
+.main-footer a:hover, .card-page-footer a:hover {
   text-decoration: underline;
 }
 
@@ -123,9 +132,7 @@ button, input, select, textarea {
   box-shadow: var(--shadow-md);
 }
 
-fieldset {
-  border: none;
-}
+fieldset { border: none; }
 
 .form-group {
   margin-block-end: var(--space-lg);
@@ -181,10 +188,7 @@ textarea {
   resize: vertical;
 }
 
-.input-group {
-  display: flex;
-  gap: 0.5rem;
-}
+.input-group { display: flex; gap: 0.5rem; }
 
 .form-actions {
   text-align: center;
@@ -260,12 +264,11 @@ textarea {
   transform: scale(1.1) rotate(90deg);
 }
 .btn-remove::before {
-  content: '×'; /* Caractere de multiplicação para um 'X' mais elegante */
+  content: '×';
 }
 
-.btn.btn--loading .btn-text {
-  visibility: hidden;
-}
+.btn.btn--loading .btn-text { visibility: hidden; }
+
 .btn.btn--loading::after {
   content: '';
   position: absolute;
@@ -293,12 +296,8 @@ textarea {
   object-fit: contain;
 }
 
-.youtube-preview-container {
-  display: none;
-}
-.youtube-preview-container.active {
-  display: block;
-}
+.youtube-preview-container { display: none; }
+.youtube-preview-container.active { display: block; }
 
 .video-wrapper {
   position: relative;
@@ -350,9 +349,7 @@ textarea {
   cursor: pointer;
   opacity: 0.7;
 }
-.notification__close:hover {
-  opacity: 1;
-}
+.notification__close:hover { opacity: 1; }
 
 .success-actions {
   display: flex;
@@ -381,6 +378,15 @@ textarea {
   background: linear-gradient(160deg, hsl(330, 80%, 98%), hsl(255, 100%, 98%));
   padding: var(--space-md) 0;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#card-view-page .main-content {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-preview {
@@ -389,8 +395,7 @@ textarea {
   padding: clamp(var(--space-md), 5vw, var(--space-xl));
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--color-border);
-  max-width: min(700px, 90vw);
-  margin-inline: auto;
+  width: 100%; /* Ocupa a largura do .container */
 }
 
 .card-preview .recipient-name {
@@ -420,7 +425,7 @@ textarea {
 .card-preview .card-body p {
   font-size: 1.15rem;
   line-height: 1.75;
-  white-space: pre-wrap; /* Preserva quebras de linha da mensagem */
+  white-space: pre-wrap;
   color: var(--color-text);
 }
 
@@ -448,9 +453,21 @@ textarea {
   box-shadow: var(--shadow-md);
 }
 
+.video-frame {
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm);
+  background: linear-gradient(145deg, hsl(240, 5%, 25%), hsl(240, 5%, 15%));
+  box-shadow: var(--shadow-lg);
+  border: 1px solid hsl(240, 5%, 40%);
+  margin-block: var(--space-lg);
+}
+.video-frame .video-wrapper {
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 2px 8px hsla(0, 0%, 0%, 0.4);
+}
+
 /* --- 8. ANIMAÇÕES E ESTADOS ESPECIAIS --- */
 
-/* Loader */
 .loader-wrapper {
   text-align: center;
   padding: 50px;
@@ -466,9 +483,7 @@ textarea {
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
 }
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Tela de Revelação */
 .reveal-box {
@@ -477,7 +492,6 @@ textarea {
     background-color: var(--color-surface);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
-    margin-top: var(--space-lg);
 }
 .reveal-icon {
     font-size: 4rem;
@@ -529,9 +543,8 @@ textarea {
 }
 
 /* Controle de Estado da Visualização */
-#card-state-manager .card-state {
-    display: none;
-}
+#card-state-manager .card-state { display: none; }
+
 #card-state-manager[data-state="reveal"] [data-view="reveal"],
 #card-state-manager[data-state="loading"] [data-view="loading"],
 #card-state-manager[data-state="error"] [data-view="error"] {
@@ -546,9 +559,7 @@ textarea {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.error-box {
-  text-align: center;
-}
+.error-box { text-align: center; }
 
 /* Botão de Coração Interativo */
 .card-actions {
@@ -560,7 +571,7 @@ textarea {
   border: none;
   cursor: pointer;
   padding: 0;
-  color: #e0e0e0; /* Cinza claro inicial */
+  color: #e0e0e0;
   transition: color 0.3s ease, transform 0.3s ease;
 }
 .like-button svg {
@@ -568,9 +579,7 @@ textarea {
   height: 50px;
   filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
 }
-.like-button:hover {
-  color: #ff8fab;
-}
+.like-button:hover { color: #ff8fab; }
 .like-button.liked {
   color: #f43f5e;
   animation: pulse 0.5s cubic-bezier(0.25, 1, 0.5, 1);
@@ -600,10 +609,7 @@ textarea {
   opacity: 0.7;
 }
 @keyframes fall {
-  to {
-    transform: translateY(110vh) rotate(360deg);
-    opacity: 0;
-  }
+  to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
 }
 
 /* --- 9. UTILITÁRIOS --- */
