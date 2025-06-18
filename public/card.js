@@ -255,11 +255,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     main();
 });
-
-// Este script (do YouTube) deve ser carregado APÓS a definição de onYouTubeIframeAPIReady
-// mas idealmente antes do DOMContentLoaded, ou de forma assíncrona.
-// Certifique-se de que no seu HTML você tem algo assim:
-/*
-<script async src="https://www.youtube.com/iframe_api"></script>
-<script src="path/to/card.js"></script>
-*/
