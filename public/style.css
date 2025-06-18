@@ -1,9 +1,8 @@
 /* Import Google Font 'Inter' */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* ============================================
-   🎨 VARIÁVEIS GLOBAIS
-   ============================================ */
+/*/ root /*/
+
 :root {
   /* Cores */
   --color-primary: hsl(330, 70%, 60%);
@@ -35,26 +34,24 @@
   --transition-slow: 500ms ease-out;
 
   /* Border Radius */
-  --radius-sm: 0.375rem; /* 6px */
-  --radius-md: 0.75rem;  /* 12px */
-  --radius-lg: 1rem;     /* 16px */
-  --radius-xl: 1.5rem;   /* 24px */
+  --radius-sm: 0.375rem;  /* 6px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
   --radius-pill: 9999px;
 
   /* Sombras */
-  --shadow-xs: 0 1px 3px hsla(0, 0%, 0%, 0.08);
-  --shadow-sm: 0 2px 5px hsla(0, 0%, 0%, 0.1);
-  --shadow-md: 0 5px 15px hsla(0, 0%, 0%, 0.12);
-  --shadow-lg: 0 10px 30px hsla(0, 0%, 0%, 0.15);
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
   --shadow-focus: 0 0 0 4px hsla(330, 70%, 60%, 0.25);
 }
 
 /* ============================================
    🏗️ RESET E ESTILOS BASE
    ============================================ */
-*,
-*::before,
-*::after {
+:where(*, *::before, *::after) {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -68,7 +65,8 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
+               Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
   color: var(--color-text);
   background-color: var(--color-bg);
@@ -78,25 +76,20 @@ body {
   min-height: 100vh;
 }
 
-img,
-picture,
-video,
-canvas,
-svg {
+:where(img, picture, video, canvas, svg) {
   display: block;
   max-width: 100%;
   height: auto;
 }
 
-ol,
-ul {
+:where(ol, ul) {
   list-style: none;
 }
 
 a {
   color: var(--color-primary);
   text-decoration: none;
-  transition: color var(--transition-fast), text-decoration var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
 a:hover {
@@ -104,15 +97,7 @@ a:hover {
   text-decoration: underline;
 }
 
-a:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-button,
-input,
-select,
-textarea {
+:where(button, input, select, textarea) {
   font: inherit;
   color: inherit;
   background: none;
@@ -123,11 +108,6 @@ button {
   cursor: pointer;
   touch-action: manipulation;
   user-select: none;
-}
-
-button:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
 }
 
 /* ============================================
@@ -188,6 +168,8 @@ button:focus-visible {
   opacity: 0.6;
   cursor: not-allowed;
   filter: grayscale(60%);
+  box-shadow: none;
+  transform: none;
 }
 
 .btn--primary {
@@ -222,30 +204,6 @@ button:focus-visible {
   width: 100%;
 }
 
-.btn--copy-link {
-  --btn-bg-color: var(--color-white);
-  --btn-text-color: var(--color-primary);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-primary);
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-transform: none;
-  margin-left: var(--space-xs);
-}
-
-.btn--copy-link:hover:not(:disabled) {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn--copy-link:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
 .btn__loading {
   display: none;
   width: 1.2em;
@@ -257,13 +215,14 @@ button:focus-visible {
   margin-right: var(--space-xs);
 }
 
-.btn--loading .btn__loading {
+.btn.btn--loading .btn__loading {
   display: inline-block;
 }
 
-.btn--loading > :not(.btn__loading) {
+.btn.btn--loading > :not(.btn__loading) {
   visibility: hidden;
   opacity: 0;
+  display: none;
 }
 
 @keyframes spin {
@@ -276,7 +235,8 @@ button:focus-visible {
 .main-header {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: var(--color-white);
-  padding-block: var(--space-lg) var(--space-xl);
+  padding-block: var(--space-xxl) var(--space-xl);
+  margin-block-end: var(--space-xl);
   text-align: center;
   box-shadow: var(--shadow-md);
 }
@@ -313,6 +273,7 @@ h1 {
 h2 {
   font-size: clamp(1.8rem, 4.5vw, 2.2rem);
   letter-spacing: -0.01em;
+  margin-block-end: var(--space-md);
 }
 
 .subtitle {
@@ -325,9 +286,10 @@ h2 {
 }
 
 .section-title {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: var(--color-primary-dark);
+  margin-block-end: var(--space-lg);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
@@ -337,7 +299,7 @@ h2 {
 .section-title::after {
   content: '';
   position: absolute;
-  bottom: -4px;
+  bottom: -6px;
   left: 0;
   width: 60%;
   height: 3px;
@@ -350,14 +312,15 @@ h2 {
    ============================================ */
 .card-form {
   background-color: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: clamp(var(--space-md), 5vw, var(--space-lg));
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-xl);
+  padding: clamp(var(--space-md), 5vw, var(--space-xl));
+  box-shadow: var(--shadow-lg);
+  margin-block-end: var(--space-xl);
   border: 1px solid var(--color-light);
 }
 
 .form-group {
-  margin-block-end: var(--space-md);
+  margin-block-end: var(--space-lg);
 }
 
 .form-section {
@@ -369,7 +332,7 @@ h2 {
 label {
   display: block;
   margin-block-end: var(--space-xs);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-muted);
   font-size: 0.95rem;
 }
@@ -380,16 +343,9 @@ label {
   font-weight: normal;
 }
 
-.form-input,
-input[type="text"],
-input[type="date"],
-input[type="email"],
-input[type="url"],
-input[type="search"],
-textarea,
-select {
+:is(.form-input, input[type="text"], input[type="date"], input[type="email"], input[type="url"], input[type="search"], textarea, select) {
   width: 100%;
-  padding: var(--space-xs) var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-light);
@@ -399,14 +355,7 @@ select {
               background-color var(--transition-base);
 }
 
-.form-input:focus,
-input[type="text"]:focus,
-input[type="date"]:focus,
-input[type="email"]:focus,
-input[type="url"]:focus,
-input[type="search"]:focus,
-textarea:focus,
-select:focus {
+:is(.form-input, input[type="text"], input[type="date"], input[type="email"], input[type="url"], input[type="search"], textarea, select):focus {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
   background-color: var(--color-white);
@@ -414,14 +363,14 @@ select:focus {
 }
 
 textarea {
-  min-height: 120px;
+  min-height: 140px;
   resize: vertical;
 }
 
 .field-hint {
   display: block;
   margin-top: var(--space-xs);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-muted);
 }
 
@@ -430,7 +379,7 @@ textarea {
    ============================================ */
 .file-upload input[type="file"] {
   width: 100%;
-  padding: var(--space-sm);
+  padding: var(--space-lg) var(--space-sm);
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-light);
@@ -438,32 +387,36 @@ textarea {
   font-size: 0.95rem;
   text-align: center;
   cursor: pointer;
-  transition: border-color var(--transition-base), background-color var(--transition-base);
+  transition: border-color var(--transition-base), background-color var(--transition-base),
+              color var(--transition-base);
 }
 
 .file-upload input[type="file"]:hover,
 .file-upload input[type="file"]:focus {
   border-color: var(--color-primary);
   background-color: hsla(330, 70%, 60%, 0.05);
+  color: var(--color-primary-dark);
 }
 
 .preview-container {
   position: relative;
-  margin-top: var(--space-sm);
+  margin-top: var(--space-md);
   border-radius: var(--radius-md);
   overflow: hidden;
+  line-height: 0;
 }
 
 .preview {
   max-width: 100%;
-  max-height: 300px;
+  max-height: 350px;
   object-fit: contain;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  background-color: var(--color-light);
 }
 
 .btn-remove {
-  --btn-remove-size: 28px;
+  --btn-remove-size: 32px;
   position: absolute;
   top: var(--space-xs);
   right: var(--space-xs);
@@ -472,29 +425,34 @@ textarea {
   border-radius: var(--radius-pill);
   background-color: var(--color-error);
   color: var(--color-white);
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: var(--btn-remove-size);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--color-white);
-  transition: transform var(--transition-base), background-color var(--transition-base);
+  padding: 0;
+  z-index: 10;
+  transition: transform var(--transition-base), background-color var(--transition-base),
+              box-shadow var(--transition-base);
 }
 
 .btn-remove:hover {
   transform: scale(1.1);
   background-color: hsl(0, 70%, 50%);
+  box-shadow: var(--shadow-md);
 }
 
 /* ============================================
    📢 FEEDBACK E NOTIFICAÇÕES
    ============================================ */
 .feedback {
-  padding: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
-  margin-block: var(--space-sm);
+  margin-block-end: var(--space-md);
   font-size: 0.95rem;
   font-weight: 500;
+  box-shadow: var(--shadow-sm);
   border-left: 4px solid;
 }
 
@@ -516,21 +474,28 @@ textarea {
   border-left-color: var(--color-success);
 }
 
-.notification {
+#appNotificationArea {
   position: fixed;
-  top: var(--space-sm);
-  right: var(--space-sm);
-  width: 280px;
-  padding: var(--space-sm);
-  border-radius: var(--radius-sm);
-  color: var(--color-white);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow-md);
-  opacity: 0.95;
-  transition: opacity var(--transition-base), transform var(--transition-base);
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.notification--removing {
+.notification {
+  padding: 15px;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.9em;
+  box-shadow: var(--shadow-md);
+  opacity: 0.95;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification.notification--removing {
   opacity: 0;
   transform: translateX(100%);
 }
@@ -549,28 +514,31 @@ textarea {
 
 .notification__close {
   position: absolute;
-  top: var(--space-xs);
-  right: var(--space-xs);
+  top: 8px;
+  right: 10px;
   background: none;
+  border: none;
   color: inherit;
-  font-size: 1.2rem;
+  font-size: 22px;
+  font-weight: bold;
   cursor: pointer;
   line-height: 1;
+  padding: 0;
 }
 
 /* ============================================
-   🖼️ PRÉVIA DO CARTÃO
+   🖼️ PRÉVIA DO CARTÃO E PÁGINA DE VISUALIZAÇÃO
    ============================================ */
 .card-preview-wrapper {
   position: fixed;
   inset: 0;
-  background-color: var(--color-overlay);
+  background-color: hsla(0, 0%, 0%, 0.5);
   display: grid;
   place-items: center;
   padding: var(--space-md);
   z-index: 1000;
   overflow-y: auto;
-  animation: fadeInOverlay var(--transition-base);
+  animation: fadeInOverlay 0.3s ease-out;
 }
 
 @keyframes fadeInOverlay {
@@ -580,18 +548,19 @@ textarea {
 
 .card-preview {
   background-color: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
   box-shadow: var(--shadow-lg);
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  animation: fadeInCardModal var(--transition-medium) backwards;
+  position: relative;
+  animation: fadeInCardModal 0.4s ease-out 0.1s backwards;
 }
 
 @keyframes fadeInCardModal {
-  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -599,75 +568,100 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-block-end: var(--space-md);
-  padding-block-end: var(--space-sm);
+  margin-block-end: var(--space-lg);
   border-block-end: 1px solid var(--color-border);
+  padding-block-end: var(--space-md);
 }
 
 .card-preview-header h2 {
   margin: 0;
-  font-size: 1.6rem;
   color: var(--color-primary-dark);
+  font-size: 1.8rem;
 }
 
 .card-preview .close-preview-btn {
   background: none;
-  font-size: 1.5rem;
+  border: none;
+  font-size: 2rem;
   color: var(--color-muted);
   cursor: pointer;
   padding: var(--space-xs);
+  line-height: 1;
   transition: color var(--transition-fast), transform var(--transition-fast);
 }
 
-.card-preview .close-preview-btn:hover,
-.card-preview .close-preview-btn:focus-visible {
+.card-preview .close-preview-btn:hover {
   color: var(--color-error);
   transform: scale(1.1);
 }
 
 .card-preview p {
   margin-block-end: var(--space-sm);
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.card-preview p strong {
+  color: var(--color-text);
+  font-weight: 600;
 }
 
 .card-preview .preview-image-container {
-  margin-block: var(--space-sm);
+  margin-block: var(--space-md);
   text-align: center;
 }
 
 .card-preview .preview-image {
   max-width: 100%;
-  max-height: 250px;
+  max-height: 300px;
   border-radius: var(--radius-md);
   object-fit: contain;
   box-shadow: var(--shadow-sm);
 }
 
 .card-preview .preview-link-info {
-  margin-block-start: var(--space-md);
-  padding-block-start: var(--space-sm);
+  margin-block-start: var(--space-lg);
+  padding-block-start: var(--space-md);
   border-block-start: 1px solid var(--color-light);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--color-muted);
   text-align: center;
 }
 
 .card-preview .preview-link-info a {
-  font-weight: 500;
+  font-weight: 600;
   word-break: break-all;
 }
 
+#card-view-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  padding: var(--space-md);
+}
+
+#card-view-page .card-preview {
+  margin-top: 0;
+}
+
+#card-view-page .card-preview h1 {
+  text-align: center;
+  margin-block-end: var(--space-lg);
+  color: var(--color-primary-dark);
+}
+
+---
 /* ============================================
-   🎥 PLAYER DE VÍDEO
+   🎥 PLAYER DE VÍDEO (NOVO E CENTRALIZADO)
    ============================================ */
 .video-player-wrapper {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 56.25%; /* Proporção 16:9 para vídeos */
   height: 0;
   overflow: hidden;
   max-width: 100%;
-  border-radius: var(--radius-md);
+  /* Removido border-radius daqui para controlar apenas pela moldura */
 }
 
 .video-player-wrapper iframe {
@@ -676,280 +670,42 @@ textarea {
   left: 0;
   width: 100%;
   height: 100%;
-  border: none;
-}
-
-.video-frame {
-  border-radius: var(--radius-lg);
-  padding: var(--space-xs);
-  background: linear-gradient(145deg, hsl(240, 5%, 25%), hsl(240, 5%, 15%));
-  box-shadow: var(--shadow-lg);
-  border: 1px solid hsl(240, 5%, 40%);
-  margin-block: var(--space-sm);
-}
-
-.video-frame .video-player-wrapper {
-  border-radius: var(--radius-sm);
-  box-shadow: inset 0 2px 8px hsla(0, 0%, 0%, 0.3);
-}
-
-/* ============================================
-   🖼️ PÁGINA DE VISUALIZAÇÃO
-   ============================================ */
-#card-view-page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(160deg, hsl(330, 80%, 98%), hsl(255, 100%, 98%));
-  padding: var(--space-md);
-}
-
-#card-view-page .card-preview {
-  margin: 0;
-}
-
-#card-view-page .card-preview h1 {
-  text-align: center;
-  margin-block-end: var(--space-md);
-  color: var(--color-primary-dark);
-}
-
-.card-page-header,
-.card-page-footer {
-  text-align: center;
-  padding: var(--space-sm);
-}
-
-.card-page-header a {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.card-preview .recipient-name {
-  color: var(--color-primary-dark);
-  font-size: clamp(1.8rem, 5vw, 2.5rem);
-}
-
-.card-preview .special-date {
-  color: var(--color-muted);
-  font-style: italic;
-  font-size: 1rem;
-}
-
-.card-preview .card-body p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.card-preview .card-image {
-  width: 100%;
-  border-radius: var(--radius-md);
-  margin-block: var(--space-sm);
-  box-shadow: var(--shadow-sm);
-}
-
-#card-mensagem {
-  white-space: pre-wrap;
-}
-
-/* ============================================
-   🎉 EFEITO CHUVA DE EMOJIS
-   ============================================ */
-.emoji-rain-container {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-.emoji {
-  position: absolute;
-  top: -10%;
-  user-select: none;
-  animation: fall linear forwards;
-}
-
-@keyframes fall {
-  to {
-    transform: translateY(110vh) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-/* ============================================
-   🛠️ UTILITÁRIOS
-   ============================================ */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   border: 0;
+  /* Garante que o iframe tenha o mesmo border-radius da moldura interna */
+  border-radius: inherit; /* Herdará o border-radius do .video-player-wrapper */
 }
 
-.hidden {
-  display: none;
+/* A MOLDURA PRINCIPAL DO VÍDEO */
+.video-frame {
+  /* Margem vertical para separar de outros elementos */
+  margin-block: var(--space-md);
+  
+  /* Arredonda os cantos da moldura externa */
+  border-radius: var(--radius-lg); 
+  
+  /* Espaçamento interno para criar o efeito de borda */
+  padding: var(--space-sm); /* ou var(--space-xs) para uma moldura mais fina */
+  
+  /* Fundo da moldura */
+  background: linear-gradient(145deg, hsl(240, 5%, 25%), hsl(240, 5%, 15%));
+  
+  /* Sombra para dar profundidade e destaque */
+  box-shadow: var(--shadow-lg), 0 0 40px hsla(330, 70%, 60%, 0.2);
+  
+  /* Borda sutil */
+  border: 1px solid hsl(240, 5%, 40%);
+  
+  /* Garante que o conteúdo (o wrapper do vídeo) respeite o border-radius da moldura */
+  overflow: hidden; 
 }
 
-/* ============================================
-   🚫 NO-JS E ALERTAS
-   ============================================ */
-.no-js-alert {
-  display: none;
-  padding: var(--space-sm);
-  background-color: var(--color-error);
-  color: var(--color-white);
-  text-align: center;
-  font-weight: 500;
-}
-
-.no-js .no-js-alert {
-  display: block;
-}
-
-.no-js .main-content {
-  display: none;
-}
-
-/* ============================================
-   📱 RESPONSIVIDADE
-   ============================================ */
-@media (max-width: 1024px) {
-  /* Para tablets e laptops menores */
-  .container {
-    padding-inline: var(--space-md);
-  }
-}
-
-@media (max-width: 768px) {
-  /* Para tablets em modo retrato e smartphones maiores */
-  html {
-    font-size: 15px; /* Reduz o tamanho da fonte base */
-  }
-  .main-header {
-    padding-block: var(--space-md) var(--space-lg); /* Ajusta o padding do cabeçalho */
-  }
-  .card-form,
-  .card-preview {
-    padding: var(--space-md); /* Reduz o padding em cards e formulários */
-  }
-  .section-title {
-    font-size: 1.1rem; /* Reduz o tamanho do título da seção */
-  }
-  .card-preview-header h2 {
-    font-size: 1.4rem; /* Ajusta o tamanho do h2 na prévia do cartão */
-  }
-  .notification {
-    width: 90%;
-    max-width: 260px; /* Ajusta a largura da notificação */
-    top: var(--space-md);
-    right: 5%; /* Centraliza mais ou menos em telas menores */
-  }
-  .btn {
-    padding: var(--space-xs) var(--space-md); /* Ajusta padding de botões */
-  }
-}
-
-@media (max-width: 480px) {
-  /* Para smartphones */
-  html {
-    font-size: 14px; /* Reduz ainda mais o tamanho da fonte base */
-  }
-  .container {
-    padding-inline: var(--space-sm); /* Mais redução no padding do container */
-  }
-  .main-header {
-    padding-block: var(--space-sm) var(--space-md); /* Mais redução no padding do cabeçalho */
-  }
-  .card-form,
-  .card-preview {
-    padding: var(--space-sm); /* Mínimo padding em cards e formulários */
-    border-radius: var(--radius-md); /* Cantos um pouco menos arredondados */
-  }
-  .section-title {
-    font-size: 1rem; /* Ainda menor para títulos de seção */
-  }
-  .card-preview-header h2 {
-    font-size: 1.2rem; /* h2 menor na prévia */
-  }
-  .card-preview p {
-    font-size: 0.95rem; /* Texto do parágrafo ligeiramente menor */
-  }
-  .card-preview .close-preview-btn {
-    font-size: 1.3rem; /* Botão de fechar menor */
-  }
-  .btn {
-    padding: var(--space-xs) var(--space-sm); /* Botões ainda menores */
-    font-size: 0.9rem;
-  }
-  .btn--copy-link {
-    font-size: 0.8rem; /* Botão de copiar link menor */
-  }
-  .form-input,
-  textarea,
-  input[type="text"],
-  input[type="date"],
-  input[type="email"],
-  input[type="url"],
-  input[type="search"],
-  select {
-    padding: var(--space-xs); /* Padding menor para inputs */
-    font-size: 0.9rem;
-  }
-  textarea {
-    min-height: 100px; /* Reduz altura mínima da textarea */
-  }
-  .file-upload input[type="file"] {
-    font-size: 0.85rem; /* Tamanho da fonte do input file */
-  }
-  .preview {
-    max-height: 200px; /* Limite de altura para pré-visualização da imagem */
-  }
-  .btn-remove {
-    --btn-remove-size: 24px; /* Botão de remover menor */
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 320px) {
-  /* Para smartphones muito pequenos (ex: iPhone 5/SE) */
-  html {
-    font-size: 13px; /* Tamanho base de fonte mínimo */
-  }
-  .container {
-    padding-inline: var(--space-xs); /* Padding mínimo para o container */
-  }
-  .main-header {
-    padding-block: var(--space-sm) var(--space-sm);
-  }
-  .section-title {
-    font-size: 0.9rem;
-  }
-  .card-preview-header h2 {
-    font-size: 1.1rem;
-  }
-  .card-preview p {
-    font-size: 0.9rem;
-  }
-  .btn {
-    padding: var(--space-xxs) var(--space-sm);
-    font-size: 0.85rem;
-  }
-  .form-input,
-  textarea,
-  input[type="text"],
-  input[type="date"],
-  input[type="email"],
-  input[type="url"],
-  input[type="search"],
-  select {
-    padding: var(--space-xxs) var(--space-xs);
-    font-size: 0.85rem;
-  }
+/* Efeito de profundidade no player dentro da moldura */
+.video-frame .video-player-wrapper {
+  /* O wrapper interno terá um border-radius ligeiramente menor ou igual, 
+     e o overflow: hidden garantirá que o iframe seja cortado corretamente. */
+  border-radius: var(--radius-md); /* Use um raio menor ou igual ao da moldura */
+  box-shadow: inset 0 2px 8px hsla(0, 0%, 0%, 0.4); /* Sombra interna para profundidade */
+  
+  /* Essencial para que o border-radius do iframe funcione corretamente. */
+  overflow: hidden; 
 }
