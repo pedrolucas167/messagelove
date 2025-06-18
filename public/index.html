@@ -1,727 +1,530 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+
+<html lang="pt-BR" dir="ltr">
+
 <head>
 
-    <meta charset="UTF-8" />
+<meta charset="UTF-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <meta name="description"
-        content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
+<meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
 
-    <meta name="theme-color" content="#e91e63" />
+<meta name="theme-color" content="#e91e63" />
 
-    <title>Messagelove - Crie Cartões Especiais Personalizados</title>
+<title>Messagelove - Crie Cartões Especiais Personalizados</title>
 
 
-    <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
+<link rel="preconnect" href="https://messagelove-backend.onrender.com" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
 
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
 
-    <link rel="icon" href="/coracao.png" type="image/png" />
+<link rel="icon" href="/coracao.png" type="image/png" />
 
-    <link rel="manifest" href="manifest.webmanifest" />
+<link rel="manifest" href="manifest.webmanifest" />
 
 
 
-    <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css" />
 
 
 
-    <style>
-        .no-js-alert {
+<style>
 
-            display: none;
-            padding: var(--space-md, 1em);
-            background-color: var(--color-error, #d9534f);
+.no-js-alert {
 
-            color: var(--color-white, #fff);
-            text-align: center;
-            border-radius: var(--radius-md, 4px);
+display: none; padding: var(--space-md, 1em); background-color: var(--color-error, #d9534f);
 
-        }
+color: var(--color-white, #fff); text-align: center; border-radius: var(--radius-md, 4px);
 
-        .no-js .no-js-alert {
-            display: block;
-        }
+}
 
-        .no-js .main-content {
-            display: none;
-        }
+.no-js .no-js-alert { display: block; }
 
+.no-js .main-content { display: none; }
 
 
-        .btn {
 
-            padding: 0.75em 1.5em;
-            border: 1px solid transparent;
-            border-radius: var(--radius-md, 4px);
+.btn {
 
-            cursor: pointer;
-            font-size: 1em;
-            text-decoration: none;
-            display: inline-block;
-            margin: 0.25em;
+padding: 0.75em 1.5em; border: 1px solid transparent; border-radius: var(--radius-md, 4px);
 
-        }
+cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0.25em;
 
-        .btn--primary {
+}
 
-            background-color: #e91e63;
-            color: white;
+.btn--primary {
 
-        }
+background-color: #e91e63; color: white;
 
-        .btn--primary:hover {
+}
 
-            background-color: #c2185b;
+.btn--primary:hover {
 
-        }
+background-color: #c2185b;
 
-        .btn--secondary {
+}
 
-            background-color: #6c757d;
-            color: white;
+.btn--secondary {
 
-        }
+background-color: #6c757d; color: white;
 
-        .btn--secondary:hover {
+}
 
-            background-color: #5a6268;
+.btn--secondary:hover {
 
-        }
+background-color: #5a6268;
 
-        .btn--loading {
+}
 
-            position: relative;
+.btn--loading {
 
-        }
+position: relative;
 
-        .btn--loading .btn-text {
+}
 
-            visibility: hidden;
+.btn--loading .btn-text {
 
-        }
+visibility: hidden;
 
-        .btn--loading .btn-loading {
+}
 
-            visibility: visible;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+.btn--loading .btn-loading {
 
-        }
+visibility: visible; position: absolute; left: 50%; transform: translateX(-50%);
 
-        .btn-spinner::before {
+}
 
-            content: '';
-            display: inline-block;
-            width: 16px;
-            height: 16px;
+.btn-spinner::before {
 
-            border: 2px solid #fff;
-            border-top-color: transparent;
-            border-radius: 50%;
+content: ''; display: inline-block; width: 16px; height: 16px;
 
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
+border: 2px solid #fff; border-top-color: transparent; border-radius: 50%;
 
-        }
+animation: spin 1s linear infinite; margin-right: 8px;
 
-        @keyframes spin {
+}
 
-            to {
-                transform: rotate(360deg);
-            }
+@keyframes spin {
 
-        }
+to { transform: rotate(360deg); }
 
+}
 
 
-        .notification {
 
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: var(--radius-md, 4px);
+.notification {
 
-            position: relative;
-            animation: slideIn 0.5s ease-in;
+padding: 10px; margin: 10px 0; border-radius: var(--radius-md, 4px);
 
-        }
+position: relative; animation: slideIn 0.5s ease-in;
 
-        .notification--success {
-            background: #4caf50;
-            color: white;
-        }
+}
 
-        .notification--error {
-            background: #f44336;
-            color: white;
-        }
+.notification--success { background: #4caf50; color: white; }
 
-        .notification--info {
-            background: #2196f3;
-            color: white;
-        }
+.notification--error { background: #f44336; color: white; }
 
-        .notification--removing {
-            animation: slideOut 0.5s ease-out forwards;
-        }
+.notification--info { background: #2196f3; color: white; }
 
-        .notification__close {
+.notification--removing { animation: slideOut 0.5s ease-out forwards; }
 
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            background: none;
+.notification__close {
 
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
+position: absolute; right: 10px; top: 10px; background: none;
 
-        }
+border: none; color: white; font-size: 16px; cursor: pointer;
 
-        @keyframes slideIn {
+}
 
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
+@keyframes slideIn {
 
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+from { transform: translateY(-20px); opacity: 0; }
 
-        }
+to { transform: translateY(0); opacity: 1; }
 
-        @keyframes slideOut {
+}
 
-            from {
-                transform: translateY(0);
-                opacity: 1;
-            }
+@keyframes slideOut {
 
-            to {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
+from { transform: translateY(0); opacity: 1; }
 
-        }
+to { transform: translateY(-20px); opacity: 0; }
 
+}
 
 
-        .preview-video-container {
 
-            margin-top: 15px;
+.preview-video-container {
 
-        }
+margin-top: 15px;
 
-        .youtube-player-wrapper {
+}
 
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
+.youtube-player-wrapper {
 
-            max-width: 100%;
-            background: #000;
-            margin-top: 15px;
+position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
 
-        }
+max-width: 100%; background: #000; margin-top: 15px;
 
-        .youtube-player-wrapper iframe {
+}
 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+.youtube-player-wrapper iframe {
 
-            border: none;
+position: absolute; top: 0; left: 0; width: 100%; height: 100%;
 
-        }
+border: none;
 
-        .card-preview {
+}
 
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
+.card-preview {
 
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+max-width: 600px; margin: 20px auto; padding: 20px; background: #fff;
 
-        }
+border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
-        .card-preview-header {
+}
 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+.card-preview-header {
 
-        }
+display: flex; justify-content: space-between; align-items: center;
 
-        .close-preview-btn,
-        .close-preview-btn-bottom {
+}
 
-            cursor: pointer;
-            background: #f44336;
-            color: white;
-            border: none;
+.close-preview-btn, .close-preview-btn-bottom {
 
-            padding: 5px 10px;
-            border-radius: 4px;
+cursor: pointer; background: #f44336; color: white; border: none;
 
-        }
+padding: 5px 10px; border-radius: 4px;
 
-        .preview-link-info a {
+}
 
-            color: #1a73e8;
-            text-decoration: none;
+.preview-link-info a {
 
-        }
+color: #1a73e8; text-decoration: none;
 
-        .preview-link-info a:hover {
+}
 
-            text-decoration: underline;
+.preview-link-info a:hover {
 
-        }
+text-decoration: underline;
 
-        .preview-image-container img {
+}
 
-            max-width: 100%;
-            border-radius: 4px;
-            margin-top: 15px;
+.preview-image-container img {
 
-        }
+max-width: 100%; border-radius: 4px; margin-top: 15px;
 
+}
 
 
-        .form-group {
 
-            margin-bottom: 1em;
+.form-group {
 
-        }
+margin-bottom: 1em;
 
-        .form-input,
-        textarea,
-        input[type="file"] {
+}
 
-            width: 100%;
-            padding: 0.5em;
-            border: 1px solid #ccc;
-            border-radius: var(--radius-md, 4px);
+.form-input, textarea, input[type="file"] {
 
-            font-size: 1em;
+width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: var(--radius-md, 4px);
 
-        }
+font-size: 1em;
 
-        textarea {
+}
 
-            resize: vertical;
-            min-height: 100px;
+textarea {
 
-        }
+resize: vertical; min-height: 100px;
 
-        .field-hint {
+}
 
-            font-size: 0.85em;
-            color: #666;
-            display: block;
-            margin-top: 0.25em;
+.field-hint {
 
-        }
+font-size: 0.85em; color: #666; display: block; margin-top: 0.25em;
 
-        .required-field::after {
+}
 
-            content: '*';
-            color: #d9534f;
-            margin-left: 0.25em;
+.required-field::after {
 
-        }
+content: '*'; color: #d9534f; margin-left: 0.25em;
 
-        .sr-only {
+}
 
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
+.sr-only {
 
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
+position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
 
-        }
+overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
 
-        .preview-container {
+}
 
-            margin-top: 0.5em;
+.preview-container {
 
-        }
+margin-top: 0.5em;
 
-        .preview-container img {
+}
 
-            max-width: 100%;
-            border-radius: 4px;
+.preview-container img {
 
-        }
+max-width: 100%; border-radius: 4px;
 
-        .btn-remove {
+}
 
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 0.25em 0.5em;
+.btn-remove {
 
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 0.5em;
+background: #f44336; color: white; border: none; padding: 0.25em 0.5em;
 
-        }
+border-radius: 4px; cursor: pointer; margin-top: 0.5em;
 
+}
 
-        /* Estilos para o player de YouTube */
 
-        .youtube-preview-container {
+/* Estilos para o player de YouTube */
 
-            margin-top: 20px;
+.youtube-preview-container {
 
-            display: none;
+margin-top: 20px;
 
-        }
+display: none;
 
-        .youtube-preview-container.active {
+}
 
-            display: block;
+.youtube-preview-container.active {
 
-        }
+display: block;
 
-        .youtube-preview-actions {
+}
 
-            margin-top: 10px;
+.youtube-preview-actions {
 
-            display: flex;
+margin-top: 10px;
 
-            gap: 10px;
+display: flex;
 
-        }
+gap: 10px;
 
-        .youtube-preview-actions button {
+}
 
-            padding: 8px 16px;
+.youtube-preview-actions button {
 
-            font-size: 14px;
+padding: 8px 16px;
 
-        }
+font-size: 14px;
 
-        .youtube-error {
+}
 
-            color: #f44336;
+.youtube-error {
 
-            margin-top: 5px;
+color: #f44336;
 
-            font-size: 14px;
+margin-top: 5px;
 
-        }
-    </style>
+font-size: 14px;
 
+}
 
-    <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
+</style>
 
-    <meta property="og:description"
-        content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
 
-    <meta property="og:type" content="website" />
+<meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
 
-    <meta property="og:url" content="https://messagelove-frontend.vercel.app" />
+<meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
 
-    <meta property="og:image" content="/assets/og-image.jpg" />
+<meta property="og:type" content="website" />
 
-    <meta property="og:locale" content="pt_BR" />
+<meta property="og:url" content="https://messagelove-frontend.vercel.app" />
+
+<meta property="og:image" content="/assets/og-image.jpg" />
+
+<meta property="og:locale" content="pt_BR" />
 
 </head>
 
 <body class="no-js">
 
-    <div class="no-js-alert" role="alert">
+<div class="no-js-alert" role="alert">
 
-        <p>Este site requer JavaScript para funcionar corretamente. Por favor, ative-o em suas configurações do
-            navegador.</p>
+<p>Este site requer JavaScript para funcionar corretamente. Por favor, ative-o em suas configurações do navegador.</p>
 
-    </div>
+</div>
 
 
 
-    <header class="main-header" role="banner">
+<header class="main-header" role="banner">
 
-        <div class="container">
+<div class="container">
 
-            <h1>Crie um Cartão Especial</h1>
+<h1>Crie um Cartão Especial</h1>
 
-            <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos do YouTube</p>
+<p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos do YouTube</p>
 
-        </div>
+</div>
 
-    </header>
+</header>
 
 
 
-    <main class="main-content" role="main">
+<main class="main-content" role="main">
 
-        <div class="container">
+<div class="container">
 
-            <form id="cardForm" class="card-form" novalidate data-js="card-form">
+<form id="cardForm" class="card-form" novalidate data-js="card-form">
 
-                <fieldset class="form-section">
+<fieldset class="form-section">
 
-                    <legend class="section-title">
-                        <h2>Informações do Cartão</h2>
-                    </legend>
+<legend class="section-title"><h2>Informações do Cartão</h2></legend>
 
 
-                    <div class="form-group">
+<div class="form-group">
 
-                        <label for="nome" class="required-field">Nome do Destinatário<span
-                                class="sr-only">(obrigatório)</span></label>
+<label for="nome" class="required-field">Nome do Destinatário<span class="sr-only">(obrigatório)</span></label>
 
-                        <input type="text" id="nome" name="nome" required placeholder="Para quem é este cartão?"
-                            aria-required="true" data-js="nome-input" />
+<input type="text" id="nome" name="nome" required placeholder="Para quem é este cartão?" aria-required="true" data-js="nome-input" />
 
-                        <small class="field-hint">Obrigatório</small>
+<small class="field-hint">Obrigatório</small>
 
-                    </div>
+</div>
 
 
 
-                    <div class="form-group">
+<div class="form-group">
 
-                        <label for="data">Data Especial</label>
+<label for="data">Data Especial</label>
 
-                        <input type="date" id="data" name="data" aria-describedby="dataHelp" data-js="data-input" />
+<input type="date" id="data" name="data" aria-describedby="dataHelp" data-js="data-input" />
 
-                        <small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
+<small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
 
-                    </div>
+</div>
 
 
 
-                    <div class="form-group">
+<div class="form-group">
 
-                        <label for="mensagem" class="required-field">Sua Mensagem<span
-                                class="sr-only">(obrigatório)</span></label>
+<label for="mensagem" class="required-field">Sua Mensagem<span class="sr-only">(obrigatório)</span></label>
 
-                        <textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem especial..."
-                            aria-required="true" data-js="mensagem-input"></textarea>
+<textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem especial..." aria-required="true" data-js="mensagem-input"></textarea>
 
-                        <small class="field-hint">Obrigatório</small>
+<small class="field-hint">Obrigatório</small>
 
-                    </div>
+</div>
 
 
 
-                    <div class="form-group file-upload" data-js="file-upload">
+<div class="form-group file-upload" data-js="file-upload">
 
-                        <label for="fotoUpload">Adicionar Foto (Opcional)</label>
+<label for="fotoUpload">Adicionar Foto (Opcional)</label>
 
-                        <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif"
-                            aria-describedby="fotoHelp" data-js="foto-input" />
+<input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" aria-describedby="fotoHelp" data-js="foto-input" />
 
-                        <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
+<small id="fotoHelp" class="field-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
 
-                        <div class="preview-container" hidden data-js="preview-container">
+<div class="preview-container" hidden data-js="preview-container">
 
-                            <img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada"
-                                data-js="foto-preview" />
+<img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada" data-js="foto-preview" />
 
-                            <button type="button" class="btn btn-remove" id="removeFoto"
-                                aria-label="Remover foto selecionada" data-js="remove-foto">×</button>
+<button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto selecionada" data-js="remove-foto">×</button>
 
-                        </div>
+</div>
 
-                    </div>
+</div>
 
 
 
-                    <!-- Seção para adicionar URL do YouTube -->
+<!-- Seção para adicionar URL do YouTube -->
 
-                    <div class="form-group">
+<div class="form-group">
 
-                        <label for="youtubeUrlInput">Link do YouTube (Opcional)</label>
+<label for="youtubeUrlInput">Link do YouTube (Opcional)</label>
 
-                        <div class="input-container" style="display: flex; gap: 10px;">
+<div class="input-container" style="display: flex; gap: 10px;">
 
-                            <input type="url" id="youtubeUrlInput" name="youtubeUrl" class="form-input"
-                                placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp"
-                                aria-required="false" />
+<input type="url" id="youtubeUrlInput" name="youtubeUrl" class="form-input" placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp" aria-required="false" />
 
-                            <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary"
-                                style="white-space: nowrap;">Adicionar</button>
+<button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary" style="white-space: nowrap;">Adicionar</button>
 
-                        </div>
+</div>
 
-                        <small id="youtubeUrlHelp" class="field-hint">Se desejar, adicione um vídeo do YouTube ao seu
-                            cartão.</small>
+<small id="youtubeUrlHelp" class="field-hint">Se desejar, adicione um vídeo do YouTube ao seu cartão.</small>
 
-                        <div id="youtubeError" class="youtube-error"></div>
+<div id="youtubeError" class="youtube-error"></div>
 
-                    </div>
+</div>
 
 
-                    <!-- Container para pré-visualização do vídeo -->
+<!-- Container para pré-visualização do vídeo -->
 
-                    <div id="youtubePreviewContainer" class="youtube-preview-container">
+<div id="youtubePreviewContainer" class="youtube-preview-container">
 
-                        <div class="youtube-player-wrapper">
+<div class="youtube-player-wrapper">
 
-                            <iframe id="youtubePlayer" allowfullscreen></iframe>
+<iframe id="youtubePlayer" allowfullscreen></iframe>
 
-                        </div>
+</div>
 
-                        <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
+<input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
 
-                    </div>
+</div>
 
-                    <!-- Fim da seção YouTube -->
+<!-- Fim da seção YouTube -->
 
 
 
-                    <div class="form-group form-actions">
+<div class="form-group form-actions">
 
-                        <button type="submit" class="btn btn-submit btn--primary" id="submitBtn" data-js="submit-btn">
+<button type="submit" class="btn btn-submit btn--primary" id="submitBtn" data-js="submit-btn">
 
-                            <span class="btn-text">Criar Cartão</span>
+<span class="btn-text">Criar Cartão</span>
 
-                            <span class="btn-loading" aria-hidden="true" hidden>
+<span class="btn-loading" aria-hidden="true" hidden>
 
-                                <span class="btn-spinner" aria-hidden="true"></span> Processando...
+<span class="btn-spinner" aria-hidden="true"></span> Processando...
 
-                            </span>
+</span>
 
-                        </button>
+</button>
 
-                        <small class="form-note">Seu cartão será gerado e você receberá um link único para
-                            compartilhar.</small>
+<small class="form-note">Seu cartão será gerado e você receberá um link único para compartilhar.</small>
 
-                    </div>
+</div>
 
-                </fieldset>
+</fieldset>
 
-            </form>
+</form>
 
-        </div>
+</div>
 
-    </main>
+</main>
 
 
 
-    <footer class="main-footer" role="contentinfo">
+<footer class="main-footer" role="contentinfo">
 
-        <div class="container">
+<div class="container">
 
-            <p>
+<p>
 
-                <span>Messagelove © <span id="currentYear" data-js="current-year">2025</span></span>
+<span>Messagelove © <span id="currentYear" data-js="current-year">2025</span></span>
 
-                <span>Feito com <span aria-label="coração">❤️</span> por <a
-                        href="https://pedrolucas167.github.io/portfolio/" target="_blank"
-                        rel="noopener noreferrer">Pedro Marques</a></span>
+<span>Feito com <span aria-label="coração">❤️</span> por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Pedro Marques</a></span>
 
-            </p>
+</p>
 
-        </div>
+</div>
 
-    </footer>
+</footer>
 
 
 
-    <div id="appNotificationArea"></div>
+<div id="appNotificationArea"></div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="script.js" defer></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="script.js" defer></script>
 
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Messagelove - Crie Cartões Especiais</title>
-    <meta name="description" content="Crie e compartilhe cartões personalizados com mensagens, fotos e vídeos." />
-    <meta name="theme-color" content="#e91e63" />
-
-    <link rel="icon" href="./assets/coracao.png" type="image/png" />
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-    <header class="main-header">
-        <div class="container">
-            <h1>Crie um Cartão Especial</h1>
-            <p>Compartilhe seu amor com uma mensagem única.</p>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <div class="container">
-            <form id="cardForm" novalidate>
-                <fieldset>
-                    <legend class="sr-only">Formulário de Criação de Cartão</legend>
-                    <div class="form-group">
-                        <label for="de" class="required">De:</label>
-                        <input type="text" id="de" name="de" placeholder="Seu nome" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="para" class="required">Para:</label>
-                        <input type="text" id="para" name="para" placeholder="Nome de quem vai receber" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="mensagem" class="required">Sua Mensagem:</label>
-                        <textarea id="mensagem" name="mensagem" rows="5" placeholder="Escreva algo do coração..." required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="fotoUpload">Adicionar Foto (Opcional, máx 5MB)</label>
-                        <input type="file" id="fotoUpload" name="foto" accept="image/png, image/jpeg, image/gif" />
-                        <div id="fotoPreviewContainer" class="preview-container" hidden>
-                            <img id="fotoPreview" alt="Pré-visualização da foto." />
-                            <button type="button" id="removeFotoBtn" class="btn-remove" aria-label="Remover Foto">Remover</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="youtubeUrlInput">Vídeo do YouTube (Opcional)</label>
-                        <div class="input-group">
-                            <input type="url" id="youtubeUrlInput" placeholder="Cole o link do vídeo aqui" />
-                            <button type="button" id="addYoutubeUrlBtn" class="btn btn-secondary">Adicionar</button>
-                        </div>
-                        <div id="youtubeError" class="error-message"></div>
-                        <div id="youtubePreviewContainer" class="preview-container" hidden>
-                            <div class="video-wrapper">
-                                <iframe id="youtubePlayer" title="Player de vídeo do YouTube" allowfullscreen></iframe>
-                            </div>
-                            <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
-                            <button type="button" id="removeYoutubeBtn" class="btn-remove" aria-label="Remover Vídeo">Remover</button>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" id="submitBtn" class="btn btn-primary">
-                            <span class="btn-text">Criar Cartão ✨</span>
-                            <span class="btn-loading" hidden>Processando...</span>
-                        </button>
-                    </div>
-                </fieldset>
-            </form>
-            <div id="appNotificationArea" class="notification-area"></div>
-        </div>
-    </main>
-
-    <footer class="main-footer">
-        <p>© <span id="currentYear"></span> Messagelove. Feito com ❤️ por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener">Pedro Marques</a>.</p>
-    </footer>
-
-    <script src="script.js" defer></script>
 </body>
+
 </html>
