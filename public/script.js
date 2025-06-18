@@ -5,7 +5,6 @@
  * @version 1.0.0
  */
 
-// Esta função onYouTubeIframeAPIReady para index.js é apenas para o player de PRÉ-VISUALIZAÇÃO na criação
 let youtubeCreatorPlayer = null; // Instância do player do YouTube para a página de criação
 
 window.onYouTubeIframeAPIReady = function() {
@@ -17,7 +16,7 @@ window.onYouTubeIframeAPIReady = function() {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded - Iniciando index.js (Modo CRIAÇÃO)');
+    console.log('DOM Content Loaded - Iniciando script.js (Modo CRIAÇÃO)');
 
     // --- Configurações e Constantes ---
     const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
