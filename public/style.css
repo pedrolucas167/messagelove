@@ -578,8 +578,6 @@ textarea {
   to { opacity: 1; }
 }
 
-.card-preview /
-
 .card-preview {
   background-color: var(--color-white);
   border-radius: var(--radius-lg);
@@ -822,23 +820,136 @@ textarea {
 /* ============================================
    📱 RESPONSIVIDADE
    ============================================ */
+@media (max-width: 1024px) {
+  /* Para tablets e laptops menores */
+  .container {
+    padding-inline: var(--space-md);
+  }
+}
+
 @media (max-width: 768px) {
-  html { font-size: 15px; }
-  .main-header { padding-block: var(--space-md) var(--space-lg); }
+  /* Para tablets em modo retrato e smartphones maiores */
+  html {
+    font-size: 15px; /* Reduz o tamanho da fonte base */
+  }
+  .main-header {
+    padding-block: var(--space-md) var(--space-lg); /* Ajusta o padding do cabeçalho */
+  }
   .card-form,
-  .card-preview { padding: var(--space-md); }
-  .section-title { font-size: 1.1rem; }
-  .card-preview-header h2 { font-size: 1.4rem; }
-  .notification { width: 90%; max-width: 260px; }
+  .card-preview {
+    padding: var(--space-md); /* Reduz o padding em cards e formulários */
+  }
+  .section-title {
+    font-size: 1.1rem; /* Reduz o tamanho do título da seção */
+  }
+  .card-preview-header h2 {
+    font-size: 1.4rem; /* Ajusta o tamanho do h2 na prévia do cartão */
+  }
+  .notification {
+    width: 90%;
+    max-width: 260px; /* Ajusta a largura da notificação */
+    top: var(--space-md);
+    right: 5%; /* Centraliza mais ou menos em telas menores */
+  }
+  .btn {
+    padding: var(--space-xs) var(--space-md); /* Ajusta padding de botões */
+  }
 }
 
 @media (max-width: 480px) {
-  html { font-size: 14px; }
+  /* Para smartphones */
+  html {
+    font-size: 14px; /* Reduz ainda mais o tamanho da fonte base */
+  }
+  .container {
+    padding-inline: var(--space-sm); /* Mais redução no padding do container */
+  }
+  .main-header {
+    padding-block: var(--space-sm) var(--space-md); /* Mais redução no padding do cabeçalho */
+  }
   .card-form,
-  .card-preview { padding: var(--space-sm); }
-  .card-preview-header h2 { font-size: 1.2rem; }
-  .card-preview p { font-size: 0.95rem; }
-  .card-preview .close-preview-btn { font-size: 1.4rem; }
-  .btn { padding: var(--space-xs) var(--space-md); }
-  .btn--copy-link { font-size: 0.85rem; }
+  .card-preview {
+    padding: var(--space-sm); /* Mínimo padding em cards e formulários */
+    border-radius: var(--radius-md); /* Cantos um pouco menos arredondados */
+  }
+  .section-title {
+    font-size: 1rem; /* Ainda menor para títulos de seção */
+  }
+  .card-preview-header h2 {
+    font-size: 1.2rem; /* h2 menor na prévia */
+  }
+  .card-preview p {
+    font-size: 0.95rem; /* Texto do parágrafo ligeiramente menor */
+  }
+  .card-preview .close-preview-btn {
+    font-size: 1.3rem; /* Botão de fechar menor */
+  }
+  .btn {
+    padding: var(--space-xs) var(--space-sm); /* Botões ainda menores */
+    font-size: 0.9rem;
+  }
+  .btn--copy-link {
+    font-size: 0.8rem; /* Botão de copiar link menor */
+  }
+  .form-input,
+  textarea,
+  input[type="text"],
+  input[type="date"],
+  input[type="email"],
+  input[type="url"],
+  input[type="search"],
+  select {
+    padding: var(--space-xs); /* Padding menor para inputs */
+    font-size: 0.9rem;
+  }
+  textarea {
+    min-height: 100px; /* Reduz altura mínima da textarea */
+  }
+  .file-upload input[type="file"] {
+    font-size: 0.85rem; /* Tamanho da fonte do input file */
+  }
+  .preview {
+    max-height: 200px; /* Limite de altura para pré-visualização da imagem */
+  }
+  .btn-remove {
+    --btn-remove-size: 24px; /* Botão de remover menor */
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 320px) {
+  /* Para smartphones muito pequenos (ex: iPhone 5/SE) */
+  html {
+    font-size: 13px; /* Tamanho base de fonte mínimo */
+  }
+  .container {
+    padding-inline: var(--space-xs); /* Padding mínimo para o container */
+  }
+  .main-header {
+    padding-block: var(--space-sm) var(--space-sm);
+  }
+  .section-title {
+    font-size: 0.9rem;
+  }
+  .card-preview-header h2 {
+    font-size: 1.1rem;
+  }
+  .card-preview p {
+    font-size: 0.9rem;
+  }
+  .btn {
+    padding: var(--space-xxs) var(--space-sm);
+    font-size: 0.85rem;
+  }
+  .form-input,
+  textarea,
+  input[type="text"],
+  input[type="date"],
+  input[type="email"],
+  input[type="url"],
+  input[type="search"],
+  select {
+    padding: var(--space-xxs) var(--space-xs);
+    font-size: 0.85rem;
+  }
 }
