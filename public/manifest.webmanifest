@@ -1,0 +1,21 @@
+{
+    "name": "Messagelove",
+    "short_name": "Messagelove",
+    "description": "Crie e compartilhe cartões personalizados com mensagens, fotos e vídeos.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#e91e63",
+    "icons": [
+        {
+            "src": "./coracao.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "./coracao.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -1,79 +1,97 @@
 <!DOCTYPE html>
-<html lang="pt-BR" dir="ltr">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>Um Cartão Especial Para Você!</title>
-    
     <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
     <meta name="theme-color" content="#e91e63">
-    <meta property="og:title" content="Um Cartão Especial Para Você!">
-    <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://sua-url.com/assets/og-image-default.jpg">
-    
     <link rel="icon" href="/assets/coracao.png" type="image/png">
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css">
+    <!-- Pré-conexão com o Google Fonts para melhor performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Biblioteca de áudio para os efeitos sonoros -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 
-    <style>
-      .loader-wrapper { text-align: center; padding: 50px; }
-      .loader {
-        display: inline-block; width: 50px; height: 50px;
-        border: 5px solid rgba(233, 30, 99, 0.2);
-        border-top-color: #e91e63;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .hidden { display: none !important; }
-    </style>
+    <!-- Folha de estilos principal -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body id="card-view-page">
 
-  <header class="card-page-header">
+  <header class="card-page-header container">
     <a href="/" title="Criar um novo cartão">Messagelove</a>
   </header>
 
-  <main>
-    <div id="loading-state" class="loader-wrapper">
-      <div class="loader"></div>
-      <p>Carregando seu cartão especial...</p>
-    </div>
+  <main class="container">
+    <div id="card-state-manager" data-state="reveal">
+    
+      <!-- Estado de Revelação Inicial -->
+      <div class="card-state" data-view="reveal">
+        <div class="reveal-box">
+            <div class="reveal-icon">💌</div>
+            <h2>Você recebeu uma mensagem!</h2>
+            <p>Alguém especial preparou um cartão com muito carinho para você.</p>
+            <button id="revealBtn" class="btn btn-primary">Revelar Cartão</button>
+        </div>
+      </div>
 
-    <article id="card-view" class="card-preview hidden">
-        <header class="card-preview-header">
-          <h1 id="card-nome" class="recipient-name"></h1>
-          <p id="card-data" class="special-date"></p>
-        </header>
+      <!-- Estado de Carregamento -->
+      <div class="card-state" data-view="loading">
+        <div class="loader-wrapper">
+          <div class="loader"></div>
+          <p>Carregando sua surpresa...</p>
+        </div>
+      </div>
 
-        <section class="card-body">
-          <p id="card-mensagem"></p>
-        </section>
+      <!-- Conteúdo do Cartão -->
+      <div class="card-state" data-view="card-content">
+        <article class="card-preview">
+            <header class="card-preview-header">
+              <h1 id="card-nome" class="recipient-name"></h1>
+              <p id="card-data" class="special-date"></p>
+            </header>
+            <section class="card-body">
+              <p id="card-mensagem"></p>
+            </section>
+            
+            <!-- Adicionado o elemento para o remetente -->
+            <p id="card-de" class="sender-name"></p>
+            
+            <figure id="card-foto-container" class="preview-image-container"></figure>
+            <div id="card-video-container"></div>
+            
+            <div class="card-actions">
+                <button id="likeBtn" class="like-button" aria-label="Gostei">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </button>
+            </div>
+        </article>
+      </div>
 
-        <figure id="card-foto-container" class="preview-image-container"></figure>
-        
-        <div id="card-video-container">
-          </div>
-    </article>
-
-    <div id="error-state" class="card-preview hidden">
-      <h2>Ops! Algo deu errado.</h2>
-      <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
-      <a href="/" class="btn btn--primary">Criar um novo cartão</a>
+      <!-- Estado de Erro -->
+      <div class="card-state" data-view="error">
+        <div class="card-preview error-box">
+          <h2>Ops! Algo deu errado.</h2>
+          <p id="error-text">Não foi possível carregar o cartão.</p>
+          <a href="/" class="btn btn-primary">Criar um novo cartão</a>
+        </div>
+      </div>
     </div>
   </main>
 
-  <footer class="card-page-footer">
-    <p>Gostou? <a href="/" class="btn btn--outline">Crie o seu também!</a></p>
+  <footer class="card-page-footer container">
+    <p>Gostou? <a href="/">Crie o seu também!</a></p>
   </footer>
 
+<<<<<<< HEAD
  
   <script async src="https://www.youtube.com/iframe_api></script>
+=======
+  <div id="reveal-overlay" class="reveal-overlay"></div>
+>>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
   <script src="card.js" defer></script>
 
 </body>

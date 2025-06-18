@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-
-<html lang="pt-BR" dir="ltr">
-
+<html lang="pt-BR">
 <head>
+<<<<<<< HEAD
 
     <meta charset="UTF-8" />
 
@@ -647,6 +646,85 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="script.js" defer></script>
 
-</body>
+=======
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Messagelove - Crie Cartões Especiais</title>
+    <meta name="description" content="Crie e compartilhe cartões personalizados com mensagens, fotos e vídeos." />
+    <meta name="theme-color" content="#e91e63" />
 
+    <link rel="icon" href="./assets/coracao.png" type="image/png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h1>Crie um Cartão Especial</h1>
+            <p>Compartilhe seu amor com uma mensagem única.</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <form id="cardForm" novalidate>
+                <fieldset>
+                    <legend class="sr-only">Formulário de Criação de Cartão</legend>
+                    <div class="form-group">
+                        <label for="de" class="required">De:</label>
+                        <input type="text" id="de" name="de" placeholder="Seu nome" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="para" class="required">Para:</label>
+                        <input type="text" id="para" name="para" placeholder="Nome de quem vai receber" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="mensagem" class="required">Sua Mensagem:</label>
+                        <textarea id="mensagem" name="mensagem" rows="5" placeholder="Escreva algo do coração..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="fotoUpload">Adicionar Foto (Opcional, máx 5MB)</label>
+                        <input type="file" id="fotoUpload" name="foto" accept="image/png, image/jpeg, image/gif" />
+                        <div id="fotoPreviewContainer" class="preview-container" hidden>
+                            <img id="fotoPreview" alt="Pré-visualização da foto." />
+                            <button type="button" id="removeFotoBtn" class="btn-remove" aria-label="Remover Foto">Remover</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="youtubeUrlInput">Vídeo do YouTube (Opcional)</label>
+                        <div class="input-group">
+                            <input type="url" id="youtubeUrlInput" placeholder="Cole o link do vídeo aqui" />
+                            <button type="button" id="addYoutubeUrlBtn" class="btn btn-secondary">Adicionar</button>
+                        </div>
+                        <div id="youtubeError" class="error-message"></div>
+                        <div id="youtubePreviewContainer" class="preview-container" hidden>
+                            <div class="video-wrapper">
+                                <iframe id="youtubePlayer" title="Player de vídeo do YouTube" allowfullscreen></iframe>
+                            </div>
+                            <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
+                            <button type="button" id="removeYoutubeBtn" class="btn-remove" aria-label="Remover Vídeo">Remover</button>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" id="submitBtn" class="btn btn-primary">
+                            <span class="btn-text">Criar Cartão ✨</span>
+                            <span class="btn-loading" hidden>Processando...</span>
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+            <div id="appNotificationArea" class="notification-area"></div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>© <span id="currentYear"></span> Messagelove. Feito com ❤️ por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener">Pedro Marques</a>.</p>
+    </footer>
+
+    <script src="script.js" defer></script>
+>>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
+</body>
 </html>

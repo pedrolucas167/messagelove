@@ -1,4 +1,8 @@
-const { Sequelize } = require('sequelize');
+// Arquivo: models/index.js (Versão Refatorada)
+
+'use strict';
+
+const { Sequelize, DataTypes } = require('sequelize');
 
 // Pega a URL do banco de dados das variáveis de ambiente
 const databaseUrl = process.env.DATABASE_URL;
@@ -6,26 +10,25 @@ if (!databaseUrl) {
   throw new Error("A variável de ambiente DATABASE_URL não foi definida.");
 }
 
-// Cria a instância do Sequelize com as configurações para o Render
+// Cria a instância do Sequelize diretamente da DATABASE_URL,
+// que é a prática recomendada para ambientes como a Render.
 const sequelize = new Sequelize(databaseUrl, {
     dialect: 'postgres',
     protocol: 'postgres',
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false
+            rejectUnauthorized: false // Necessário para a Render
         }
     }
 });
 
-// Cria um objeto para guardar nossos modelos e a conexão
 const db = {};
 
-db.Sequelize = Sequelize;
+// Passa 'sequelize' e 'DataTypes' ao inicializar o modelo
+db.Card = require('./card.js')(sequelize, DataTypes);
+
 db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
-// Importa nosso modelo Card e o inicializa com a conexão
-db.Card = require('./card.js')(sequelize);
-
-// Exporta o objeto db, que agora contém tudo que precisamos
 module.exports = db;

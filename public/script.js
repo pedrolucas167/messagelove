@@ -2,13 +2,14 @@
  * @file script.js
  * @description Script principal para o Messagelove.
  * @author Pedro Marques
- * @version 3.0.0
+ * @version 4.0.1
  */
 document.addEventListener('DOMContentLoaded', () => {
+
     // --- 1. CONFIGURAÇÕES ---
     const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3001/api'
-        : 'https://messagelove-backend.onrender.com/api';
+        : 'https://messagelove-backend.onrender.com/api'; // CORRIGIDO: Adicionado /api
 
     // --- 2. SELEÇÃO DE ELEMENTOS DO DOM ---
     const elements = {
@@ -32,36 +33,38 @@ document.addEventListener('DOMContentLoaded', () => {
             removeBtn: document.getElementById('removeYoutubeBtn'),
         }
     };
+
     if (!elements.form) return console.error('Formulário principal não encontrado.');
 
     // --- 3. FUNÇÕES AUXILIARES ---
-    const showNotification = (message, type = 'info', duration = 5000) => {
+    const showNotification = (message, type = 'info') => {
+        elements.notificationArea.innerHTML = ''; // Limpa notificações antigas
         const notification = document.createElement('div');
         notification.className = `notification notification--${type}`;
         notification.innerHTML = `<span>${message}</span><button class="notification__close" onclick="this.parentElement.remove()">×</button>`;
-        elements.notificationArea.innerHTML = '';
         elements.notificationArea.appendChild(notification);
-        if (duration) setTimeout(() => notification.remove(), duration);
     };
 
     const copyToClipboard = async (text) => {
         try {
             await navigator.clipboard.writeText(text);
-            showNotification('Link copiado!', 'success', 3000);
-        } catch (error) {
-            showNotification('Erro ao copiar.', 'error');
+            showNotification('Link copiado!', 'info');
+        } catch (err) {
+            console.error('Falha ao copiar:', err);
+            showNotification('Não foi possível copiar o link.', 'error');
         }
     };
 
     const toggleButtonLoading = (isLoading) => {
         elements.submitBtn.disabled = isLoading;
-        elements.submitBtn.classList.toggle('btn--loading', isLoading);
+        elements.submitBtn.querySelector('.btn-text').hidden = isLoading;
+        elements.submitBtn.querySelector('.btn-loading').hidden = !isLoading;
     };
 
-    const resetFormAndPreviews = () => {
+    const resetForm = () => {
         elements.form.reset();
         elements.foto.previewContainer.hidden = true;
-        elements.youtube.previewContainer.classList.remove('active');
+        elements.youtube.previewContainer.hidden = true;
         elements.youtube.player.src = 'about:blank';
     };
 
@@ -73,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const videoId = extractYouTubeId(url);
         elements.youtube.error.textContent = '';
         if (videoId) {
-            elements.youtube.player.src = `https://www.youtube.com/embed/$${videoId}?rel=0`;
+            elements.youtube.player.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
             elements.youtube.videoIdInput.value = videoId;
-            elements.youtube.previewContainer.classList.add('active');
+            elements.youtube.previewContainer.hidden = false;
         } else if (url) {
             elements.youtube.error.textContent = 'Link do YouTube inválido.';
-            elements.youtube.previewContainer.classList.remove('active');
+            elements.youtube.previewContainer.hidden = true;
         }
     };
 
@@ -86,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = event.target.files[0];
         if (!file) return;
         if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
-            return showNotification('Imagem inválida (máx. 5MB).', 'error');
+            return showNotification('Imagem inválida (máx 5MB).', 'error');
         }
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -95,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsDataURL(file);
     };
-
+    
     const displaySuccessState = (result) => {
         const cardUrl = new URL(`card.html?id=${result.cardId}`, window.location.origin).href;
         elements.notificationArea.innerHTML = `
@@ -118,22 +121,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const formData = new FormData(elements.form);
-            if (!formData.get('de') || !formData.get('para') || !formData.get('mensagem')) {
+            if (!formData.get('de')?.trim() || !formData.get('para')?.trim() || !formData.get('mensagem')?.trim()) {
                 throw new Error('Por favor, preencha os campos obrigatórios.');
             }
-
+            // A chamada agora estará correta: https://.../api/cards
             const response = await fetch(`${API_URL}/cards`, { method: 'POST', body: formData });
-            const result = await response.json().catch(() => response.text());
+            const result = await response.json().catch(() => ({ message: 'A resposta do servidor não é um JSON válido.' }));
 
             if (!response.ok) {
-                const errorMessage = result?.message || (typeof result === 'string' ? result : 'Erro desconhecido no servidor.');
-                throw new Error(errorMessage);
+                throw new Error(result.message || 'Erro desconhecido no servidor.');
             }
 
             displaySuccessState(result);
-            resetFormAndPreviews();
+            resetForm();
+
         } catch (error) {
-            console.error('Erro ao enviar:', error);
+            console.error('Erro ao enviar o formulário:', error);
             showNotification(error.message, 'error');
         } finally {
             toggleButtonLoading(false);
@@ -151,11 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.youtube.urlInput.addEventListener('keypress', (e) => e.key === 'Enter' && (e.preventDefault(), handleYouTubeUrl()));
     elements.youtube.removeBtn.addEventListener('click', () => {
         elements.youtube.urlInput.value = '';
-        elements.youtube.previewContainer.classList.remove('active');
+        elements.youtube.previewContainer.hidden = true;
         elements.youtube.player.src = 'about:blank';
     });
     
     // --- 7. INICIALIZAÇÃO ---
     if (elements.currentYearSpan) elements.currentYearSpan.textContent = new Date().getFullYear();
-    document.body.classList.remove('no-js');
 });
