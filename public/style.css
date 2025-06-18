@@ -336,6 +336,7 @@ textarea {
   height: 0;
   overflow: hidden; /* Garante que o iframe respeite o border-radius do wrapper */
   max-width: 100%;
+}
 .video-wrapper {
   position: relative;
   padding-bottom: 56.25%; /* 16:9 */

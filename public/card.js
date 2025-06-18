@@ -251,6 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     main(); // Inicia o processo de carregamento do cartão
+    }
+
+    main();
 });
 
 // Este script (do YouTube) deve ser carregado APÓS a definição de onYouTubeIframeAPIReady
@@ -260,31 +263,3 @@ document.addEventListener('DOMContentLoaded', () => {
 <script async src="https://www.youtube.com/iframe_api"></script>
 <script src="path/to/card.js"></script>
 */
-            renderCardContent(cardData);
-            
-            ELEMENTS.stateManager.dataset.state = 'card-content';
-            // Adicione seus efeitos visuais aqui (ex: playSoundEffect(), triggerEmojiRain())
-        } catch (error) {
-            console.error('Não foi possível carregar o cartão:', error);
-            if (ELEMENTS.errorText) ELEMENTS.errorText.textContent = error.message;
-            ELEMENTS.stateManager.dataset.state = 'error';
-        }
-    };
-
-    // --- 3. INICIALIZAÇÃO ---
-
-    const init = () => {
-        if (!ELEMENTS.stateManager) {
-            console.error("Elemento #card-state-manager não encontrado.");
-            return;
-        }
-        ELEMENTS.revealBtn?.addEventListener('click', () => {
-            // Adicione seus efeitos visuais aqui (ex: triggerFullscreenReveal())
-            setTimeout(loadCard, 500);
-        }, { once: true });
-        
-        // ... (outros event listeners como o do likeBtn)
-    };
-
-    init();
-});
