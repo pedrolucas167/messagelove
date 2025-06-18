@@ -27,6 +27,26 @@
     <meta property="og:url" content="https://messagelove-frontend.vercel.app" />
     <meta property="og:image" content="/assets/og-image.jpg" />
     <meta property="og:locale" content="pt_BR" />
+
+    <style>
+        /* Estilos básicos para os novos campos de tempo. Você pode mover para seu style.css */
+        .form-group-time-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .time-inputs {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-input-time {
+            width: 70px; /* Largura fixa para os campos de tempo */
+        }
+    </style>
 </head>
 
 <body>
@@ -35,7 +55,7 @@
             var html = document.documentElement;
             if (html.classList.contains('no-js')) {
                 html.classList.remove('no-js');
-                html.classList.add('js'); // Adiciona 'js' para indicar que JS está ativo (boa prática)
+                html.classList.add('js');
             }
         })();
     </script>
@@ -63,21 +83,21 @@
                     <div class="form-group">
                         <label for="nome" class="required-field">Nome do Destinatário<span
                                 class="sr-only">(obrigatório)</span></label>
-                        <input type="text" id="nome" name="nome" required placeholder="Para quem é este cartão?"
+                        <input type="text" id="nome" name="nome" class="form-input" required placeholder="Para quem é este cartão?"
                             aria-required="true" data-js="nome-input" />
                         <small class="field-hint">Obrigatório</small>
                     </div>
 
                     <div class="form-group">
                         <label for="data">Data Especial</label>
-                        <input type="date" id="data" name="data" aria-describedby="dataHelp" data-js="data-input" />
+                        <input type="date" id="data" name="data" class="form-input" aria-describedby="dataHelp" data-js="data-input" />
                         <small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
                     </div>
 
                     <div class="form-group">
                         <label for="mensagem" class="required-field">Sua Mensagem<span
                                 class="sr-only">(obrigatório)</span></label>
-                        <textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem especial..."
+                        <textarea id="mensagem" name="mensagem" class="form-input" required placeholder="Escreva sua mensagem especial..."
                             aria-required="true" data-js="mensagem-input"></textarea>
                         <small class="field-hint">Obrigatório</small>
                     </div>
@@ -107,7 +127,16 @@
                         <small id="youtubeUrlHelp" class="field-hint">Se desejar, adicione um vídeo do YouTube ao seu
                             cartão.</small>
                         <div id="youtubeError" class="youtube-error"></div>
-                    </div>
+                        
+                        <div class="form-group-time-container">
+                             <label for="youtubeStartTimeMin">Tempo de Início do Vídeo (Opcional)</label>
+                             <div class="time-inputs">
+                                 <input type="number" id="youtubeStartTimeMin" class="form-input form-input-time" placeholder="Min" min="0">
+                                 <span>:</span>
+                                 <input type="number" id="youtubeStartTimeSec" class="form-input form-input-time" placeholder="Seg" min="0" max="59">
+                             </div>
+                        </div>
+                        </div>
 
                     <div id="youtubePreviewContainer" class="youtube-preview-container">
                         <div class="youtube-player-wrapper">
@@ -115,6 +144,7 @@
                         </div>
                         <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
                     </div>
+
                     <div class="form-group form-actions">
                         <button type="submit" class="btn btn-submit btn--primary" id="submitBtn" data-js="submit-btn">
                             <span class="btn-text">Criar Cartão</span>
@@ -145,5 +175,6 @@
 
     <script async src="https://www.youtube.com/iframe_api"></script>
     <script src="script.js" defer></script> 
+    <canvas id="particle-canvas"></canvas>
 </body>
 </html>
