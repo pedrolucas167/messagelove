@@ -1,14 +1,11 @@
-<<<<<<< HEAD
 /* Import Google Font 'Inter' */
 @import url('https://fonts.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-=======
 /* ---
  * Messagelove - Stylesheet Principal
  * Versão: 8.0.0
  * Descrição: CSS final com layout alinhado, componentes aprimorados e
  * animações integradas.
  * --- */
->>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
 
 /* --- 1. IMPORTAÇÃO E VARIÁVEIS GLOBAIS (ROOT) --- */
 
@@ -304,7 +301,6 @@ textarea {
 .youtube-preview-container { display: none; }
 .youtube-preview-container.active { display: block; }
 
-<<<<<<< HEAD
 .card-preview .preview-link-info a {
   font-weight: 600;
   word-break: break-all;
@@ -340,7 +336,6 @@ textarea {
   height: 0;
   overflow: hidden; /* Garante que o iframe respeite o border-radius do wrapper */
   max-width: 100%;
-=======
 .video-wrapper {
   position: relative;
   padding-bottom: 56.25%; /* 16:9 */
@@ -349,7 +344,6 @@ textarea {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   background-color: #000;
->>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
 }
 .video-wrapper iframe {
   position: absolute;
@@ -363,9 +357,7 @@ textarea {
   border-radius: inherit; 
 }
 
-<<<<<<< HEAD
 /* A MOLDURA EXTERNA QUE ENVOLVE O VÍDEO */
-=======
 .error-message {
   color: var(--color-error);
   font-size: 0.9em;
@@ -502,7 +494,6 @@ textarea {
   box-shadow: var(--shadow-md);
 }
 
->>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
 .video-frame {
   margin-block: var(--space-md); /* Espaçamento vertical */
   
@@ -514,7 +505,6 @@ textarea {
   
   /* Fundo da moldura (um tom escuro para contraste) */
   background: linear-gradient(145deg, hsl(240, 5%, 25%), hsl(240, 5%, 15%));
-<<<<<<< HEAD
   
   /* Sombra para dar profundidade e destaque */
   box-shadow: var(--shadow-lg), 0 0 40px hsla(330, 70%, 60%, 0.2);
@@ -537,7 +527,6 @@ textarea {
   
   /* Garante que o iframe dentro deste wrapper respeite o border-radius definido aqui */
   overflow: hidden; 
-=======
   box-shadow: var(--shadow-lg);
   border: 1px solid hsl(240, 5%, 40%);
   margin-block: var(--space-lg);
@@ -704,5 +693,4 @@ textarea {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
->>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
 }
