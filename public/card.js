@@ -230,7 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!cardId) throw new Error('O link está incompleto.');
             
             const cardData = await fetchCardData(cardId);
-<<<<<<< HEAD
             cardDataGlobal = cardData; // Armazena globalmente para onYouTubeIframeAPIReady
 
             // Verifica se a API do YouTube já está carregada.
@@ -261,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <script async src="https://www.youtube.com/iframe_api"></script>
 <script src="path/to/card.js"></script>
 */
-=======
             renderCardContent(cardData);
             
             ELEMENTS.stateManager.dataset.state = 'card-content';
@@ -290,4 +288,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
->>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
