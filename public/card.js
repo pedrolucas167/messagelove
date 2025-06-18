@@ -2,11 +2,8 @@
  * @file card.js
  * @description Script para carregar e exibir um cartão personalizado com arquitetura modular.
  * @author Pedro Marques
-<<<<<<< HEAD
  * @version 1.0.2 
-=======
  * @version 6.2.0
->>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
  */
 
 // Declara a função global onYouTubeIframeAPIReady ANTES do DOMContentLoaded
