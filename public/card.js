@@ -2,8 +2,18 @@
  * @file card.js
  * @description Script para carregar e exibir um cartão personalizado na página de visualização do Messagelove.
  * @author Pedro Marques
- * @version 1.0.1
+ * @version 1.0.2 
  */
+
+// Declara a função global onYouTubeIframeAPIReady ANTES do DOMContentLoaded
+// para garantir que o YouTube a encontre quando a API carregar.
+let cardDataGlobal = null; // Variável para armazenar os dados do cartão globalmente
+
+window.onYouTubeIframeAPIReady = function() {
+    if (cardDataGlobal) {
+        renderCardContent(cardDataGlobal);
+    }
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     // Configurações e Constantes
@@ -23,14 +33,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const fotoContainerEl = document.getElementById('card-foto-container');
     const videoContainerEl = document.getElementById('card-video-container');
 
+    // Variável global para o contêiner de emojis, para evitar duplicatas
+    let emojiRainContainerEl = null;
+
     // Funções Auxiliares
     const fetchCardData = async (id) => {
-        const url = `${API_URL}/cards/${id}`; // Corrigido: /card para /cards
+        const url = `${API_URL}/cards/${id}`;
         console.log('Buscando cartão na URL:', url);
         try {
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error(`Cartão não encontrado (Status: ${response.status})`);
+                // Tenta ler a mensagem de erro do backend se disponível
+                const errorText = await response.text();
+                throw new Error(`Cartão não encontrado (Status: ${response.status}). Detalhes: ${errorText}`);
             }
             const data = await response.json();
             console.log('Dados do cartão recebidos:', data);
@@ -43,23 +58,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formatSpecialDate = (dateString) => {
         if (!dateString) return '';
-        const date = new Date(dateString + 'T00:00:00');
+        // Adiciona 'T00:00:00' para garantir que a data seja interpretada como UTC e evitar problemas de fuso horário
+        const date = new Date(dateString + 'T00:00:00'); 
         if (isNaN(date.getTime())) {
-            return 'Uma data especial';
+            return 'Uma data especial'; // Fallback para datas inválidas
         }
         return date.toLocaleDateString('pt-BR', {
-            day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
+            day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' // Força UTC para consistência
         });
     };
 
-    const renderCardContent = (card) => {
+    // A função renderCardContent agora é globalmente acessível para onYouTubeIframeAPIReady
+    window.renderCardContent = (card) => {
         document.title = `Uma mensagem para ${card.nome}`;
         nomeEl.textContent = card.nome;
         mensagemEl.textContent = card.mensagem;
         dataEl.textContent = formatSpecialDate(card.data);
 
-        fotoContainerEl.innerHTML = '';
-        if (card.foto) { // Ajustado para campo 'foto' do backend
+        fotoContainerEl.innerHTML = ''; // Limpa antes de adicionar
+        if (card.foto) {
             const img = document.createElement('img');
             img.src = card.foto;
             img.alt = `Foto para ${card.nome}`;
@@ -67,14 +84,16 @@ document.addEventListener('DOMContentLoaded', () => {
             fotoContainerEl.appendChild(img);
         }
 
-        videoContainerEl.innerHTML = '';
-        if (card.youtubeVideoId && window.YT) {
-            const playerId = `ytplayer-${Date.now()}`;
+        videoContainerEl.innerHTML = ''; // Limpa antes de adicionar
+        // Verifica se há um ID de vídeo e se a API do YouTube está carregada
+        if (card.youtubeVideoId && typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+            const playerId = `ytplayer-${Date.now()}`; // ID único para o player
             const videoPlayerDiv = document.createElement('div');
             videoPlayerDiv.id = playerId;
 
+            // Cria o wrapper com a moldura
             const videoWrapper = document.createElement('div');
-            videoWrapper.className = 'video-player-wrapper video-frame';
+            videoWrapper.className = 'video-player-wrapper video-frame'; // Classes para o CSS
             videoWrapper.appendChild(videoPlayerDiv);
             videoContainerEl.appendChild(videoWrapper);
 
@@ -82,31 +101,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 height: '100%',
                 width: '100%',
                 videoId: card.youtubeVideoId,
-                playerVars: { 'autoplay': 1, 'mute': 1, 'loop': 1, 'playlist': card.youtubeVideoId, 'controls': 0 },
-                events: { 'onReady': (event) => event.target.playVideo() }
+                playerVars: { 
+                    'autoplay': 1, // Tentar autoplay
+                    'mute': 1,     // Silenciar para permitir autoplay em mais navegadores
+                    'loop': 1,     // Loop contínuo do vídeo
+                    'playlist': card.youtubeVideoId, // Necessário para 'loop' funcionar
+                    'controls': 0, // Esconder controles do player
+                    'modestbranding': 1, // Reduzir o branding do YouTube
+                    'rel': 0 // Não mostrar vídeos relacionados ao final
+                },
+                events: { 
+                    'onReady': (event) => {
+                        event.target.playVideo(); // Força a execução do vídeo
+                    },
+                    'onError': (error) => {
+                        console.error('Erro no player do YouTube:', error);
+                        // Opcional: exiba uma mensagem de erro ou fallback aqui
+                    }
+                }
             });
+        } else if (card.youtubeVideoId) {
+            console.warn('API do YouTube não carregada ou YouTubeVideoId ausente. O vídeo não será exibido.');
+            // Opcional: Adicionar um placeholder ou mensagem para o usuário
         }
 
-        cardViewEl.classList.remove('hidden');
-        triggerEmojiRain();
+        cardViewEl.classList.remove('hidden'); // Exibe o cartão
+        triggerEmojiRain(); // Chama a chuva de emojis após o cartão ser renderizado
     };
 
     const triggerEmojiRain = () => {
-        const emojiContainer = document.createElement('div');
-        emojiContainer.className = 'emoji-rain-container';
-        document.body.appendChild(emojiContainer);
+        // Cria o contêiner de emojis apenas uma vez
+        if (!emojiRainContainerEl) {
+            emojiRainContainerEl = document.createElement('div');
+            emojiRainContainerEl.className = 'emoji-rain-container';
+            document.body.appendChild(emojiRainContainerEl);
+        } else {
+            // Se já existe, limpa para uma nova "chuva" se a função for chamada novamente
+            emojiRainContainerEl.innerHTML = '';
+        }
+
         const emojis = ['❤️', '💖', '✨', '🎉', '💕', '⭐', '🥰', '😍'];
-        const amount = 70;
+        const amount = 70; // Quantidade de emojis
+        const fragment = document.createDocumentFragment(); // Para melhor performance
+
         for (let i = 0; i < amount; i++) {
             const emojiSpan = document.createElement('span');
             emojiSpan.className = 'emoji';
             emojiSpan.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            // Posicionamento horizontal aleatório
             emojiSpan.style.left = `${Math.random() * 100}vw`;
-            emojiSpan.style.fontSize = `${Math.random() * 1.5 + 0.8}rem`;
-            emojiSpan.style.animationDuration = `${Math.random() * 4 + 3}s`;
-            emojiSpan.style.animationDelay = `${Math.random() * 5}s`;
-            emojiContainer.appendChild(emojiSpan);
+            // Tamanho aleatório
+            emojiSpan.style.fontSize = `${Math.random() * 1.5 + 0.8}rem`; // Entre 0.8rem e 2.3rem
+            // Duração da animação aleatória
+            emojiSpan.style.animationDuration = `${Math.random() * 4 + 3}s`; // Entre 3s e 7s
+            // Atraso da animação aleatório para que não caiam todos ao mesmo tempo
+            emojiSpan.style.animationDelay = `${Math.random() * 5}s`; // Entre 0s e 5s
+
+            fragment.appendChild(emojiSpan);
         }
+        emojiRainContainerEl.appendChild(fragment); // Adiciona todos os emojis de uma vez
     };
 
     // Função Principal
@@ -120,21 +174,33 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const cardData = await fetchCardData(cardId);
+            cardDataGlobal = cardData; // Armazena globalmente para onYouTubeIframeAPIReady
 
-            const render = () => renderCardContent(cardData);
-
-            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-                window.onYouTubeIframeAPIReady = render;
+            // Verifica se a API do YouTube já está carregada.
+            // Se sim, renderiza diretamente. Caso contrário, espera o callback.
+            if (typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+                renderCardContent(cardData);
             } else {
-                render();
+                // A função onYouTubeIframeAPIReady já está definida no escopo global
+                // Ela será chamada automaticamente pelo script da API do YouTube quando carregar.
+                console.log('Esperando a API do YouTube carregar...');
             }
         } catch (error) {
-            console.error('Erro na inicialização:', error.message);
+            console.error('Erro na inicialização do cartão:', error.message);
+            errorStateEl.textContent = `Erro ao carregar o cartão: ${error.message}`;
             errorStateEl.classList.remove('hidden');
         } finally {
-            loadingStateEl.classList.add('hidden');
+            loadingStateEl.classList.add('hidden'); // Esconde o estado de carregamento
         }
     };
 
-    main();
+    main(); // Inicia o processo de carregamento do cartão
 });
+
+// Este script (do YouTube) deve ser carregado APÓS a definição de onYouTubeIframeAPIReady
+// mas idealmente antes do DOMContentLoaded, ou de forma assíncrona.
+// Certifique-se de que no seu HTML você tem algo assim:
+/*
+<script async src="https://www.youtube.com/iframe_api"></script>
+<script src="path/to/card.js"></script>
+*/
