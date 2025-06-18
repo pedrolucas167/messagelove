@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ? 'http://localhost:3001/api'
         : 'https://messagelove-backend.onrender.com/api';
 
-<<<<<<< HEAD
     // Seletores do DOM
     const loadingStateEl = document.getElementById('loading-state');
     const errorStateEl = document.getElementById('error-state');
@@ -165,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função Principal
     const main = async () => {
-=======
     const ELEMENTS = {
         stateManager: document.getElementById('card-state-manager'),
         revealBtn: document.getElementById('revealBtn'),
@@ -227,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadCard = async () => {
         ELEMENTS.stateManager.dataset.state = 'loading';
->>>>>>> b2f9d5c7bb00eb130b060af04d4385d1f4dc428d
         try {
             const cardId = new URLSearchParams(window.location.search).get('id');
             if (!cardId) throw new Error('O link está incompleto.');
