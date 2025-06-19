@@ -2,7 +2,7 @@
  * @file script.js
  * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube e envio para o backend.
  * @author Pedro Marques
- * @version 2.0.0
+ * @version 2.1.0 (Refactored)
  */
 
 // --- Módulo de Criação de Cartão ---
@@ -35,8 +35,8 @@ const CardCreatorApp = (() => {
         fotoPreviewImg: document.querySelector('[data-js="foto-preview"]'),
         removeFotoBtn: document.querySelector('[data-js="remove-foto"]'),
         youtubeUrlInput: document.getElementById('youtubeUrlInput'),
-        youtubeStartTimeMinInput: document.getElementById('youtubeStartTimeMin'), // NOVO
-        youtubeStartTimeSecInput: document.getElementById('youtubeStartTimeSec'), // NOVO
+        youtubeStartTimeMinInput: document.getElementById('youtubeStartTimeMin'),
+        youtubeStartTimeSecInput: document.getElementById('youtubeStartTimeSec'),
         addYoutubeUrlBtn: document.getElementById('addYoutubeUrlBtn'),
         youtubeErrorEl: document.getElementById('youtubeError'),
         youtubePreviewContainer: document.getElementById('youtubePreviewContainer'),
@@ -69,27 +69,36 @@ const CardCreatorApp = (() => {
         }
     };
 
-    // 4. Módulo de Lógica do YouTube
+    // 4. Módulo de Lógica do YouTube (REATORADO)
     const youtube = {
+        // --- Métodos Públicos ---
         onApiReady() {
             console.log('API do YouTube carregada e pronta (modo CRIAÇÃO).');
-            // Se já houver uma URL, tenta inicializar o player
+            // Se já houver uma URL na carga da página, tenta inicializar o player
             if (elements.youtubeUrlInput.value.trim()) {
                 this.initPlayer();
             }
         },
+
         parseUrl(url) {
             const regExp = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
             const match = url.match(regExp);
             return (match && match[1]) ? match[1] : null;
         },
+        
         getStartTime() {
             const minutes = parseInt(elements.youtubeStartTimeMinInput.value, 10) || 0;
             const seconds = parseInt(elements.youtubeStartTimeSecInput.value, 10) || 0;
             return (minutes * 60) + seconds;
         },
+        
         initPlayer() {
-            elements.youtubeErrorEl.textContent = '';
+            // 1. Validações iniciais (Guard Clauses)
+            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+                utils.showNotification('API do YouTube ainda não carregada. Tente novamente em segundos.', 'warn');
+                return;
+            }
+            
             const url = elements.youtubeUrlInput.value.trim();
             if (!url) {
                 utils.showNotification('Por favor, insira um link do YouTube.', 'error');
@@ -98,31 +107,32 @@ const CardCreatorApp = (() => {
 
             const videoId = this.parseUrl(url);
             if (!videoId) {
-                elements.youtubeErrorEl.textContent = 'Link do YouTube inválido. Por favor, verifique.';
-                elements.youtubePreviewContainer.classList.remove('active');
-                elements.youtubeVideoIdInputHidden.value = '';
+                this._updateUI('error', 'Link do YouTube inválido. Por favor, verifique.');
                 return;
             }
-
-            const startSeconds = this.getStartTime();
-            elements.youtubeVideoIdInputHidden.value = videoId;
-            elements.youtubePreviewContainer.classList.add('active');
             
+            // 2. Se a validação passar, atualiza a UI e o player
+            const startSeconds = this.getStartTime();
+
+            this._updateUI('success');
+            elements.youtubeVideoIdInputHidden.value = videoId;
+            this._createOrUpdatePlayer(videoId, startSeconds);
+        },
+
+        // --- Métodos Privados (Lógica interna) ---
+        _createOrUpdatePlayer(videoId, startSeconds) {
             const playerVars = { 
                 'controls': 1, 
                 'rel': 0, 
                 'modestbranding': 1,
                 'start': startSeconds 
             };
-
-            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-                utils.showNotification('API do YouTube ainda não carregada. Tente novamente em alguns segundos.', 'warn');
-                return;
-            }
-
-            if (state.youtubePlayer) {
+            
+            if (state.youtubePlayer && typeof state.youtubePlayer.loadVideoById === 'function') {
+                // Se o player já existe, apenas carrega o novo vídeo
                 state.youtubePlayer.loadVideoById({ videoId, startSeconds });
             } else {
+                // Se não, cria uma nova instância do player
                 state.youtubePlayer = new YT.Player(elements.youtubePlayerIframe, {
                     height: '100%',
                     width: '100%',
@@ -130,16 +140,34 @@ const CardCreatorApp = (() => {
                     playerVars: playerVars,
                     events: {
                         'onReady': () => console.log('Player de CRIAÇÃO pronto.'),
-                        'onError': (error) => {
-                            console.error('Erro no player de criação do YouTube:', error);
-                            elements.youtubeErrorEl.textContent = 'Não foi possível carregar o vídeo. Verifique o link.';
-                            elements.youtubePreviewContainer.classList.remove('active');
-                        }
+                        'onError': (e) => this._handlePlayerError(e)
                     }
                 });
             }
+        },
+        
+        _updateUI(uiState, message = '') {
+            if (uiState === 'success') {
+                elements.youtubeErrorEl.textContent = '';
+                elements.youtubePreviewContainer.classList.add('active');
+            } else if (uiState === 'error') {
+                elements.youtubeErrorEl.textContent = message;
+                elements.youtubePreviewContainer.classList.remove('active');
+                elements.youtubeVideoIdInputHidden.value = '';
+                 // Opcional: destruir o player para economizar recursos
+                if (state.youtubePlayer && typeof state.youtubePlayer.destroy === 'function') {
+                    state.youtubePlayer.destroy();
+                    state.youtubePlayer = null;
+                }
+            }
+        },
+
+        _handlePlayerError(error) {
+            console.error('Erro no player de criação do YouTube:', error);
+            this._updateUI('error', 'Não foi possível carregar o vídeo. Verifique o link ou se o vídeo permite incorporação.');
         }
     };
+
 
     // 5. Módulo de Lógica da Foto
     const photo = {
@@ -223,7 +251,6 @@ const CardCreatorApp = (() => {
                 utils.showNotification(`Falha ao criar o cartão: ${error.message}`, 'error', 7000);
                 this.setSubmitButtonState(false);
             }
-            // Não precisa de finally aqui, pois o estado do botão só deve ser resetado em caso de erro. Em caso de sucesso, a página redireciona.
         }
     };
 
@@ -259,10 +286,6 @@ const CardCreatorApp = (() => {
 // --- Ponto de Entrada Global ---
 document.addEventListener('DOMContentLoaded', CardCreatorApp.init);
 
-/**
- * Função global exigida pela API do YouTube.
- * Ela chama o método correspondente dentro do nosso módulo encapsulado.
- */
 function onYouTubeIframeAPIReady() {
     CardCreatorApp.onYouTubeApiReady();
 }
