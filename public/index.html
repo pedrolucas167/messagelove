@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" dir="ltr" class="no-js">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,7 +28,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="style.css" />
 
     <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
@@ -38,11 +39,11 @@
     <meta property="og:image" content="/assets/og-image.jpg" />
     <meta property="og:locale" content="pt_BR" />
 
-    </head>
+</head>
 
 <body>
     <script>
-        (function() {
+        (function () {
             var html = document.documentElement;
             if (html.classList.contains('no-js')) {
                 html.classList.remove('no-js');
@@ -65,18 +66,19 @@
                     <legend class="section-title">
                         <h2>Informações do Cartão</h2>
                     </legend>
-                    
+
                     <div class="form-group">
                         <label for="deInput" class="required-field">Seu Nome (Remetente)</label>
-                        <input type="text" id="deInput" name="de" class="form-input" required placeholder="Quem está enviando?"
-                            aria-required="true" />
+                        <input type="text" id="deInput" name="de" class="form-input" required
+                            placeholder="Quem está enviando?" aria-required="true" />
                         <small class="field-hint">Obrigatório</small>
                     </div>
 
                     <div class="form-group">
                         <label for="nome" class="required-field">Nome do Destinatário</label>
-                        <input type="text" id="nome" name="nome" class="form-input" required placeholder="Para quem é este cartão?"
-                            aria-required="true" />
+                        <input type="text" id="nome" name="para" class="form-input" required
+                            placeholder="Para quem é este cartão?" aria-required="true" />
+                        aria-required="true" />
                         <small class="field-hint">Obrigatório</small>
                     </div>
 
@@ -88,16 +90,18 @@
 
                     <div class="form-group">
                         <label for="mensagem" class="required-field">Sua Mensagem</label>
-                        <textarea id="mensagem" name="mensagem" class="form-input" required placeholder="Escreva sua mensagem especial..."
-                            aria-required="true"></textarea>
+                        <textarea id="mensagem" name="mensagem" class="form-input" required
+                            placeholder="Escreva sua mensagem especial..." aria-required="true"></textarea>
                         <small class="field-hint">Obrigatório</small>
                     </div>
                 </fieldset>
-                
+
                 <fieldset class="form-section">
-                    <legend class="section-title"><h3>Adicionais (Opcional)</h3></legend>
-                    
-                     <div class="form-group file-upload" data-js="file-upload">
+                    <legend class="section-title">
+                        <h3>Adicionais (Opcional)</h3>
+                    </legend>
+
+                    <div class="form-group file-upload" data-js="file-upload">
                         <label for="fotoUpload">Adicionar Foto</label>
                         <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif"
                             aria-describedby="fotoHelp" />
@@ -114,18 +118,18 @@
                         <label for="youtubeUrlInput">Link do YouTube</label>
                         <div class="input-group-action">
                             <input type="url" id="youtubeUrlInput" name="youtubeUrl" class="form-input"
-                                placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp"/>
+                                placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp" />
                             <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary">Adicionar</button>
                         </div>
                         <div id="youtubeError" class="youtube-error"></div>
-                        
 
-                    <div id="youtubePreviewContainer" class="youtube-preview-container">
-                        <div class="youtube-player-wrapper">
-                            <iframe id="youtubePlayer" allowfullscreen title="Player de vídeo do YouTube"></iframe>
+
+                        <div id="youtubePreviewContainer" class="youtube-preview-container">
+                            <div class="youtube-player-wrapper">
+                                <iframe id="youtubePlayer" allowfullscreen title="Player de vídeo do YouTube"></iframe>
+                            </div>
+                            <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
                         </div>
-                        <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
-                    </div>
                 </fieldset>
 
                 <div class="form-group form-actions">
@@ -135,7 +139,8 @@
                             <span class="btn-spinner" aria-hidden="true"></span> Processando...
                         </span>
                     </button>
-                    <small class="form-note">Seu cartão será gerado e você receberá um link único para compartilhar.</small>
+                    <small class="form-note">Seu cartão será gerado e você receberá um link único para
+                        compartilhar.</small>
                 </div>
             </form>
 
@@ -146,7 +151,8 @@
                     <input type="text" id="generatedCardLink" readonly aria-label="Link do cartão gerado" />
                     <button type="button" id="copyLinkBtn" class="btn btn--secondary">Copiar</button>
                 </div>
-                <a href="#" id="viewCardBtn" class="btn btn--primary" target="_blank" rel="noopener noreferrer">Ver Cartão</a>
+                <a href="#" id="viewCardBtn" class="btn btn--primary" target="_blank" rel="noopener noreferrer">Ver
+                    Cartão</a>
             </div>
 
         </div>
@@ -164,9 +170,10 @@
     </footer>
 
     <div id="appNotificationArea"></div>
-    
+
     <script src="https://www.youtube.com/iframe_api" async defer></script>
-    <script src="script.js" defer></script> 
+    <script src="script.js" defer></script>
     <canvas id="particle-canvas"></canvas>
 </body>
+
 </html>
