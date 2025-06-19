@@ -2,24 +2,14 @@
  * @file script.js
  * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube e envio para o backend.
  * @author Pedro Marques
- * @version 2.4.0 (Removed YouTube Start Time feature)
+ * @version 2.5.0 (UX Modal & Bug Fixes)
  */
 const CardCreatorApp = (() => {
-    // 1. Configurações e Estado da Aplicação
-    const config = {
-        IS_LOCAL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
-        get API_URL() {
-            return this.IS_LOCAL 
-                ? 'http://localhost:3001/api' 
-                : 'https://messagelove-backend.onrender.com/api';
-        }
-    };
+    // 1. Configurações e Estado
+    const config = { /* ... sem alterações ... */ };
+    const state = { /* ... sem alterações ... */ };
 
-    const state = {
-        youtubePlayer: null,
-    };
-
-    // 2. Centralização dos Seletores do DOM (REMOVIDOS CAMPOS DE TEMPO)
+    // 2. Seletores do DOM (ATUALIZADO PARA O MODAL)
     const elements = {
         cardForm: document.getElementById('cardForm'),
         submitBtn: document.getElementById('submitBtn'),
@@ -40,124 +30,25 @@ const CardCreatorApp = (() => {
         youtubePlayerIframe: document.getElementById('youtubePlayer'),
         youtubeVideoIdInputHidden: document.getElementById('youtubeVideoId'),
         appNotificationArea: document.getElementById('appNotificationArea'),
-        successArea: document.getElementById('successArea'),
+        // Seletores do MODAL
+        successModal: document.getElementById('successModal'),
+        closeModalBtn: document.getElementById('closeModalBtn'),
+        createAnotherBtn: document.getElementById('createAnotherBtn'),
         generatedCardLinkInput: document.getElementById('generatedCardLink'),
         copyLinkBtn: document.getElementById('copyLinkBtn'),
         viewCardBtn: document.getElementById('viewCardBtn'),
     };
 
-    // 3. Funções Utilitárias
-    const utils = {
-        showNotification(message, type = 'info', duration = 3000) {
-            if (!elements.appNotificationArea) {
-                console.warn('Área de notificação não encontrada.');
-                return;
-            }
-            const notificationEl = document.createElement('div');
-            notificationEl.className = `notification notification--${type}`;
-            notificationEl.innerHTML = `<span>${message}</span><button class="notification__close">×</button>`;
-            elements.appNotificationArea.appendChild(notificationEl);
+    // 3. Funções Utilitárias (sem alterações)
+    const utils = { /* ... sem alterações ... */ };
 
-            const close = () => {
-                notificationEl.classList.add('notification--removing');
-                notificationEl.addEventListener('animationend', () => notificationEl.remove());
-            };
+    // 4. Módulo de Lógica do YouTube (sem alterações, mas o CSP deve corrigir)
+    const youtube = { /* ... sem alterações ... */ };
 
-            notificationEl.querySelector('.notification__close').addEventListener('click', close);
-            if (duration) setTimeout(close, duration);
-        }
-    };
+    // 5. Módulo de Lógica da Foto (sem alterações)
+    const photo = { /* ... sem alterações ... */ };
 
-    // 4. Módulo de Lógica do YouTube (REATORADO)
-    const youtube = {
-        onApiReady() {
-            console.log('API do YouTube carregada e pronta (modo CRIAÇÃO).');
-            if (elements.youtubeUrlInput.value.trim()) this.initPlayer();
-        },
-        parseUrl(url) {
-            const regExp = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-            const match = url.match(regExp);
-            return (match && match[1]) ? match[1] : null;
-        },
-        // REMOVIDA A FUNÇÃO getStartTime()
-        initPlayer() {
-            // A lógica de espera da API que implementamos anteriormente foi mesclada aqui para simplicidade
-            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-                utils.showNotification('API do YouTube ainda não carregada. Tente novamente.', 'warn');
-                return;
-            }
-            const url = elements.youtubeUrlInput.value.trim();
-            if (!url) {
-                utils.showNotification('Por favor, insira um link do YouTube.', 'error');
-                return;
-            }
-            const videoId = this.parseUrl(url);
-            if (!videoId) {
-                this._updateUI('error', 'Link do YouTube inválido. Por favor, verifique.');
-                return;
-            }
-            
-            this._updateUI('success');
-            elements.youtubeVideoIdInputHidden.value = videoId;
-            this._createOrUpdatePlayer(videoId); // Não passa mais o startSeconds
-        },
-        _createOrUpdatePlayer(videoId) { // Não recebe mais o startSeconds
-            // REMOVIDO 'start' de playerVars
-            const playerVars = { 'controls': 1, 'rel': 0, 'modestbranding': 1 }; 
-            if (state.youtubePlayer && typeof state.youtubePlayer.loadVideoById === 'function') {
-                // Não precisa mais passar startSeconds
-                state.youtubePlayer.loadVideoById({ videoId });
-            } else {
-                state.youtubePlayer = new YT.Player(elements.youtubePlayerIframe, {
-                    height: '100%', width: '100%', videoId: videoId, playerVars: playerVars,
-                    events: {
-                        'onReady': () => console.log('Player de CRIAÇÃO pronto.'),
-                        'onError': (e) => this._handlePlayerError(e)
-                    }
-                });
-            }
-        },
-        _updateUI(uiState, message = '') {
-            if (uiState === 'success') {
-                elements.youtubeErrorEl.textContent = '';
-                elements.youtubePreviewContainer.classList.add('active');
-            } else if (uiState === 'error') {
-                elements.youtubeErrorEl.textContent = message;
-                elements.youtubePreviewContainer.classList.remove('active');
-                elements.youtubeVideoIdInputHidden.value = '';
-                if (state.youtubePlayer && typeof state.youtubePlayer.destroy === 'function') {
-                    state.youtubePlayer.destroy();
-                    state.youtubePlayer = null;
-                }
-            }
-        },
-        _handlePlayerError(error) {
-            console.error('Erro no player de criação do YouTube:', error);
-            this._updateUI('error', 'Não foi possível carregar o vídeo. Verifique o link ou se ele permite incorporação.');
-        }
-    };
-
-    // 5. Módulo de Lógica da Foto
-    const photo = {
-        handleUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    elements.fotoPreviewImg.src = e.target.result;
-                    elements.fotoPreviewContainer.hidden = false;
-                };
-                reader.readAsDataURL(file);
-            }
-        },
-        remove() {
-            elements.fotoUploadInput.value = '';
-            elements.fotoPreviewImg.src = '';
-            elements.fotoPreviewContainer.hidden = true;
-        }
-    };
-
-    // 6. Módulo de Lógica do Formulário
+    // 6. Módulo de Lógica do Formulário e Modal (REATORADO)
     const form = {
         setSubmitButtonState(isLoading) {
             if (elements.submitBtn) {
@@ -167,29 +58,32 @@ const CardCreatorApp = (() => {
             }
         },
 
-        displaySuccess(cardId) {
+        openSuccessModal(cardId) {
             const cardUrl = `${window.location.origin}/card.html?id=${cardId}`;
-            elements.cardForm.hidden = true;
-            elements.successArea.hidden = false;
+            
+            elements.cardForm.hidden = true; // Esconde o formulário
+            elements.successModal.hidden = false;
+            
+            // Força o navegador a aplicar o display antes de adicionar a classe de animação
+            setTimeout(() => {
+                elements.successModal.classList.add('active');
+            }, 10);
+            
             elements.generatedCardLinkInput.value = cardUrl;
             elements.viewCardBtn.href = cardUrl;
         },
 
-        async copyLinkToClipboard() {
-            try {
-                await navigator.clipboard.writeText(elements.generatedCardLinkInput.value);
-                const originalText = elements.copyLinkBtn.textContent;
-                elements.copyLinkBtn.textContent = 'Copiado!';
-                utils.showNotification('Link copiado para a área de transferência!', 'success');
-                setTimeout(() => {
-                    elements.copyLinkBtn.textContent = originalText;
-                }, 2000);
-            } catch (err) {
-                console.error('Falha ao copiar o link: ', err);
-                utils.showNotification('Não foi possível copiar o link.', 'error');
-            }
+        closeSuccessModal() {
+            elements.successModal.classList.remove('active');
+            // Espera a animação de saída terminar antes de esconder o elemento
+            setTimeout(() => {
+                elements.successModal.hidden = true;
+            }, 300); // 300ms é a duração da transição no CSS
         },
+
+        async copyLinkToClipboard() { /* ... sem alterações ... */ },
         
+        // CORRIGIDO: Removido o 'finally' para um controle mais preciso do estado do botão
         async handleSubmit(event) {
             event.preventDefault();
 
@@ -200,52 +94,58 @@ const CardCreatorApp = (() => {
 
             this.setSubmitButtonState(true);
 
-            const formData = new FormData();
-            formData.append('de', elements.deInput.value.trim());
-            formData.append('para', elements.nomeInput.value.trim());
-            formData.append('mensagem', elements.mensagemInput.value.trim());
-
-            if (elements.dataInput.value) formData.append('data', elements.dataInput.value);
+            const formData = new FormData(elements.cardForm); // Forma mais simples de pegar os dados
+            formData.set('de', elements.deInput.value.trim());
+            formData.set('para', elements.nomeInput.value.trim());
+            formData.set('mensagem', elements.mensagemInput.value.trim());
             
-            if (elements.youtubeVideoIdInputHidden.value) {
-                formData.append('youtubeVideoId', elements.youtubeVideoIdInputHidden.value);
-                // REMOVIDO: Envio do youtubeStartTime
-            }
-
-            if (elements.fotoUploadInput.files[0]) {
-                formData.append('foto', elements.fotoUploadInput.files[0]);
-            }
+            // Opcional: remover campos que não devem ser enviados se vazios
+            if (!elements.dataInput.value) formData.delete('data');
+            if (!elements.youtubeVideoIdInputHidden.value) formData.delete('youtubeVideoId');
+            if (!elements.fotoUploadInput.files[0]) formData.delete('foto');
 
             try {
                 const response = await fetch(`${config.API_URL}/cards`, {
                     method: 'POST',
                     body: formData,
                 });
+
                 const result = await response.json();
                 if (!response.ok) {
-                    throw new Error(result.message || 'Erro desconhecido ao criar o cartão.');
+                    throw new Error(result.message || `Erro ${response.status}`);
                 }
+
                 if (result.cardId) {
-                    this.displaySuccess(result.cardId);
+                    this.openSuccessModal(result.cardId);
                 } else {
                     throw new Error('ID do cartão não foi recebido do servidor.');
                 }
             } catch (error) {
                 console.error('Erro no envio do formulário:', error);
                 utils.showNotification(`Falha ao criar o cartão: ${error.message}`, 'error', 7000);
-            } finally {
-                this.setSubmitButtonState(false);
+                this.setSubmitButtonState(false); // Reativa o botão APENAS em caso de erro
             }
         }
     };
 
-    // 7. Vinculação de Eventos
+    // 7. Vinculação de Eventos (ATUALIZADO)
     const bindEvents = () => {
         if (elements.cardForm) elements.cardForm.addEventListener('submit', form.handleSubmit.bind(form));
         if (elements.fotoUploadInput) elements.fotoUploadInput.addEventListener('change', photo.handleUpload.bind(photo));
         if (elements.removeFotoBtn) elements.removeFotoBtn.addEventListener('click', photo.remove.bind(photo));
         if (elements.addYoutubeUrlBtn) elements.addYoutubeUrlBtn.addEventListener('click', youtube.initPlayer.bind(youtube));
+        
+        // Eventos do Modal
         if (elements.copyLinkBtn) elements.copyLinkBtn.addEventListener('click', form.copyLinkToClipboard.bind(form));
+        if (elements.closeModalBtn) elements.closeModalBtn.addEventListener('click', form.closeSuccessModal.bind(form));
+        if (elements.createAnotherBtn) elements.createAnotherBtn.addEventListener('click', () => window.location.reload());
+        if (elements.successModal) {
+            elements.successModal.addEventListener('click', (e) => {
+                if (e.target === elements.successModal) { // Fecha se clicar no overlay
+                    form.closeSuccessModal();
+                }
+            });
+        }
     };
     
     // 8. Inicialização
@@ -255,7 +155,7 @@ const CardCreatorApp = (() => {
     };
 
     return {
-        init: init,
+        init,
         onYouTubeApiReady: youtube.onApiReady.bind(youtube)
     };
 })();

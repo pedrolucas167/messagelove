@@ -6,6 +6,15 @@
     <meta name="description"
         content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
     <meta name="theme-color" content="#e91e63" />
+
+    <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self'; 
+    script-src 'self' https://www.youtube.com/iframe_api 'unsafe-inline';
+    frame-src 'self' https://www.youtube.com;
+    img-src 'self' data: https:;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001;">
     <title>Messagelove - Crie Cartões Especiais Personalizados</title>
 
     <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
