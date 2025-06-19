@@ -13,7 +13,7 @@ const CardCreatorApp = (() => {
         get API_URL() {
             return this.IS_LOCAL 
                 ? 'http://localhost:3001/api' 
-                : 'https://messagelove-backend.onrender.com/api';
+                : 'https://messagelove-backend.onrender.com';
         }
     };
 
