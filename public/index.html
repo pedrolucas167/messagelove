@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <link rel="PNG" href="/coracao.png" type="image/png" />
+    <link rel="icon" href="/coracao.png" type="image/png" />
     <link rel="manifest" href="manifest.webmanifest" />
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,26 +28,7 @@
     <meta property="og:image" content="/assets/og-image.jpg" />
     <meta property="og:locale" content="pt_BR" />
 
-    <style>
-        /* Estilos básicos para os novos campos de tempo. Você pode mover para seu style.css */
-        .form-group-time-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-
-        .time-inputs {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .form-input-time {
-            width: 70px; /* Largura fixa para os campos de tempo */
-        }
-    </style>
-</head>
+    </head>
 
 <body>
     <script>
@@ -109,7 +90,7 @@
                      <div class="form-group file-upload" data-js="file-upload">
                         <label for="fotoUpload">Adicionar Foto</label>
                         <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif"
-                            aria-describedby="fotoHelp" data-js="foto-input" />
+                            aria-describedby="fotoHelp" />
                         <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
                         <div class="preview-container" hidden data-js="preview-container">
                             <img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada"
@@ -121,10 +102,9 @@
 
                     <div class="form-group">
                         <label for="youtubeUrlInput">Link do YouTube</label>
-                        <div class="input-container">
+                        <div class="input-group-action">
                             <input type="url" id="youtubeUrlInput" name="youtubeUrl" class="form-input"
-                                placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp"
-                                aria-required="false" />
+                                placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp"/>
                             <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary">Adicionar</button>
                         </div>
                         <div id="youtubeError" class="youtube-error"></div>
@@ -174,7 +154,7 @@
     <footer class="main-footer" role="contentinfo">
         <div class="container">
             <p>
-                <span>Messagelove © <span id="currentYear">2025</span></span>
+                <span>Messagelove © <span id="currentYear"></span></span>
                 <span>Feito com <span aria-label="coração">❤️</span> por <a
                         href="https://pedrolucas167.github.io/portfolio/" target="_blank"
                         rel="noopener noreferrer">Pedro Marques</a></span>
@@ -184,7 +164,7 @@
 
     <div id="appNotificationArea"></div>
     
-    <script src="https://www.youtube.com/iframe_api`." async defer></script>
+    <script src="https://www.youtube.com/iframe_api" async defer></script>
     <script src="script.js" defer></script> 
     <canvas id="particle-canvas"></canvas>
 </body>
