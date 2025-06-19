@@ -2,10 +2,8 @@
  * @file script.js
  * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube e envio para o backend.
  * @author Pedro Marques
- * @version 2.1.0 (Refactored)
+ * @version 2.2.0 (Refactored with Success Area)
  */
-
-// --- Módulo de Criação de Cartão ---
 const CardCreatorApp = (() => {
     // 1. Configurações e Estado da Aplicação
     const config = {
@@ -21,12 +19,13 @@ const CardCreatorApp = (() => {
         youtubePlayer: null,
     };
 
-    // 2. Centralização dos Seletores do DOM
+    // 2. Centralização dos Seletores do DOM (ATUALIZADO)
     const elements = {
         cardForm: document.getElementById('cardForm'),
         submitBtn: document.getElementById('submitBtn'),
         submitBtnText: document.querySelector('#submitBtn .btn-text'),
         submitBtnLoading: document.querySelector('#submitBtn .btn-loading'),
+        deInput: document.getElementById('deInput'), // NOVO
         nomeInput: document.getElementById('nome'),
         mensagemInput: document.getElementById('mensagem'),
         dataInput: document.getElementById('data'),
@@ -43,6 +42,11 @@ const CardCreatorApp = (() => {
         youtubePlayerIframe: document.getElementById('youtubePlayer'),
         youtubeVideoIdInputHidden: document.getElementById('youtubeVideoId'),
         appNotificationArea: document.getElementById('appNotificationArea'),
+        // Seletores da nova área de sucesso
+        successArea: document.getElementById('successArea'), // NOVO
+        generatedCardLinkInput: document.getElementById('generatedCardLink'), // NOVO
+        copyLinkBtn: document.getElementById('copyLinkBtn'), // NOVO
+        viewCardBtn: document.getElementById('viewCardBtn'), // NOVO
     };
 
     // 3. Funções Utilitárias
@@ -63,81 +67,53 @@ const CardCreatorApp = (() => {
             };
 
             notificationEl.querySelector('.notification__close').addEventListener('click', close);
-            if (duration) {
-                setTimeout(close, duration);
-            }
+            if (duration) setTimeout(close, duration);
         }
     };
 
-    // 4. Módulo de Lógica do YouTube (REATORADO)
+    // 4. Módulo de Lógica do YouTube (sem alterações)
     const youtube = {
-        // --- Métodos Públicos ---
         onApiReady() {
             console.log('API do YouTube carregada e pronta (modo CRIAÇÃO).');
-            // Se já houver uma URL na carga da página, tenta inicializar o player
-            if (elements.youtubeUrlInput.value.trim()) {
-                this.initPlayer();
-            }
+            if (elements.youtubeUrlInput.value.trim()) this.initPlayer();
         },
-
         parseUrl(url) {
             const regExp = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
             const match = url.match(regExp);
             return (match && match[1]) ? match[1] : null;
         },
-        
         getStartTime() {
             const minutes = parseInt(elements.youtubeStartTimeMinInput.value, 10) || 0;
             const seconds = parseInt(elements.youtubeStartTimeSecInput.value, 10) || 0;
             return (minutes * 60) + seconds;
         },
-        
         initPlayer() {
-            // 1. Validações iniciais (Guard Clauses)
             if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-                utils.showNotification('API do YouTube ainda não carregada. Tente novamente em segundos.', 'warn');
+                utils.showNotification('API do YouTube ainda não carregada. Tente novamente.', 'warn');
                 return;
             }
-            
             const url = elements.youtubeUrlInput.value.trim();
             if (!url) {
                 utils.showNotification('Por favor, insira um link do YouTube.', 'error');
                 return;
             }
-
             const videoId = this.parseUrl(url);
             if (!videoId) {
                 this._updateUI('error', 'Link do YouTube inválido. Por favor, verifique.');
                 return;
             }
-            
-            // 2. Se a validação passar, atualiza a UI e o player
             const startSeconds = this.getStartTime();
-
             this._updateUI('success');
             elements.youtubeVideoIdInputHidden.value = videoId;
             this._createOrUpdatePlayer(videoId, startSeconds);
         },
-
-        // --- Métodos Privados (Lógica interna) ---
         _createOrUpdatePlayer(videoId, startSeconds) {
-            const playerVars = { 
-                'controls': 1, 
-                'rel': 0, 
-                'modestbranding': 1,
-                'start': startSeconds 
-            };
-            
+            const playerVars = { 'controls': 1, 'rel': 0, 'modestbranding': 1, 'start': startSeconds };
             if (state.youtubePlayer && typeof state.youtubePlayer.loadVideoById === 'function') {
-                // Se o player já existe, apenas carrega o novo vídeo
                 state.youtubePlayer.loadVideoById({ videoId, startSeconds });
             } else {
-                // Se não, cria uma nova instância do player
                 state.youtubePlayer = new YT.Player(elements.youtubePlayerIframe, {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoId,
-                    playerVars: playerVars,
+                    height: '100%', width: '100%', videoId: videoId, playerVars: playerVars,
                     events: {
                         'onReady': () => console.log('Player de CRIAÇÃO pronto.'),
                         'onError': (e) => this._handlePlayerError(e)
@@ -145,7 +121,6 @@ const CardCreatorApp = (() => {
                 });
             }
         },
-        
         _updateUI(uiState, message = '') {
             if (uiState === 'success') {
                 elements.youtubeErrorEl.textContent = '';
@@ -154,22 +129,19 @@ const CardCreatorApp = (() => {
                 elements.youtubeErrorEl.textContent = message;
                 elements.youtubePreviewContainer.classList.remove('active');
                 elements.youtubeVideoIdInputHidden.value = '';
-                 // Opcional: destruir o player para economizar recursos
                 if (state.youtubePlayer && typeof state.youtubePlayer.destroy === 'function') {
                     state.youtubePlayer.destroy();
                     state.youtubePlayer = null;
                 }
             }
         },
-
         _handlePlayerError(error) {
             console.error('Erro no player de criação do YouTube:', error);
-            this._updateUI('error', 'Não foi possível carregar o vídeo. Verifique o link ou se o vídeo permite incorporação.');
+            this._updateUI('error', 'Não foi possível carregar o vídeo. Verifique o link ou se ele permite incorporação.');
         }
     };
 
-
-    // 5. Módulo de Lógica da Foto
+    // 5. Módulo de Lógica da Foto (sem alterações)
     const photo = {
         handleUpload(event) {
             const file = event.target.files[0];
@@ -183,13 +155,13 @@ const CardCreatorApp = (() => {
             }
         },
         remove() {
-            elements.fotoUploadInput.value = ''; // Limpa o seletor de arquivo
+            elements.fotoUploadInput.value = '';
             elements.fotoPreviewImg.src = '';
             elements.fotoPreviewContainer.hidden = true;
         }
     };
 
-    // 6. Módulo de Lógica do Formulário
+    // 6. Módulo de Lógica do Formulário (TOTALMENTE REATORADO)
     const form = {
         setSubmitButtonState(isLoading) {
             if (elements.submitBtn) {
@@ -198,29 +170,54 @@ const CardCreatorApp = (() => {
                 if(elements.submitBtnLoading) elements.submitBtnLoading.hidden = !isLoading;
             }
         },
+
+        displaySuccess(cardId) {
+            const cardUrl = `${window.location.origin}/card.html?id=${cardId}`;
+            
+            elements.cardForm.hidden = true; // Esconde o formulário
+            elements.successArea.hidden = false; // Mostra a área de sucesso
+            
+            elements.generatedCardLinkInput.value = cardUrl;
+            elements.viewCardBtn.href = cardUrl;
+        },
+
+        async copyLinkToClipboard() {
+            try {
+                await navigator.clipboard.writeText(elements.generatedCardLinkInput.value);
+                const originalText = elements.copyLinkBtn.textContent;
+                elements.copyLinkBtn.textContent = 'Copiado!';
+                utils.showNotification('Link copiado para a área de transferência!', 'success');
+                setTimeout(() => {
+                    elements.copyLinkBtn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Falha ao copiar o link: ', err);
+                utils.showNotification('Não foi possível copiar o link.', 'error');
+            }
+        },
+        
         async handleSubmit(event) {
             event.preventDefault();
 
-            if (!elements.nomeInput.value.trim() || !elements.mensagemInput.value.trim()) {
-                utils.showNotification('Por favor, preencha o nome e a mensagem.', 'error');
+            if (!elements.deInput.value.trim() || !elements.nomeInput.value.trim() || !elements.mensagemInput.value.trim()) {
+                utils.showNotification('Por favor, preencha seu nome, o do destinatário e a mensagem.', 'error');
                 return;
             }
 
             this.setSubmitButtonState(true);
 
             const formData = new FormData();
-            formData.append('de', 'Seu Nome'); // Considere adicionar um campo "de" no HTML
+            formData.append('de', elements.deInput.value.trim()); // CORRIGIDO
             formData.append('para', elements.nomeInput.value.trim());
             formData.append('mensagem', elements.mensagemInput.value.trim());
 
-            if (elements.dataInput.value) {
-                formData.append('data', elements.dataInput.value);
-            }
+            if (elements.dataInput.value) formData.append('data', elements.dataInput.value);
+            
             if (elements.youtubeVideoIdInputHidden.value) {
-                const startTime = youtube.getStartTime();
                 formData.append('youtubeVideoId', elements.youtubeVideoIdInputHidden.value);
-                formData.append('youtubeStartTime', startTime); // Envia o tempo de início
+                formData.append('youtubeStartTime', youtube.getStartTime());
             }
+
             if (elements.fotoUploadInput.files[0]) {
                 formData.append('foto', elements.fotoUploadInput.files[0]);
             }
@@ -238,10 +235,8 @@ const CardCreatorApp = (() => {
                 }
 
                 if (result.cardId) {
-                    utils.showNotification('Cartão criado com sucesso!', 'success', 5000);
-                    setTimeout(() => {
-                        window.location.href = `/card.html?id=${result.cardId}`;
-                    }, 1000);
+                    // LÓGICA DE SUCESSO ALTERADA
+                    this.displaySuccess(result.cardId);
                 } else {
                     throw new Error('ID do cartão não foi recebido do servidor.');
                 }
@@ -249,25 +244,22 @@ const CardCreatorApp = (() => {
             } catch (error) {
                 console.error('Erro no envio do formulário:', error);
                 utils.showNotification(`Falha ao criar o cartão: ${error.message}`, 'error', 7000);
+            } finally {
+                // Sempre reativa o botão em caso de erro. Em caso de sucesso, o form some.
                 this.setSubmitButtonState(false);
             }
         }
     };
 
-    // 7. Vinculação de Eventos
+    // 7. Vinculação de Eventos (ATUALIZADO)
     const bindEvents = () => {
-        if (elements.cardForm) {
-            elements.cardForm.addEventListener('submit', form.handleSubmit.bind(form));
-        }
-        if (elements.fotoUploadInput) {
-            elements.fotoUploadInput.addEventListener('change', photo.handleUpload.bind(photo));
-        }
-        if (elements.removeFotoBtn) {
-            elements.removeFotoBtn.addEventListener('click', photo.remove.bind(photo));
-        }
-        if (elements.addYoutubeUrlBtn) {
-            elements.addYoutubeUrlBtn.addEventListener('click', youtube.initPlayer.bind(youtube));
-        }
+        if (elements.cardForm) elements.cardForm.addEventListener('submit', form.handleSubmit.bind(form));
+        if (elements.fotoUploadInput) elements.fotoUploadInput.addEventListener('change', photo.handleUpload.bind(photo));
+        if (elements.removeFotoBtn) elements.removeFotoBtn.addEventListener('click', photo.remove.bind(photo));
+        if (elements.addYoutubeUrlBtn) elements.addYoutubeUrlBtn.addEventListener('click', youtube.initPlayer.bind(youtube));
+        
+        // Evento para o novo botão de copiar
+        if (elements.copyLinkBtn) elements.copyLinkBtn.addEventListener('click', form.copyLinkToClipboard.bind(form));
     };
     
     // 8. Inicialização
@@ -276,14 +268,12 @@ const CardCreatorApp = (() => {
         bindEvents();
     };
 
-    // Expor métodos/propriedades públicas (Interface Pública)
     return {
         init: init,
-        onYouTubeApiReady: youtube.onApiReady.bind(youtube) // Expor para ser chamado globalmente
+        onYouTubeApiReady: youtube.onApiReady.bind(youtube)
     };
 })();
 
-// --- Ponto de Entrada Global ---
 document.addEventListener('DOMContentLoaded', CardCreatorApp.init);
 
 function onYouTubeIframeAPIReady() {
