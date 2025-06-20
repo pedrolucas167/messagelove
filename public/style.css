@@ -2,7 +2,7 @@
  * @file style.css
  * @description Folha de estilos principal para o projeto Messagelove.
  * @author Pedro Marques
- * @version 3.0.0 (Added Card View Styles)
+ * @version 3.1.0 (Final Card View Styles)
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -141,32 +141,45 @@ textarea { min-height: 140px; resize: vertical; }
 .modal-actions { display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap; }
 
 /* ============================================
-   🖼️ PÁGINA DE VISUALIZAÇÃO DO CARTÃO (NOVO)
+   🖼️ PÁGINA DE VISUALIZAÇÃO DO CARTÃO
    ============================================ */
-#card-view-page body { display: flex; flex-direction: column; }
 #card-view-page main { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: var(--space-lg); }
 .card-page-header, .card-page-footer { text-align: center; padding: var(--space-md) 0; flex-shrink: 0; }
 .card-page-header a { font-weight: bold; color: var(--color-primary); font-size: 1.2rem; text-decoration: none; }
 .card-page-footer p { margin: 0; }
-.card-page-footer .btn { padding: 0.5em 1.2em; }
 
 /* --- Estados de Carregamento e Erro --- */
 .loader-wrapper { text-align: center; color: var(--color-muted); }
 .loader { display: inline-block; width: 50px; height: 50px; border: 5px solid hsla(330, 70%, 60%, 0.2); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
 #error-state { padding: var(--space-xl); background: hsla(0, 70%, 55%, 0.05); border: 1px solid hsla(0, 70%, 55%, 0.2); border-radius: var(--radius-lg); text-align: center; }
 #error-state h2 { color: var(--color-error); }
+#error-state p { margin-bottom: var(--space-lg); }
 
 /* --- Estilo do Cartão Final --- */
 .card-preview { background-color: var(--color-surface); border-radius: var(--radius-lg); padding: clamp(var(--space-md), 5vw, var(--space-xl)); box-shadow: var(--shadow-lg); max-width: 650px; width: 100%; text-align: center; opacity: 0; transform: translateY(20px); transition: opacity var(--transition-long), transform var(--transition-long); }
 .card-preview.is-visible { opacity: 1; transform: translateY(0); }
 .recipient-name { color: var(--color-primary-dark); margin-bottom: var(--space-xs); }
 .special-date { color: var(--color-muted); font-style: italic; margin-bottom: var(--space-md); }
-#card-mensagem { font-size: 1.1rem; line-height: 1.7; margin-block: var(--space-lg); white-space: pre-wrap; }
+#card-mensagem { font-size: 1.1rem; line-height: 1.7; margin-block: var(--space-lg); white-space: pre-wrap; /* Preserva quebras de linha */ }
 .preview-image-container { margin-block: var(--space-lg); }
 .card-image { max-height: 400px; width: auto; margin-inline: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
-#card-video-container { margin-block: var(--space-lg); }
+.video-frame { margin-block: var(--space-lg); }
+
+/* --- Estilo da assinatura (NOVO) --- */
+.card-sender {
+  margin-top: var(--space-lg);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--color-muted);
+}
+.card-sender strong {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--color-text);
+}
 
 /* --- Player de Vídeo na Visualização --- */
+.video-player-wrapper { position: relative; }
 .unmute-button { position: absolute; bottom: 20px; right: 20px; z-index: 10; background-color: hsla(0, 0%, 0%, 0.7); color: var(--color-surface); border-radius: var(--radius-pill); padding: 10px 20px; font-weight: 500; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; display: flex; align-items: center; gap: 8px; }
 .unmute-button.visible { opacity: 1; transform: translateY(0); }
 .unmute-button:hover { background-color: var(--color-primary); }
