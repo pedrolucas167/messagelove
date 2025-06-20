@@ -3,73 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Um Cartão Especial Para Você!</title>
-    
+    <title>Uma Mensagem Especial Para Você!</title>
     <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
     <meta name="theme-color" content="#e91e63">
-
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self'; 
-        script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com;
-        frame-src 'self' https://www.youtube.com;
-        img-src 'self' data: https:;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001;
-    ">
-
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; frame-src 'self' https://www.youtube.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001;">
     <meta property="og:title" content="Um Cartão Especial Para Você!">
     <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="/assets/og-image-default.jpg"> <link rel="icon" href="/coracao.png" type="image/png">
+    <meta property="og:image" content="/assets/og-image-default.jpg">
+    <link rel="icon" href="/coracao.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Caveat:wght@500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body id="card-view-page">
 
-  <header class="card-page-header">
-    <a href="/" title="Criar um novo cartão">Messagelove</a>
-  </header>
-
-  <main class="main-content">
-    
-    <div id="loading-state" class="loader-wrapper">
-      <div class="loader"></div>
-      <p>Carregando seu cartão especial...</p>
+  <div id="unveiling-screen" class="unveiling-container">
+    <div class="unveiling-content">
+      <p class="unveiling-prompt">Você recebeu uma mensagem especial de</p>
+      <h1 id="unveiling-sender-name" class="unveiling-name">...</h1>
+      <button id="open-card-btn" class="btn btn--primary btn--reveal">💌 Abrir o cartão</button>
     </div>
+  </div>
 
-    <article id="card-view" class="card-preview hidden">
+  <main class="main-content hidden">
+    <article id="card-view" class="card-preview">
         <header class="card-preview-header">
           <h1 id="card-nome" class="recipient-name"></h1>
           <p id="card-data" class="special-date"></p>
         </header>
-
         <section class="card-body">
           <p id="card-mensagem"></p>
+          <p class="card-sender">Com carinho, <strong id="card-de"></strong></p>
         </section>
-
         <figure id="card-foto-container" class="preview-image-container"></figure>
-        
         <div id="card-video-container" class="video-frame"></div>
     </article>
-
-    <div id="error-state" class="card-preview hidden">
-      <h2>Ops! Algo deu errado.</h2>
-      <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
-      <a href="/" class="btn btn--primary">Criar um novo cartão</a>
-    </div>
-
   </main>
 
-  <footer class="card-page-footer">
+  <footer class="card-page-footer hidden">
     <p>Gostou? <a href="/" class="btn btn--tertiary">Crie o seu também!</a></p>
   </footer>
 
+  <div id="loading-state" class="loader-wrapper"><div class="loader"></div></div>
+  <div id="error-state" class="hidden"><h2>Ops!</h2><p>Não foi possível carregar o cartão.</p></div>
   <canvas id="particle-canvas"></canvas>
 
   <script src="https://www.youtube.com/iframe_api" async></script>
