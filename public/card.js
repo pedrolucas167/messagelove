@@ -2,15 +2,15 @@
  * @file card.js
  * @description Script para carregar e exibir um cartão personalizado. Utiliza Canvas para um sistema de partículas de emoji e gerencia a visualização do cartão.
  * @author Pedro Marques
- * @version 2.0.0
+ * @version 2.1.0 (Fixes for Particles & YouTube Player)
  */
 
-// --- Classe para o Sistema de Partículas com Canvas ---
 class ParticleSystem {
     constructor(canvasId, emojis = ['❤️', '💖', '✨', '🎉', '💕', '⭐', '🥰']) {
         this.canvas = document.getElementById(canvasId);
+        // A verificação já existe no construtor, o que é ótimo.
         if (!this.canvas) {
-            console.error('Canvas element not found!');
+            console.warn('Canvas element not found, particle system will not run.');
             return;
         }
         this.ctx = this.canvas.getContext('2d');
@@ -21,17 +21,20 @@ class ParticleSystem {
     }
 
     resizeCanvas() {
+        if (!this.canvas) return;
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
     }
 
     createParticles(amount = 100) {
+        if (!this.canvas) return;
+        this.particles = []; // Limpa partículas existentes ao criar novas
         for (let i = 0; i < amount; i++) {
             this.particles.push({
                 x: Math.random() * this.canvas.width,
-                y: this.canvas.height + Math.random() * 100, // Começa abaixo da tela
-                vx: (Math.random() - 0.5) * 1, // Movimento lateral leve
-                vy: -Math.random() * 1.5 - 0.5, // Velocidade para cima
+                y: this.canvas.height + Math.random() * 100,
+                vx: (Math.random() - 0.5) * 1,
+                vy: -Math.random() * 1.5 - 0.5,
                 opacity: Math.random() * 0.5 + 0.5,
                 emoji: this.emojis[Math.floor(Math.random() * this.emojis.length)],
                 size: Math.random() * 20 + 15,
@@ -42,6 +45,7 @@ class ParticleSystem {
     }
 
     updateAndDraw() {
+        if (!this.ctx) return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.particles.forEach(p => {
@@ -49,7 +53,6 @@ class ParticleSystem {
             p.y += p.vy;
             p.rotation += p.rotationSpeed;
 
-            // Ressuscita a partícula no fundo quando ela sai pelo topo
             if (p.y < -p.size) {
                 p.y = this.canvas.height + p.size;
                 p.x = Math.random() * this.canvas.width;
@@ -68,6 +71,7 @@ class ParticleSystem {
     }
 
     start() {
+        if (!this.canvas) return;
         this.createParticles();
         this.updateAndDraw();
     }
@@ -118,48 +122,21 @@ const CardViewerApp = (() => {
 
     // 4. Lógica de UI (Renderização)
     const ui = {
-        showLoading() {
-            if(elements.loading) elements.loading.classList.remove('hidden');
-            if(elements.error) elements.error.classList.add('hidden');
-        },
-        showError(message) {
-            if(elements.loading) elements.loading.classList.add('hidden');
-            if (elements.error) {
-                elements.error.textContent = `Erro: ${message}`;
-                elements.error.classList.remove('hidden');
-            }
-        },
-        formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString); // A data já vem no formato correto do backend
-            return new Intl.DateTimeFormat('pt-BR', {
-                day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
-            }).format(date);
-        },
-        createUnmuteButton(player, container) {
-            const button = document.createElement('button');
-            button.className = 'unmute-button';
-            button.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9"x2="23" y2="15"></line></svg>
-                <span>Ativar Som</span>`;
-            
-            button.addEventListener('click', () => {
-                player.unMute();
-                button.style.display = 'none'; // Esconde o botão após o clique
-            });
-            
-            container.appendChild(button);
-            setTimeout(() => button.classList.add('visible'), 1000); // Aparece suavemente
-        },
+        showLoading() { /* ... código sem alterações ... */ },
+        showError(message) { /* ... código sem alterações ... */ },
+        formatDate(dateString) { /* ... código sem alterações ... */ },
+        createUnmuteButton(player, container) { /* ... código sem alterações ... */ },
+
+        // CORRIGIDO: Lógica de partículas agora é mais segura
         renderCard(card) {
             state.cardData = card;
             document.title = `Uma mensagem para ${card.para}`;
             elements.nome.textContent = card.para;
             elements.mensagem.textContent = card.mensagem;
-            elements.data.textContent = this.formatDate(card.data);
+            if (elements.data) elements.data.textContent = this.formatDate(card.data);
 
-            if (elements.fotoContainer && card.foto) {
-                elements.fotoContainer.innerHTML = `<img src="${card.foto}" alt="Foto para ${card.para}" class="card-image"/>`;
+            if (elements.fotoContainer && card.fotoUrl) { // usa fotoUrl
+                elements.fotoContainer.innerHTML = `<img src="${card.fotoUrl}" alt="Foto para ${card.para}" class="card-image"/>`;
             }
 
             if (elements.videoContainer && card.youtubeVideoId) {
@@ -168,14 +145,18 @@ const CardViewerApp = (() => {
             
             elements.cardView.classList.add('is-visible');
             
-            if (!state.particleSystem) {
+            // CORREÇÃO: Inicia o sistema de partículas apenas se o canvas existir.
+            if (!state.particleSystem && document.getElementById('particle-canvas')) {
                 state.particleSystem = new ParticleSystem('particle-canvas');
-                state.particleSystem.start();
+                if (state.particleSystem.canvas) { // Dupla verificação
+                    state.particleSystem.start();
+                }
             }
         }
     };
+    Object.assign(ui, { showLoading() { if(elements.loading) elements.loading.classList.remove('hidden'); if(elements.error) elements.error.classList.add('hidden'); }, showError(message) { if(elements.loading) elements.loading.classList.add('hidden'); if (elements.error) { elements.error.textContent = `Erro: ${message}`; elements.error.classList.remove('hidden'); } }, formatDate(dateString) { if (!dateString) return ''; const date = new Date(dateString); return new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date); }, createUnmuteButton(player, container) { const button = document.createElement('button'); button.className = 'unmute-button'; button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9"x2="23" y2="15"></line></svg> <span>Ativar Som</span>`; button.addEventListener('click', () => { player.unMute(); button.style.display = 'none'; }); container.appendChild(button); setTimeout(() => button.classList.add('visible'), 1000); } });
     
-    // 5. Lógica do YouTube
+    // 5. Lógica do YouTube (CORRIGIDO)
     const youtube = {
         initPlayer(card) {
             if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
@@ -194,13 +175,14 @@ const CardViewerApp = (() => {
                 videoId: card.youtubeVideoId,
                 playerVars: {
                     autoplay: 1,
-                    mute: 1, // Começa mudo por política dos navegadores
+                    mute: 1,
                     loop: 1,
-                    playlist: card.youtubeVideoId, // Necessário para o loop funcionar
+                    playlist: card.youtubeVideoId,
                     controls: 0,
                     modestbranding: 1,
                     rel: 0,
-                    start: card.youtubeStartTime || 0 // Usa o tempo de início!
+                    // REMOVIDO: youtubeStartTime para consistência com as outras partes do app
+                    origin: window.location.origin // CORREÇÃO: Adiciona a origem para evitar erros de postMessage
                 },
                 events: {
                     onReady: (event) => {
@@ -228,9 +210,8 @@ const CardViewerApp = (() => {
         try {
             ui.showLoading();
             const cardData = await api.fetchCard(cardId);
-            state.cardData = cardData; // Armazena os dados
+            state.cardData = cardData; 
             
-            // Verifica se a API do YT já carregou, se sim, renderiza. Se não, onYouTubeApiReady fará isso.
             if (typeof YT !== 'undefined' && YT.Player) {
                  ui.renderCard(cardData);
             }
@@ -242,12 +223,9 @@ const CardViewerApp = (() => {
         }
     };
 
-    // Método a ser chamado pela função global da API do YouTube
     const onYouTubeApiReady = () => {
         console.log('API do YouTube pronta (detectada pelo módulo).');
         if (state.cardData) {
-            // Se os dados do cartão já foram buscados, renderiza o cartão agora.
-            // A renderização inclui a inicialização do player.
             ui.renderCard(state.cardData);
         }
     };
@@ -261,10 +239,7 @@ const CardViewerApp = (() => {
 // --- Ponto de Entrada Global ---
 document.addEventListener('DOMContentLoaded', CardViewerApp.init);
 
-/**
- * Função global exigida pela API do YouTube.
- * Ela delega a chamada para o nosso módulo encapsulado, mantendo o escopo global limpo.
- */
+
 function onYouTubeIframeAPIReady() {
     CardViewerApp.onYouTubeApiReady();
 }
