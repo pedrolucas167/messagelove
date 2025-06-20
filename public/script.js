@@ -2,7 +2,7 @@
  * @file script.js
  * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube e envio para o backend.
  * @author Pedro Marques
- * @version 2.5.2 (Fixed 'this' context binding error)
+ * @version 2.5.2 
  */
 const CardCreatorApp = (() => {
     // 1. Configurações e Estado
@@ -16,7 +16,7 @@ const CardCreatorApp = (() => {
     };
     const state = { youtubePlayer: null };
 
-    // 2. Seletores do DOM
+
     const elements = {
         cardForm: document.getElementById('cardForm'),
         submitBtn: document.getElementById('submitBtn'),
