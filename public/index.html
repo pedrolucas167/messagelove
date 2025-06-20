@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR" dir="ltr" class="no-js">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
-        content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
+    <title>Messagelove - Crie Cartões Especiais Personalizados</title>
+    <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
     <meta name="theme-color" content="#e91e63" />
 
     <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self'; 
-    script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube.com/iframe_api;
-    frame-src 'self' https://www.youtube.com;
-    img-src 'self' data: https:;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001;
-">
-    <title>Messagelove - Crie Cartões Especiais Personalizados</title>
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com;
+        frame-src 'self' https://www.youtube.com;
+        img-src 'self' data: https:;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001;
+    ">
 
     <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
@@ -27,35 +25,27 @@
     <link rel="manifest" href="manifest.webmanifest" />
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
+    
     <link rel="stylesheet" href="style.css" />
 
     <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
-    <meta property="og:description"
-        content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
+    <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://messagelove-frontend.vercel.app" />
     <meta property="og:image" content="/assets/og-image.jpg" />
     <meta property="og:locale" content="pt_BR" />
-
 </head>
 
 <body>
     <script>
-        (function () {
-            var html = document.documentElement;
-            if (html.classList.contains('no-js')) {
-                html.classList.remove('no-js');
-                html.classList.add('js');
-            }
-        })();
+        // Remove a classe 'no-js' para habilitar estilos dependentes de JS
+        document.documentElement.classList.replace('no-js', 'js');
     </script>
 
     <header class="main-header" role="banner">
         <div class="container">
             <h1>Crie um Cartão Especial</h1>
-            <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos do YouTube</p>
+            <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos.</p>
         </div>
     </header>
 
@@ -66,95 +56,86 @@
                     <legend class="section-title">
                         <h2>Informações do Cartão</h2>
                     </legend>
-
+                    
                     <div class="form-group">
                         <label for="deInput" class="required-field">Seu Nome (Remetente)</label>
-                        <input type="text" id="deInput" name="de" class="form-input" required
-                            placeholder="Quem está enviando?" aria-required="true" />
+                        <input type="text" id="deInput" name="de" class="form-input" required placeholder="Quem está enviando?" aria-required="true" />
                         <small class="field-hint">Obrigatório</small>
                     </div>
 
                     <div class="form-group">
                         <label for="nome" class="required-field">Nome do Destinatário</label>
-                        <input type="text" id="nome" name="para" class="form-input" required
-                            placeholder="Para quem é este cartão?" aria-required="true" />
-                        aria-required="true" />
+                        <input type="text" id="nome" name="para" class="form-input" required placeholder="Para quem é este cartão?" aria-required="true" />
                         <small class="field-hint">Obrigatório</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="data">Data Especial</label>
+                        <label for="data">Data Especial (Opcional)</label>
                         <input type="date" id="data" name="data" class="form-input" aria-describedby="dataHelp" />
                         <small id="dataHelp" class="field-hint">Ex: Aniversário, Dia dos Namorados</small>
                     </div>
 
                     <div class="form-group">
                         <label for="mensagem" class="required-field">Sua Mensagem</label>
-                        <textarea id="mensagem" name="mensagem" class="form-input" required
-                            placeholder="Escreva sua mensagem especial..." aria-required="true"></textarea>
+                        <textarea id="mensagem" name="mensagem" class="form-input" required placeholder="Escreva sua mensagem especial..." aria-required="true"></textarea>
                         <small class="field-hint">Obrigatório</small>
                     </div>
                 </fieldset>
-
+                
                 <fieldset class="form-section">
-                    <legend class="section-title">
-                        <h3>Adicionais (Opcional)</h3>
-                    </legend>
-
-                    <div class="form-group file-upload" data-js="file-upload">
+                    <legend class="section-title"><h3>Adicionais (Opcional)</h3></legend>
+                    
+                     <div class="form-group file-upload">
                         <label for="fotoUpload">Adicionar Foto</label>
-                        <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif"
-                            aria-describedby="fotoHelp" />
-                        <small id="fotoHelp" class="field-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
+                        <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" />
                         <div class="preview-container" hidden data-js="preview-container">
-                            <img id="fotoPreview" class="preview" alt="Pré-visualização da foto selecionada"
-                                data-js="foto-preview" />
-                            <button type="button" class="btn btn-remove" id="removeFoto"
-                                aria-label="Remover foto selecionada" data-js="remove-foto">×</button>
+                            <img class="preview" alt="Pré-visualização da foto selecionada" data-js="foto-preview" />
+                            <button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto">×</button>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="youtubeUrlInput">Link do YouTube</label>
                         <div class="input-group-action">
-                            <input type="url" id="youtubeUrlInput" name="youtubeUrl" class="form-input"
-                                placeholder="Cole o link do vídeo do YouTube aqui" aria-describedby="youtubeUrlHelp" />
+                            <input type="url" id="youtubeUrlInput" class="form-input" placeholder="Cole o link do vídeo aqui" />
                             <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary">Adicionar</button>
                         </div>
                         <div id="youtubeError" class="youtube-error"></div>
+                    </div>
 
-
-                        <div id="youtubePreviewContainer" class="youtube-preview-container">
-                            <div class="youtube-player-wrapper">
-                                <iframe id="youtubePlayer" allowfullscreen title="Player de vídeo do YouTube"></iframe>
-                            </div>
-                            <input type="hidden" id="youtubeVideoId" name="youtubeVideoId" />
+                    <div id="youtubePreviewContainer" class="youtube-preview-container">
+                        <div class="youtube-player-wrapper">
+                            <iframe id="youtubePlayer" allowfullscreen title="Player de vídeo do YouTube"></iframe>
                         </div>
+                    </div>
+                    <input type="hidden" id="youtubeVideoIdInputHidden" name="youtubeVideoId" />
                 </fieldset>
 
                 <div class="form-group form-actions">
-                    <button type="submit" class="btn btn-submit btn--primary" id="submitBtn">
+                    <button type="submit" class="btn btn--primary" id="submitBtn">
                         <span class="btn-text">Criar Cartão</span>
                         <span class="btn-loading" aria-hidden="true" hidden>
-                            <span class="btn-spinner" aria-hidden="true"></span> Processando...
+                            <span class="btn-spinner"></span> Processando...
                         </span>
                     </button>
-                    <small class="form-note">Seu cartão será gerado e você receberá um link único para
-                        compartilhar.</small>
                 </div>
             </form>
 
-            <div id="successArea" class="success-area" hidden>
-                <h2>Cartão Criado com Sucesso! ✨</h2>
-                <p>Use o link abaixo para compartilhar sua mensagem especial:</p>
-                <div class="link-container">
-                    <input type="text" id="generatedCardLink" readonly aria-label="Link do cartão gerado" />
-                    <button type="button" id="copyLinkBtn" class="btn btn--secondary">Copiar</button>
+            <div id="successModal" class="modal-overlay" hidden>
+                <div class="modal-content">
+                    <button id="closeModalBtn" class="modal-close-btn" aria-label="Fechar">×</button>
+                    <h2>Cartão Criado! ✨</h2>
+                    <p>Compartilhe este link com aquela pessoa especial:</p>
+                    <div class="link-container">
+                        <input type="text" id="generatedCardLink" readonly aria-label="Link do cartão gerado" />
+                        <button type="button" id="copyLinkBtn" class="btn btn--secondary">Copiar</button>
+                    </div>
+                    <div class="modal-actions">
+                        <a href="#" id="viewCardBtn" class="btn btn--primary" target="_blank" rel="noopener noreferrer">Ver Cartão</a>
+                        <button type="button" id="createAnotherBtn" class="btn btn--tertiary">Criar Outro Cartão</button>
+                    </div>
                 </div>
-                <a href="#" id="viewCardBtn" class="btn btn--primary" target="_blank" rel="noopener noreferrer">Ver
-                    Cartão</a>
             </div>
-
         </div>
     </main>
 
@@ -162,18 +143,15 @@
         <div class="container">
             <p>
                 <span>Messagelove © <span id="currentYear"></span></span>
-                <span>Feito com <span aria-label="coração">❤️</span> por <a
-                        href="https://pedrolucas167.github.io/portfolio/" target="_blank"
-                        rel="noopener noreferrer">Pedro Marques</a></span>
+                <span>Feito com <span aria-label="coração">❤️</span> por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Pedro Marques</a></span>
             </p>
         </div>
     </footer>
 
     <div id="appNotificationArea"></div>
-
-    <script src="https://www.youtube.com/iframe_api" async defer></script>
-    <script src="script.js" defer></script>
+    
     <canvas id="particle-canvas"></canvas>
+    <script src="https://www.youtube.com/iframe_api" async></script>
+    <script src="script.js" defer></script> 
 </body>
-
 </html>
