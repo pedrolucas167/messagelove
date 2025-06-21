@@ -9,13 +9,12 @@ const CardCreatorApp = (() => {
     const config = {
         IS_LOCAL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
         get API_URL() {
-            // CORRIGIDO: Adicionado /api no final da URL de produção
             return this.IS_LOCAL 
                 ? 'http://localhost:3001/api' 
                 : 'https://messagelove-backend.onrender.com/api';
         }
     };
-    const state = { youtubePlayer: null };
+    const state = { youtubeVideoId: null }; // Simplificado: removido youtubePlayer
 
     // 2. Seletores do DOM
     const elements = {
@@ -36,7 +35,6 @@ const CardCreatorApp = (() => {
         youtubeErrorEl: document.getElementById('youtubeError'),
         youtubePreviewContainer: document.getElementById('youtubePreviewContainer'),
         youtubePlayerIframe: document.getElementById('youtubePlayer'),
-        // CORRIGIDO: O ID do elemento oculto estava errado.
         youtubeVideoIdInputHidden: document.getElementById('youtubeVideoIdInputHidden'),
         appNotificationArea: document.getElementById('appNotificationArea'),
         successModal: document.getElementById('successModal'),
@@ -52,8 +50,8 @@ const CardCreatorApp = (() => {
         setSubmitButtonState(isLoading) {
             if (!elements.submitBtn) return;
             elements.submitBtn.disabled = isLoading;
-            if (elements.submitBtnText) elements.submitBtnText.hidden = isLoading;
-            if (elements.submitBtnLoading) elements.submitBtnLoading.hidden = !isLoading;
+            elements.submitBtnText.hidden = isLoading;
+            elements.submitBtnLoading.hidden = !isLoading;
         },
         showNotification(message, type = 'info', duration = 3000) {
             if (!elements.appNotificationArea) return;
@@ -74,8 +72,8 @@ const CardCreatorApp = (() => {
             elements.cardForm.hidden = true;
             elements.successModal.hidden = false;
             setTimeout(() => elements.successModal.classList.add('active'), 10);
-            if (elements.generatedCardLinkInput) elements.generatedCardLinkInput.value = cardUrl;
-            if (elements.viewCardBtn) elements.viewCardBtn.href = cardUrl;
+            elements.generatedCardLinkInput.value = cardUrl;
+            elements.viewCardBtn.href = cardUrl;
         },
         closeSuccessModal() {
             if (!elements.successModal) return;
@@ -90,7 +88,7 @@ const CardCreatorApp = (() => {
                 elements.copyLinkBtn.textContent = 'Copiado!';
                 this.showNotification('Link copiado para a área de transferência!', 'success');
                 setTimeout(() => {
-                    if (elements.copyLinkBtn) elements.copyLinkBtn.textContent = originalText;
+                    elements.copyLinkBtn.textContent = originalText;
                 }, 2000);
             } catch (err) {
                 console.error('Falha ao copiar o link: ', err);
@@ -99,43 +97,33 @@ const CardCreatorApp = (() => {
         },
     };
 
-    // 4. Módulo do YouTube
+    // 4. Módulo do YouTube (Refatorado)
     const youtube = {
-        onApiReady() {
-            console.log('API do YouTube carregada e pronta.');
-        },
         parseUrl(url) {
             const match = url.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            return (match && match[1]) ? match[1] : null;
+            return match ? match[1] : null;
         },
         initPlayer() {
-            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-                ui.showNotification('API do YouTube ainda não carregada. Tente novamente.', 'warn');
-                return;
-            }
             const url = elements.youtubeUrlInput.value.trim();
             if (!url) {
                 ui.showNotification('Por favor, insira um link do YouTube.', 'error');
+                this._updateUI('error', 'Link do YouTube inválido.');
                 return;
             }
             const videoId = this.parseUrl(url);
             if (!videoId) {
+                ui.showNotification('Link do YouTube inválido.', 'error');
                 this._updateUI('error', 'Link do YouTube inválido.');
                 return;
             }
+            state.youtubeVideoId = videoId;
+            elements.youtubeVideoIdInputHidden.value = videoId;
+            this._updateIframe(videoId);
             this._updateUI('success');
-            if (elements.youtubeVideoIdInputHidden) {
-                elements.youtubeVideoIdInputHidden.value = videoId;
-            }
-            this._createOrUpdatePlayer(videoId);
         },
-        _createOrUpdatePlayer(videoId) {
-            const playerVars = { 'controls': 1, 'rel': 0, 'modestbranding': 1 };
-            if (state.youtubePlayer && typeof state.youtubePlayer.loadVideoById === 'function') {
-                state.youtubePlayer.loadVideoById({ videoId });
-            } else {
-                state.youtubePlayer = new YT.Player(elements.youtubePlayerIframe, { height: '100%', width: '100%', videoId: videoId, playerVars: playerVars, events: { 'onReady': () => console.log('Player de CRIAÇÃO pronto.'), 'onError': (e) => this._handlePlayerError(e) } });
-            }
+        _updateIframe(videoId) {
+            elements.youtubePlayerIframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&rel=0&modestbranding=1`;
+            elements.youtubePreviewContainer.classList.add('active');
         },
         _updateUI(uiState, message = '') {
             if (uiState === 'success') {
@@ -144,14 +132,11 @@ const CardCreatorApp = (() => {
             } else if (uiState === 'error') {
                 elements.youtubeErrorEl.textContent = message;
                 elements.youtubePreviewContainer.classList.remove('active');
-                if (elements.youtubeVideoIdInputHidden) elements.youtubeVideoIdInputHidden.value = '';
-                if (state.youtubePlayer && typeof state.youtubePlayer.destroy === 'function') { state.youtubePlayer.destroy(); state.youtubePlayer = null; }
+                elements.youtubeVideoIdInputHidden.value = '';
+                elements.youtubePlayerIframe.src = ''; // Limpa o iframe
+                state.youtubeVideoId = null;
             }
         },
-        _handlePlayerError(error) {
-            console.error('Erro no player de criação do YouTube:', error);
-            this._updateUI('error', 'Não foi possível carregar o vídeo. Verifique o link.');
-        }
     };
 
     // 5. Módulo da Foto
@@ -193,7 +178,7 @@ const CardCreatorApp = (() => {
             if (elements.dataInput.value) {
                 formData.append('data', elements.dataInput.value);
             }
-            if (elements.youtubeVideoIdInputHidden && elements.youtubeVideoIdInputHidden.value) {
+            if (elements.youtubeVideoIdInputHidden.value) {
                 formData.append('youtubeVideoId', elements.youtubeVideoIdInputHidden.value);
             }
             if (elements.fotoUploadInput.files[0]) {
@@ -216,20 +201,17 @@ const CardCreatorApp = (() => {
             } catch (error) {
                 console.error('Erro no envio do formulário:', error);
                 ui.showNotification(`Falha ao criar o cartão: ${error.message}`, 'error', 7000);
-                ui.setSubmitButtonState(false); // Reativa o botão apenas em caso de erro
+                ui.setSubmitButtonState(false);
             }
         }
     };
 
     // 7. Vinculação de Eventos
     const bindEvents = () => {
-        // Mapeamento explícito para clareza e segurança
         if (elements.cardForm) elements.cardForm.addEventListener('submit', form.handleSubmit.bind(form));
         if (elements.fotoUploadInput) elements.fotoUploadInput.addEventListener('change', photo.handleUpload.bind(photo));
         if (elements.removeFotoBtn) elements.removeFotoBtn.addEventListener('click', photo.remove.bind(photo));
         if (elements.addYoutubeUrlBtn) elements.addYoutubeUrlBtn.addEventListener('click', youtube.initPlayer.bind(youtube));
-        
-        // Eventos do Modal
         if (elements.copyLinkBtn) elements.copyLinkBtn.addEventListener('click', ui.copyLinkToClipboard.bind(ui));
         if (elements.closeModalBtn) elements.closeModalBtn.addEventListener('click', ui.closeSuccessModal.bind(ui));
         if (elements.createAnotherBtn) elements.createAnotherBtn.addEventListener('click', () => window.location.reload());
@@ -246,14 +228,7 @@ const CardCreatorApp = (() => {
         bindEvents();
     };
 
-    return {
-        init,
-        onYouTubeApiReady: youtube.onApiReady.bind(youtube)
-    };
+    return { init };
 })();
 
 document.addEventListener('DOMContentLoaded', CardCreatorApp.init);
-
-function onYouTubeIframeAPIReady() {
-    CardCreatorApp.onYouTubeApiReady();
-}
