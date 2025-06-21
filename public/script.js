@@ -1,8 +1,8 @@
 /**
  * @file script.js
- * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube e envio para o backend.
+ * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube, autenticação e envio para o backend.
  * @author Pedro Marques
- * @version 3.1.0
+ * @version 3.2.0
  */
 const CardCreatorApp = (() => {
     // 1. Configurações e Estado
@@ -12,9 +12,10 @@ const CardCreatorApp = (() => {
             return this.IS_LOCAL 
                 ? 'http://localhost:3001/api' 
                 : 'https://messagelove-backend.onrender.com/api';
-        }
+        },
+        LOGIN_URL: '/login.html'
     };
-    const state = { youtubeVideoId: null };
+    const state = { youtubeVideoId: null, youtubeStartTime: null };
 
     // 2. Seletores do DOM
     const elements = {
@@ -31,6 +32,7 @@ const CardCreatorApp = (() => {
         fotoPreviewImg: document.querySelector('[data-js="foto-preview"]'),
         removeFotoBtn: document.querySelector('[data-js="remove-foto"]'),
         youtubeUrlInput: document.getElementById('youtubeUrlInput'),
+        youtubeStartTimeInput: document.getElementById('youtubeStartTimeInput'), // Novo input
         addYoutubeUrlBtn: document.getElementById('addYoutubeUrlBtn'),
         youtubeErrorEl: document.getElementById('youtubeError'),
         youtubePreviewContainer: document.getElementById('youtubePreviewContainer'),
@@ -43,9 +45,33 @@ const CardCreatorApp = (() => {
         generatedCardLinkInput: document.getElementById('generatedCardLink'),
         copyLinkBtn: document.getElementById('copyLinkBtn'),
         viewCardBtn: document.getElementById('viewCardBtn'),
+        logoutBtn: document.getElementById('logoutBtn') // Novo botão
     };
 
-    // 3. Módulo de UI
+    // 3. Módulo de Autenticação
+    const auth = {
+        isLoggedIn() {
+            return !!localStorage.getItem('token');
+        },
+        getToken() {
+            return localStorage.getItem('token');
+        },
+        logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = config.LOGIN_URL;
+        },
+        requireLogin() {
+            if (!this.isLoggedIn()) {
+                ui.showNotification('Faça login para criar um cartão.', 'error');
+                setTimeout(() => window.location.href = config.LOGIN_URL, 1000);
+                return false;
+            }
+            return true;
+        }
+    };
+
+    // 4. Módulo de UI
     const ui = {
         setSubmitButtonState(isLoading) {
             if (!elements.submitBtn) return;
@@ -79,6 +105,7 @@ const CardCreatorApp = (() => {
             if (!elements.successModal) return;
             elements.successModal.classList.remove('active');
             setTimeout(() => { elements.successModal.hidden = true; }, 300);
+            elements.cardForm.hidden = false;
         },
         async copyLinkToClipboard() {
             if (!elements.generatedCardLinkInput) return;
@@ -87,9 +114,7 @@ const CardCreatorApp = (() => {
                 const originalText = elements.copyLinkBtn.textContent;
                 elements.copyLinkBtn.textContent = 'Copiado!';
                 this.showNotification('Link copiado para a área de transferência!', 'success');
-                setTimeout(() => {
-                    elements.copyLinkBtn.textContent = originalText;
-                }, 2000);
+                setTimeout(() => elements.copyLinkBtn.textContent = originalText, 2000);
             } catch (err) {
                 console.error('Falha ao copiar o link:', err);
                 this.showNotification('Não foi possível copiar o link.', 'error');
@@ -97,17 +122,24 @@ const CardCreatorApp = (() => {
         },
         resetYouTubeUI() {
             elements.youtubeUrlInput.value = '';
+            elements.youtubeStartTimeInput.value = '';
             elements.youtubeErrorEl.textContent = '';
             elements.youtubePreviewContainer.classList.remove('active');
             elements.youtubePlayerIframe.src = '';
             elements.youtubeVideoIdInputHidden.value = '';
             state.youtubeVideoId = null;
+            state.youtubeStartTime = null;
         },
+        addLogoutButton() {
+            if (auth.isLoggedIn() && elements.logoutBtn) {
+                elements.logoutBtn.hidden = false;
+                elements.logoutBtn.addEventListener('click', auth.logout);
+            }
+        }
     };
 
-    // 4. Módulo do YouTube (Simplificado e Corrigido)
+    // 5. Módulo do YouTube
     const youtube = {
-        // Valida e extrai o videoId de URLs do YouTube
         getVideoId(url) {
             const patterns = [
                 /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/|live\/))([a-zA-Z0-9_-]{11})/,
@@ -120,25 +152,26 @@ const CardCreatorApp = (() => {
             }
             return null;
         },
-        // Verifica se o vídeo existe fazendo uma requisição ao YouTube
         async validateVideo(videoId) {
             try {
-                const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+                const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`, {
+                    headers: { 'Accept': 'application/json' }
+                });
                 return response.ok;
             } catch {
                 return false;
             }
         },
-        // Atualiza o iframe com o vídeo
-        updateIframe(videoId) {
-            const src = `https://www.youtube.com/embed/${videoId}?controls=1&rel=0&modestbranding=1&playsinline=1`;
+        updateIframe(videoId, startTime = 0) {
+            const src = `https://www.youtube.com/embed/${videoId}?controls=1&rel=0&modestbranding=1&playsinline=1&start=${startTime}`;
             elements.youtubePlayerIframe.src = src;
             elements.youtubePlayerIframe.setAttribute('title', 'Pré-visualização do vídeo do YouTube');
             elements.youtubePreviewContainer.classList.add('active');
         },
-        // Processa a URL inserida pelo usuário
         async handleYouTubeUrl() {
             const url = elements.youtubeUrlInput.value.trim();
+            const startTime = parseInt(elements.youtubeStartTimeInput.value.trim(), 10) || 0;
+
             if (!url) {
                 ui.showNotification('Por favor, insira um link do YouTube.', 'error');
                 elements.youtubeErrorEl.textContent = 'Link do YouTube inválido.';
@@ -154,7 +187,13 @@ const CardCreatorApp = (() => {
                 return;
             }
 
-            // Valida se o vídeo existe
+            if (isNaN(startTime) || startTime < 0) {
+                ui.showNotification('Tempo inicial do vídeo inválido.', 'error');
+                elements.youtubeErrorEl.textContent = 'Tempo inicial deve ser um número não negativo.';
+                ui.resetYouTubeUI();
+                return;
+            }
+
             const isValidVideo = await this.validateVideo(videoId);
             if (!isValidVideo) {
                 ui.showNotification('O vídeo do YouTube não está disponível.', 'error');
@@ -163,22 +202,22 @@ const CardCreatorApp = (() => {
                 return;
             }
 
-            // Atualiza o estado e a UI
             state.youtubeVideoId = videoId;
+            state.youtubeStartTime = startTime;
             elements.youtubeVideoIdInputHidden.value = videoId;
-            this.updateIframe(videoId);
+            this.updateIframe(videoId, startTime);
             elements.youtubeErrorEl.textContent = '';
             ui.showNotification('Vídeo do YouTube adicionado com sucesso!', 'success');
-        },
+        }
     };
 
-    // 5. Módulo da Foto
+    // 6. Módulo da Foto
     const photo = {
         handleUpload(event) {
             const file = event.target.files[0];
             if (file) {
-                if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-                    ui.showNotification('Por favor, envie uma imagem em formato JPEG, PNG ou GIF.', 'error');
+                if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                    ui.showNotification('Apenas imagens JPEG, PNG ou WebP são permitidas.', 'error');
                     return;
                 }
                 const reader = new FileReader();
@@ -193,31 +232,35 @@ const CardCreatorApp = (() => {
             elements.fotoUploadInput.value = '';
             elements.fotoPreviewImg.src = '';
             elements.fotoPreviewContainer.hidden = true;
-        },
+        }
     };
 
-    // 6. Módulo de Formulário
+    // 7. Módulo de Formulário
     const form = {
         async handleSubmit(event) {
             event.preventDefault();
+            if (!auth.requireLogin()) return;
+
             const requiredFields = [elements.deInput, elements.nomeInput, elements.mensagemInput];
             if (requiredFields.some(input => !input.value.trim())) {
-                ui.showNotification('Por favor, preencha seu nome, o do destinatário e a mensagem.', 'error');
+                ui.showNotification('Preencha seu nome, o do destinatário e a mensagem.', 'error');
                 return;
             }
 
             ui.setSubmitButtonState(true);
-
             const formData = new FormData();
             formData.append('de', elements.deInput.value.trim());
             formData.append('para', elements.nomeInput.value.trim());
             formData.append('mensagem', elements.mensagemInput.value.trim());
 
             if (elements.dataInput.value) {
-                formData.append('dataEspecial', elements.dataInput.value); // Ajustado para corresponder ao backend
+                formData.append('data', elements.dataInput.value);
             }
-            if (elements.youtubeVideoIdInputHidden.value) {
-                formData.append('youtubeVideoId', elements.youtubeVideoIdInputHidden.value);
+            if (state.youtubeVideoId) {
+                formData.append('youtubeVideoId', state.youtubeVideoId);
+                if (state.youtubeStartTime) {
+                    formData.append('youtubeStartTime', state.youtubeStartTime.toString());
+                }
             }
             if (elements.fotoUploadInput.files[0]) {
                 formData.append('foto', elements.fotoUploadInput.files[0]);
@@ -226,19 +269,33 @@ const CardCreatorApp = (() => {
             try {
                 const response = await fetch(`${config.API_URL}/cards`, {
                     method: 'POST',
-                    body: formData,
+                    headers: { 'Authorization': `Bearer ${auth.getToken()}` },
+                    body: formData
                 });
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.message || `Erro ${response.status}`);
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        auth.logout();
+                        throw new Error('Sessão expirada. Faça login novamente.');
+                    }
+                    if (response.status === 429) {
+                        throw new Error('Muitas requisições. Tente novamente mais tarde.');
+                    }
+                    if (result.errors) {
+                        throw new Error(result.errors.map(e => e.msg).join(', '));
+                    }
+                    throw new Error(result.message || `Erro ${response.status}`);
+                }
 
                 if (result.cardId) {
                     ui.openSuccessModal(result.cardId);
-                    // Reseta o formulário e o YouTube
                     elements.cardForm.reset();
                     ui.resetYouTubeUI();
                     photo.remove();
+                    ui.showNotification('Cartão criado com sucesso!', 'success');
                 } else {
-                    throw new Error('ID do cartão não foi recebido do servidor.');
+                    throw new Error('ID do cartão não recebido do servidor.');
                 }
             } catch (error) {
                 console.error('Erro no envio do formulário:', error);
@@ -246,10 +303,10 @@ const CardCreatorApp = (() => {
             } finally {
                 ui.setSubmitButtonState(false);
             }
-        },
+        }
     };
 
-    // 7. Vinculação de Eventos
+    // 8. Vinculação de Eventos
     const bindEvents = () => {
         if (elements.cardForm) elements.cardForm.addEventListener('submit', form.handleSubmit.bind(form));
         if (elements.fotoUploadInput) elements.fotoUploadInput.addEventListener('change', photo.handleUpload.bind(photo));
@@ -271,9 +328,10 @@ const CardCreatorApp = (() => {
         }
     };
 
-    // 8. Inicialização
+    // 9. Inicialização
     const init = () => {
         console.log(`DOM Content Loaded - Iniciando CardCreatorApp. API_URL: ${config.API_URL}`);
+        ui.addLogoutButton();
         bindEvents();
     };
 

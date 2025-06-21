@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro | Messagelove</title>
+    <meta name="description" content="Registre-se no Messagelove para criar cartões personalizados.">
+    <meta name="theme-color" content="#e91e63">
+
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        frame-src 'self' https://www.youtube.com;
+        img-src 'self' data: https:;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001 https://www.youtube.com;
+    ">
+
+    <link rel="icon" href="/coracao.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css" media="all">
+</head>
+<body id="register-page">
+    <header class="main-header">
+        <div class="container">
+            <h1>Messagelove</h1>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <form id="registerForm" class="card-form" novalidate>
+                <h2 class="section-title">Crie sua Conta</h2>
+                <div class="form-group">
+                    <label for="name" class="required-field">Nome</label>
+                    <input type="text" id="name" name="name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="required-field">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="required-field">Senha</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn--primary">
+                    <span class="btn-text">Registrar</span>
+                    <span class="btn-loading hidden">Carregando...</span>
+                </button>
+                <p class="form-hint">Já tem conta? <a href="/login.html">Faça login</a></p>
+            </form>
+        </div>
+    </main>
+
+    <div id="appNotificationArea" aria-live="polite"></div>
+    <script src="/register.js" defer></script>
+</body>
+</html>

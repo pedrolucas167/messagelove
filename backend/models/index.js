@@ -2,6 +2,8 @@
 
 'use strict';
 
+'use strict';
+
 const { Sequelize, DataTypes } = require('sequelize');
 
 // Pega a URL do banco de dados das variáveis de ambiente
@@ -20,13 +22,15 @@ const sequelize = new Sequelize(databaseUrl, {
             require: true,
             rejectUnauthorized: false // Necessário para a Render
         }
-    }
+    },
+    logging: false,
 });
 
 const db = {};
 
 // Passa 'sequelize' e 'DataTypes' ao inicializar o modelo
 db.Card = require('./card.js')(sequelize, DataTypes);
+db.User = require('./user')(sequelize, DataTypes);
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
