@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uma Mensagem Especial Para Você!</title>
+    <title>Um Cartão Especial Para Você! | Messagelove</title>
     
-    <meta name="description" content="Você recebeu um cartão especial criado com Messagelove.">
+    <meta name="description" content="Você recebeu um cartão personalizado criado com carinho no Messagelove. Abra para descobrir a mensagem especial!">
     <meta name="theme-color" content="#e91e63">
+    <meta name="robots" content="noindex, nofollow">
 
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
@@ -19,10 +20,12 @@
     ">
 
     <meta property="og:title" content="Um Cartão Especial Para Você!">
-    <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
+    <meta property="og:description" content="Alguém especial criou um cartão personalizado para você com o Messagelove. Abra para ver a mensagem!">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://messagelove-frontend.vercel.app/card.html">
     <meta property="og:image" content="/assets/og-image-default.jpg">
-    <meta property="og:image:alt" content="Cartão Messagelove">
+    <meta property="og:image:alt" content="Cartão personalizado do Messagelove">
+    <meta property="og:locale" content="pt_BR">
 
     <link rel="icon" href="/coracao.png" type="image/png">
     <link rel="manifest" href="/manifest.webmanifest">
@@ -34,27 +37,30 @@
     <link rel="stylesheet" href="/style.css" media="all">
 </head>
 
-<body id="card-view-page">
-    <div id="unveiling-screen" class="unveiling-container visible" role="dialog" aria-labelledby="unveiling-prompt">
+<body id="card-view-page" role="document">
+    <div id="unveiling-screen" class="unveiling-container visible" role="dialog" aria-labelledby="unveiling-title">
         <div id="loading-state" class="loader-wrapper">
-            <div class="loader" role="status" aria-label="Carregando"></div>
+            <div class="loader" role="status" aria-label="Carregando cartão"></div>
         </div>
-        <div id="unveiling-content" class="unveiling-content hidden">
-            <p id="unveiling-prompt" class="unveiling-prompt">Você recebeu uma mensagem especial de</p>
-            <h1 id="unveiling-sender-name" class="unveiling-name">...</h1>
-            <button id="open-card-btn" class="btn btn--primary btn--reveal" type="button">💌 Abrir o cartão</button>
+        <div id="unveiling-content" class="unveiling-content hidden" role="region">
+            <h1 id="unveiling-title" class="sr-only">Tela de revelação do cartão</h1>
+            <p class="unveiling-prompt">Um cartão especial para</p>
+            <h2 id="unveiling-recipient-name" class="unveiling-name"></h2>
+            <p class="unveiling-prompt">de</p>
+            <h3 id="unveiling-sender-name" class="unveiling-name"></h3>
+            <button id="open-card-btn" class="btn btn--primary btn--reveal" type="button" aria-label="Abrir cartão personalizado">💌 Abrir o Cartão</button>
         </div>
     </div>
 
-    <header id="card-page-header" class="card-page-header hidden">
+    <header id="card-page-header" class="card-page-header hidden" role="banner">
         <div class="container">
-            <a href="/" aria-label="Criar um novo cartão com Messagelove">Messagelove</a>
+            <a href="/" class="btn btn--tertiary" aria-label="Voltar ao Messagelove para criar um novo cartão">Messagelove</a>
         </div>
     </header>
 
-    <main id="main-content" class="main-content hidden">
+    <main id="main-content" class="main-content hidden" role="main">
         <div class="container">
-            <article id="card-view" class="card-preview hidden" role="article">
+            <article id="card-view" class="card-preview hidden" role="article" aria-labelledby="card-nome">
                 <header class="card-preview-header">
                     <h1 id="card-nome" class="recipient-name"></h1>
                     <p id="card-data" class="special-date"></p>
@@ -63,19 +69,19 @@
                     <p id="card-mensagem"></p>
                     <p class="card-sender">Com carinho, <strong id="card-de"></strong></p>
                 </section>
-                <figure id="card-foto-container" class="preview-image-container"></figure>
-                <div id="card-video-container" class="video-frame"></div>
+                <figure id="card-foto-container" class="preview-image-container" role="figure" aria-label="Foto do cartão"></figure>
+                <div id="card-video-container" class="video-player-wrapper video-frame" role="region" aria-label="Vídeo do cartão"></div>
             </article>
 
-            <div id="error-state" class="hidden">
+            <section id="error-state" class="hidden" role="alert">
                 <h2>Ops! Algo deu errado.</h2>
-                <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
-                <a href="/" class="btn btn--primary" aria-label="Criar um novo cartão">Criar um novo cartão</a>
-            </div>
+                <p>Não conseguimos carregar este cartão. O link pode estar inválido ou o cartão foi removido.</p>
+                <a href="/" class="btn btn--primary" aria-label="Criar um novo cartão com Messagelove">Criar um Novo Cartão</a>
+            </section>
         </div>
     </main>
 
-    <footer id="card-page-footer" class="card-page-footer hidden">
+    <footer id="card-page-footer" class="card-page-footer hidden" role="contentinfo">
         <div class="container">
             <p>Gostou? <a href="/" class="btn btn--tertiary" aria-label="Crie seu próprio cartão com Messagelove">Crie o seu também!</a></p>
         </div>
