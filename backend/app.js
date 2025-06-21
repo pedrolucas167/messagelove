@@ -1,80 +1,153 @@
-// app.js
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const winston = require('winston');
 const cardRoutes = require('./routes/cardRoutes');
 const db = require('./models');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- Início da Configuração Robusta do CORS ---
-const whitelist = [
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'https://messagelove-frontend.vercel.app'
-];
+// Configuração do Logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'logs/combined.log' })
+  ]
+});
 
+// Configuração do CORS
 const corsOptions = {
-    origin: function (origin, callback) {
-        // Permite requisições sem 'origin' (ex: Postman, apps mobile) ou se a origem está na whitelist
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Acesso não permitido pela política de CORS'));
-        }
-    },
-    methods: ['GET', 'POST', 'OPTIONS'], // Adicionado OPTIONS para requisições 'preflight'
-    allowedHeaders: ['Content-Type', 'Authorization'], // Headers que seu frontend pode enviar
-    credentials: true // Permite o envio de credenciais (cookies, etc.), se necessário no futuro
+  origin: (origin, callback) => {
+    const whitelist = [
+      'http://localhost:5500',
+      'http://127.0.0.1:5500',
+      'https://messagelove-frontend.vercel.app',
+      process.env.FRONTEND_URL // Suporte a variável de ambiente para flexibilidade
+    ].filter(Boolean); // Remove valores undefined
+
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      const error = new Error(`Origem '${origin}' não permitida pela política de CORS`);
+      logger.error(error.message, { origin });
+      callback(error);
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204 // Para maior compatibilidade com navegadores
 };
 
-// Habilita o CORS para todas as rotas com as opções robustas
-app.use(cors(corsOptions));
-
-// Habilita a resposta para requisições preflight 'OPTIONS' em todas as rotas
-// Isso é essencial para que POST com Content-Type complexo (como multipart/form-data) funcione corretamente
-app.options('*', cors(corsOptions)); 
-// --- Fim da Configuração Robusta do CORS ---
-
+// Configuração de Cabeçalhos de Segurança com Helmet
+const cspConfig = {
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'"],
+    frameSrc: ["'self'", 'https://www.youtube.com'],
+    imgSrc: ["'self'", 'data:', 'https:'],
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+    connectSrc: [
+      "'self'",
+      'https://messagelove-backend.onrender.com',
+      'http://localhost:3001',
+      'https://www.youtube.com' // Para oEmbed
+    ],
+    objectSrc: ["'none'"],
+    upgradeInsecureRequests: []
+  }
+};
 
 // Middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const configureMiddlewares = () => {
+  app.use(helmet({
+    contentSecurityPolicy: cspConfig // Aplica CSP no servidor
+  }));
+  app.use(compression()); // Compressão de respostas
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  // Logger de requisições
+  app.use((req, res, next) => {
+    logger.info(`${req.method} ${req.url}`, {
+      ip: req.ip,
+      origin: req.get('origin'),
+      userAgent: req.get('user-agent')
+    });
+    next();
+  });
+};
 
-// Rota de Saúde
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'API do MessageLove está no ar!' });
-});
+// Rotas
+const configureRoutes = () => {
+  // Rota de Saúde
+  app.get('/', (req, res) => {
+    res.status(200).json({ message: 'API do MessageLove está no ar!', version: '1.0.0' });
+  });
 
-// Roteador Principal
-app.use('/api', cardRoutes);
+  // Rotas de cartões
+  app.use('/api', cardRoutes);
+};
 
-// Tratamento de Erro Global
-app.use((err, req, res, next) => {
-    // Adicionado para tratar erros de CORS especificamente
-    if (err.message === 'Acesso não permitido pela política de CORS') {
-        console.error('Tentativa de acesso bloqueada por CORS. Origem:', req.header('origin'));
-        return res.status(403).json({ message: err.message });
+// Tratamento de Erros
+const configureErrorHandling = () => {
+  app.use((err, req, res, next) => {
+    if (err.message.includes('não permitida pela política de CORS')) {
+      return res.status(403).json({ message: err.message });
     }
-    
-    console.error('ERRO GLOBAL:', err.stack);
-    res.status(500).json({ message: err.message || 'Ocorreu um erro interno no servidor.' });
-});
+
+    logger.error('Erro global', {
+      error: err.message,
+      stack: err.stack,
+      url: req.url,
+      method: req.method
+    });
+
+    res.status(err.status || 500).json({
+      message: err.message || 'Ocorreu um erro interno no servidor.',
+      error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  });
+
+  // 404 para rotas não encontradas
+  app.use((req, res) => {
+    res.status(404).json({ message: `Rota ${req.url} não encontrada.` });
+  });
+};
 
 // Inicialização do Servidor
 const startServer = async () => {
-    try {
-        await db.sequelize.sync({ alter: true });
-        console.log('Banco de dados PostgreSQL sincronizado.');
-        app.listen(PORT, () => {
-            console.log(`--- Servidor iniciado na porta ${PORT} ---`);
-        });
-    } catch (error) {
-        console.error('Falha ao iniciar o servidor:', error);
-        process.exit(1);
-    }
+  try {
+    await db.sequelize.authenticate();
+    logger.info('Conexão com o banco de dados PostgreSQL estabelecida.');
+    await db.sequelize.sync({ alter: true });
+    logger.info('Modelos sincronizados com o banco de dados.');
+
+    configureMiddlewares();
+    configureRoutes();
+    configureErrorHandling();
+
+    app.listen(PORT, () => {
+      logger.info(`Servidor iniciado na porta ${PORT}`, {
+        environment: process.env.NODE_ENV || 'development'
+      });
+    });
+  } catch (error) {
+    logger.error('Falha ao iniciar o servidor', { error: error.message, stack: error.stack });
+    process.exit(1);
+  }
 };
 
+// Iniciar o servidor
 startServer();
