@@ -36,25 +36,23 @@
 <body id="card-view-page">
 
   <div id="unveiling-screen" class="unveiling-container visible">
-    <div id="loading-state" class="loader-wrapper" role="status">
+    <div id="loading-state" class="loader-wrapper">
       <div class="loader"></div>
-      <p>Carregando a surpresa...</p>
     </div>
-    
-    <div id="unveiling-content" class="unveiling-content hidden">
+    <div class="unveiling-content">
       <p class="unveiling-prompt">Você recebeu uma mensagem especial de</p>
       <h1 id="unveiling-sender-name" class="unveiling-name">...</h1>
       <button id="open-card-btn" class="btn btn--primary btn--reveal">💌 Abrir o cartão</button>
     </div>
   </div>
 
-  <header id="card-page-header" class="card-page-header hidden">
+  <header class="card-page-header">
     <div class="container">
         <a href="/" title="Criar um novo cartão">Messagelove</a>
     </div>
   </header>
 
-  <main id="main-content" class="main-content hidden">
+  <main class="main-content hidden">
     <div class="container">
       <article id="card-view" class="card-preview">
           <header class="card-preview-header">
@@ -77,7 +75,7 @@
     </div>
   </main>
 
-  <footer id="card-page-footer" class="card-page-footer hidden">
+  <footer class="card-page-footer hidden">
     <div class="container">
         <p>Gostou? <a href="/" class="btn btn--tertiary">Crie o seu também!</a></p>
     </div>
@@ -85,6 +83,7 @@
 
   <canvas id="particle-canvas"></canvas>
 
+  <script src="https://www.youtube.com/iframe_api" async></script>
   <script src="card.js" defer></script>
 
 </body>
