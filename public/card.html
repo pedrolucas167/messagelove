@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" dir="ltr" class="js">
+<html lang="pt-BR" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +9,8 @@
     <meta name="theme-color" content="#e91e63">
 
     <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self'; 
-        script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com;
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
         frame-src 'self' https://www.youtube.com;
         img-src 'self' data: https:;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
@@ -22,69 +22,67 @@
     <meta property="og:description" content="Abra e veja a mensagem especial que alguém preparou com muito carinho.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="/assets/og-image-default.jpg">
-    
+    <meta property="og:image:alt" content="Cartão Messagelove">
+
     <link rel="icon" href="/coracao.png" type="image/png">
-    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="manifest" href="/manifest.webmanifest">
     
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Inter:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css" media="all">
 </head>
 
 <body id="card-view-page">
-
-  <div id="unveiling-screen" class="unveiling-container visible">
-    <div id="loading-state" class="loader-wrapper">
-      <div class="loader"></div>
+    <div id="unveiling-screen" class="unveiling-container visible" role="dialog" aria-labelledby="unveiling-prompt">
+        <div id="loading-state" class="loader-wrapper">
+            <div class="loader" role="status" aria-label="Carregando"></div>
+        </div>
+        <div id="unveiling-content" class="unveiling-content hidden">
+            <p id="unveiling-prompt" class="unveiling-prompt">Você recebeu uma mensagem especial de</p>
+            <h1 id="unveiling-sender-name" class="unveiling-name">...</h1>
+            <button id="open-card-btn" class="btn btn--primary btn--reveal" type="button">💌 Abrir o cartão</button>
+        </div>
     </div>
-    <div class="unveiling-content">
-      <p class="unveiling-prompt">Você recebeu uma mensagem especial de</p>
-      <h1 id="unveiling-sender-name" class="unveiling-name">...</h1>
-      <button id="open-card-btn" class="btn btn--primary btn--reveal">💌 Abrir o cartão</button>
-    </div>
-  </div>
 
-  <header class="card-page-header">
-    <div class="container">
-        <a href="/" title="Criar um novo cartão">Messagelove</a>
-    </div>
-  </header>
+    <header id="card-page-header" class="card-page-header hidden">
+        <div class="container">
+            <a href="/" aria-label="Criar um novo cartão com Messagelove">Messagelove</a>
+        </div>
+    </header>
 
-  <main class="main-content hidden">
-    <div class="container">
-      <article id="card-view" class="card-preview">
-          <header class="card-preview-header">
-            <h1 id="card-nome" class="recipient-name"></h1>
-            <p id="card-data" class="special-date"></p>
-          </header>
-          <section class="card-body">
-            <p id="card-mensagem"></p>
-            <p class="card-sender">Com carinho, <strong id="card-de"></strong></p>
-          </section>
-          <figure id="card-foto-container" class="preview-image-container"></figure>
-          <div id="card-video-container" class="video-frame"></div>
-      </article>
+    <main id="main-content" class="main-content hidden">
+        <div class="container">
+            <article id="card-view" class="card-preview hidden" role="article">
+                <header class="card-preview-header">
+                    <h1 id="card-nome" class="recipient-name"></h1>
+                    <p id="card-data" class="special-date"></p>
+                </header>
+                <section class="card-body">
+                    <p id="card-mensagem"></p>
+                    <p class="card-sender">Com carinho, <strong id="card-de"></strong></p>
+                </section>
+                <figure id="card-foto-container" class="preview-image-container"></figure>
+                <div id="card-video-container" class="video-frame"></div>
+            </article>
 
-      <div id="error-state" class="hidden">
-        <h2>Ops! Algo deu errado.</h2>
-        <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
-        <a href="/" class="btn btn--primary">Criar um novo cartão</a>
-      </div>
-    </div>
-  </main>
+            <div id="error-state" class="hidden">
+                <h2>Ops! Algo deu errado.</h2>
+                <p>Não conseguimos encontrar este cartão. O link pode estar quebrado ou o cartão pode ter sido removido.</p>
+                <a href="/" class="btn btn--primary" aria-label="Criar um novo cartão">Criar um novo cartão</a>
+            </div>
+        </div>
+    </main>
 
-  <footer class="card-page-footer hidden">
-    <div class="container">
-        <p>Gostou? <a href="/" class="btn btn--tertiary">Crie o seu também!</a></p>
-    </div>
-  </footer>
+    <footer id="card-page-footer" class="card-page-footer hidden">
+        <div class="container">
+            <p>Gostou? <a href="/" class="btn btn--tertiary" aria-label="Crie seu próprio cartão com Messagelove">Crie o seu também!</a></p>
+        </div>
+    </footer>
 
-  <canvas id="particle-canvas"></canvas>
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
-  <script src="https://www.youtube.com/iframe_api" async></script>
-  <script src="card.js" defer></script>
-
+    <script src="/card.js" defer></script>
 </body>
 </html>

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt-BR" dir="ltr" class="no-js">
+<html lang="pt-BR" dir="ltr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messagelove - Crie Cartões Especiais Personalizados</title>
-    <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
-    <meta name="theme-color" content="#e91e63" />
+    <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
+    <meta name="theme-color" content="#e91e63">
 
     <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self'; 
-        script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com;
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
         frame-src 'self' https://www.youtube.com;
         img-src 'self' data: https:;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
@@ -17,31 +17,25 @@
         connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001;
     ">
 
-    <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta property="og:title" content="Messagelove - Crie Cartões Especiais">
+    <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://messagelove-frontend.vercel.app">
+    <meta property="og:image" content="/assets/og-image.jpg">
+    <meta property="og:image:alt" content="Cartão Messagelove">
+    <meta property="og:locale" content="pt_BR">
 
-    <link rel="icon" href="/coracao.png" type="image/png" />
-    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="/coracao.png" type="image/png">
+    <link rel="manifest" href="/manifest.webmanifest">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css" />
 
-    <meta property="og:title" content="Messagelove - Crie Cartões Especiais" />
-    <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://messagelove-frontend.vercel.app" />
-    <meta property="og:image" content="/assets/og-image.jpg" />
-    <meta property="og:locale" content="pt_BR" />
+    <link rel="stylesheet" href="/style.css" media="all">
 </head>
 
 <body>
-    <script>
-        // Remove a classe 'no-js' para habilitar estilos dependentes de JS
-        document.documentElement.classList.replace('no-js', 'js');
-    </script>
-
     <header class="main-header" role="banner">
         <div class="container">
             <h1>Crie um Cartão Especial</h1>
@@ -51,25 +45,25 @@
 
     <main class="main-content" role="main">
         <div class="container">
-            <form id="cardForm" class="card-form" novalidate>
+            <form id="cardForm" class="card-form" novalidate role="form" aria-labelledby="form-title">
                 <fieldset class="form-section">
-                    <legend class="section-title">
+                    <legend id="form-title" class="section-title">
                         <h2>Informações do Cartão</h2>
                     </legend>
-                    
+
                     <div class="form-group">
                         <label for="deInput" class="required-field">Seu Nome (Remetente)</label>
-                        <input type="text" id="deInput" name="de" class="form-input" required placeholder="Quem está enviando?" aria-required="true" />
+                        <input type="text" id="deInput" name="de" class="form-input" required placeholder="Quem está enviando?" aria-required="true">
                     </div>
 
                     <div class="form-group">
                         <label for="nome" class="required-field">Nome do Destinatário</label>
-                        <input type="text" id="nome" name="para" class="form-input" required placeholder="Para quem é este cartão?" aria-required="true" />
+                        <input type="text" id="nome" name="para" class="form-input" required placeholder="Para quem é este cartão?" aria-required="true">
                     </div>
 
                     <div class="form-group">
                         <label for="data">Data Especial (Opcional)</label>
-                        <input type="date" id="data" name="data" class="form-input" />
+                        <input type="date" id="data" name="data" class="form-input">
                     </div>
 
                     <div class="form-group">
@@ -77,35 +71,38 @@
                         <textarea id="mensagem" name="mensagem" class="form-input" required placeholder="Escreva sua mensagem especial..." aria-required="true"></textarea>
                     </div>
                 </fieldset>
-                
+
                 <fieldset class="form-section">
-                    <legend class="section-title"><h3>Adicionais (Opcional)</h3></legend>
-                    
-                     <div class="form-group file-upload">
+                    <legend class="section-title">
+                        <h3>Adicionais (Opcional)</h3>
+                    </legend>
+
+                    <div class="form-group file-upload">
                         <label for="fotoUpload">Adicionar Foto</label>
-                        <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" />
+                        <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" aria-describedby="foto-upload-desc">
+                        <p id="foto-upload-desc" class="form-hint">Formatos aceitos: JPEG, PNG, GIF</p>
                         <div class="preview-container" hidden data-js="preview-container">
-                            <img class="preview" alt="Pré-visualização da foto" data-js="foto-preview" />
-                            <button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto">×</button>
+                            <img class="preview" alt="Pré-visualização da foto" data-js="foto-preview">
+                            <button type="button" class="btn btn-remove" data-js="remove-foto" aria-label="Remover foto">×</button>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="youtubeUrlInput">Link do YouTube</label>
                         <div class="input-group-action">
-                            <input type="url" id="youtubeUrlInput" class="form-input" placeholder="Cole o link do vídeo aqui" />
+                            <input type="url" id="youtubeUrlInput" class="form-input" placeholder="Cole o link do vídeo aqui" aria-describedby="youtube-error">
                             <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary">Adicionar</button>
                         </div>
-                        <div id="youtubeError" class="youtube-error"></div>
+                        <div id="youtubeError" class="youtube-error" aria-live="polite"></div>
                     </div>
 
-                    <div id="youtubePreviewContainer" class="youtube-preview-container">
+                    <div id="youtubePreviewContainer" class="youtube-preview-container" hidden>
                         <div class="youtube-player-wrapper">
-                            <iframe id="youtubePlayer" allowfullscreen title="Player de vídeo do YouTube"></iframe>
+                            <iframe id="youtubePlayer" allowfullscreen title="Pré-visualização do vídeo do YouTube"></iframe>
                         </div>
                     </div>
-                    
-                    <input type="hidden" id="youtubeVideoIdInputHidden" name="youtubeVideoId" />
+
+                    <input type="hidden" id="youtubeVideoIdInputHidden" name="youtubeVideoId">
                 </fieldset>
 
                 <div class="form-group form-actions">
@@ -118,13 +115,13 @@
                 </div>
             </form>
 
-            <div id="successModal" class="modal-overlay" hidden>
+            <div id="successModal" class="modal-overlay" hidden role="dialog" aria-labelledby="modal-title">
                 <div class="modal-content">
-                    <button id="closeModalBtn" class="modal-close-btn" aria-label="Fechar">×</button>
-                    <h2>Cartão Criado! ✨</h2>
+                    <button id="closeModalBtn" class="modal-close-btn" type="button" aria-label="Fechar modal">×</button>
+                    <h2 id="modal-title">Cartão Criado! ✨</h2>
                     <p>Compartilhe este link com aquela pessoa especial:</p>
                     <div class="link-container">
-                        <input type="text" id="generatedCardLink" readonly aria-label="Link do cartão gerado" />
+                        <input type="text" id="generatedCardLink" readonly aria-label="Link do cartão gerado">
                         <button type="button" id="copyLinkBtn" class="btn btn--secondary">Copiar</button>
                     </div>
                     <div class="modal-actions">
@@ -145,10 +142,10 @@
         </div>
     </footer>
 
-    <div id="appNotificationArea"></div>
-    
-    <canvas id="particle-canvas"></canvas>
-    <script src="https://www.youtube.com/iframe_api" async></script>
-    <script src="script.js" defer></script> 
+    <div id="appNotificationArea" aria-live="polite"></div>
+
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+    <script src="/script.js" defer></script>
 </body>
 </html>

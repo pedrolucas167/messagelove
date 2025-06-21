@@ -1,6 +1,5 @@
 // Aguarda o DOM estar completamente carregado antes de executar o script
 document.addEventListener('DOMContentLoaded', () => {
-
     // Mapeamento dos elementos do DOM para fácil acesso
     const elements = {
         unveilingScreen: document.getElementById('unveiling-screen'),
@@ -23,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorState: document.getElementById('error-state')
     };
 
-    const API_BASE_URL = 'https://messagelove-backend.onrender.com/cards';
+    const API_BASE_URL = 'https://messagelove-backend.onrender.com/api/cards';
 
     // Função principal que inicia o processo
     const initializeCard = async () => {
@@ -63,7 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Preenche o conteúdo do cartão
     const populateCardData = (data) => {
         elements.card.recipient.textContent = data.para;
-        elements.card.date.textContent = new Date(data.dataEspecial).toLocaleDateString('pt-BR', { dateStyle: 'long' });
+        elements.card.date.textContent = data.dataEspecial 
+            ? new Date(data.dataEspecial).toLocaleDateString('pt-BR', { dateStyle: 'long' })
+            : '';
         elements.card.message.textContent = data.mensagem;
         elements.card.sender.textContent = data.de;
 
@@ -76,8 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Adiciona o vídeo do YouTube se existir
-        if (data.videoId) {
-            createYouTubePlayer(data.videoId);
+        if (data.youtubeVideoId) { // Ajustado para corresponder ao campo do backend
+            createYouTubeIframe(data.youtubeVideoId);
         }
     };
 
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.header.classList.remove('hidden');
         elements.mainContent.classList.remove('hidden');
         elements.footer.classList.remove('hidden');
-        elements.card.container.classList.remove('hidden'); // Garante que o cartão está visível
+        elements.card.container.classList.remove('hidden');
 
         // Aqui você pode iniciar animações, como a de partículas
         // initParticles(); 
@@ -104,32 +105,16 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.errorState.classList.remove('hidden');
     };
 
-    // Lida com a criação do Player do YouTube
-    const createYouTubePlayer = (videoId) => {
-        // Verifica se a API já foi carregada
-        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-            window.onYouTubeIframeAPIReady = () => {
-                loadPlayer(videoId);
-            };
-        } else {
-            loadPlayer(videoId);
-        }
-    };
-    
-    const loadPlayer = (videoId) => {
-        new YT.Player(elements.card.videoContainer, {
-            height: '360',
-            width: '100%',
-            videoId: videoId,
-            playerVars: {
-                'playsinline': 1
-            }
-        });
+    // Cria um iframe simples para o YouTube (Refatorado)
+    const createYouTubeIframe = (videoId) => {
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&rel=0&modestbranding=1&playsinline=1`;
+        iframe.width = '100%';
+        iframe.height = '360';
+        iframe.frameBorder = '0';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        elements.card.videoContainer.appendChild(iframe);
     };
 
     // Adiciona o listener de evento ao botão
