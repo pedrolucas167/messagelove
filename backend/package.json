@@ -5,7 +5,10 @@
   "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "build": "echo 'Build completo'",
+    "render-build": "mkdir -p src && cp -R . src/backend",
+    "verify-structure": "node -e \"console.log('Estrutura:', require('fs').readdirSync('.'))\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.832.0",
@@ -25,5 +28,8 @@
     "sequelize": "^6.37.7",
     "sharp": "^0.34.2",
     "winston": "^3.17.0"
+  },
+  "engines": {
+    "node": ">=20.19.2"
   }
 }
