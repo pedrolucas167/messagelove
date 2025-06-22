@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { User } = require('../models');
-const logger = require('../config/logger');
+const { getLogger } = require('../config/logger');
+const logger = getLogger();
 
 const router = express.Router();
 

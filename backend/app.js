@@ -1,3 +1,4 @@
+// app.js - Com a correção do 'trust proxy' aplicada
 
 require('dotenv').config();
 
@@ -12,17 +13,13 @@ const fs = require('fs');
 const winston = require('winston');
 
 // --- VERIFICADOR DE ARQUIVOS ---
-// Esta função é executada antes de qualquer outra coisa para garantir a integridade do ambiente.
-
 const verifyEssentialFiles = () => {
-  // Logger temporário usado apenas durante a verificação inicial
   const initLogger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     transports: [new winston.transports.Console()]
   });
 
-  // CORRIGIDO: Nomes dos arquivos usando camelCase para corresponder à estrutura real.
   const essentialFiles = {
     middlewares: ['auth.js'],
     routes: ['cardRoutes.js', 'authRoutes.js'],
@@ -46,7 +43,6 @@ const verifyEssentialFiles = () => {
   }
 
   if (!allFilesExist) {
-    // Lança um erro para ser capturado pelo bloco try/catch principal, em vez de sair abruptamente.
     throw new Error('Arquivos essenciais faltando. Verifique os logs acima para detalhes.');
   }
 
@@ -55,14 +51,12 @@ const verifyEssentialFiles = () => {
 
 
 // --- IMPORTAÇÕES LOCAIS ---
-// CORRIGIDO: `require` usando os nomes corretos com camelCase.
 const cardRoutes = require('./routes/cardRoutes');
 const authRoutes = require('./routes/authRoutes');
 const db = require('./models');
 
 
 // --- MÓDULOS DE CONFIGURAÇÃO ---
-
 const configureLogger = () => {
   const logDir = path.join(__dirname, 'logs');
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
@@ -109,12 +103,10 @@ const configureRoutes = (app) => {
 };
 
 const configureErrorHandling = (app, logger) => {
-  // Handler para rotas não encontradas (404)
   app.use((req, res, next) => {
     res.status(404).json({ message: 'Rota não encontrada' });
   });
 
-  // Handler de erro global
   app.use((err, req, res, next) => {
     logger.error(err.message, { stack: err.stack, path: req.path });
     const isProduction = process.env.NODE_ENV === 'production';
@@ -126,19 +118,21 @@ const configureErrorHandling = (app, logger) => {
 
 
 // --- INICIALIZAÇÃO DO SERVIDOR ---
-
 const startServer = async () => {
   let logger;
   try {
-    // 1. Verificação crítica de arquivos antes de qualquer outra coisa.
     verifyEssentialFiles();
     
-    // 2. Agora que sabemos que o ambiente está ok, configuramos o logger principal.
     logger = configureLogger();
     
     const app = express();
     
-    // 3. Aplica todas as configurações
+    // ==================================================================
+    // ▼▼▼ CORREÇÃO APLICADA AQUI ▼▼▼
+    // Adicionado para corrigir o erro do express-rate-limit em ambientes de proxy como o Render.
+    app.set('trust proxy', 1);
+    // ==================================================================
+    
     configureSecurity(app);
     configureMiddlewares(app);
     
@@ -152,16 +146,14 @@ const startServer = async () => {
     }
     
     configureRoutes(app);
-    configureErrorHandling(app, logger); // Passa o logger para o error handler
+    configureErrorHandling(app, logger);
     
-    // 4. Inicia o servidor
     const port = process.env.PORT || 3001;
     app.listen(port, () => {
       logger.info(`Servidor iniciado na porta ${port}`, { environment: process.env.NODE_ENV || 'development' });
     });
     
   } catch (error) {
-    // Se o logger principal falhou ao iniciar, usamos um logger de emergência.
     const emergencyLogger = logger || winston.createLogger({ transports: [new winston.transports.Console()] });
     emergencyLogger.error('Falha crítica na inicialização do servidor:', {
       message: error.message,
