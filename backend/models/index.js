@@ -5,6 +5,7 @@
 'use strict';
 
 const { Sequelize, DataTypes } = require('sequelize');
+const User = require('./users'); 
 
 // Pega a URL do banco de dados das variáveis de ambiente
 const databaseUrl = process.env.DATABASE_URL;
@@ -30,7 +31,7 @@ const db = {};
 
 // Passa 'sequelize' e 'DataTypes' ao inicializar o modelo
 db.Card = require('./card.js')(sequelize, DataTypes);
-db.User = require('./user')(sequelize, DataTypes);
+db.User = require('./users')(sequelize, DataTypes);
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
