@@ -4,24 +4,22 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { User } = require('../models');
-const { getLogger } = require('../config/logger');
-const logger = getLogger();
 
 const router = express.Router();
 
 // Constantes para reutilização
-const PASSWORD_MIN_LENGTH = 8; 
+const PASSWORD_MIN_LENGTH = 8;
 const TOKEN_CONFIG = {
   expiresIn: process.env.TOKEN_EXPIRATION || '24h'
 };
 
 // Rate Limiter para endpoints de autenticação
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 5, 
-  message: { 
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
     error: 'Muitas tentativas, tente novamente mais tarde',
-    retryAfter: 900 
+    retryAfter: 900
   },
   standardHeaders: true,
   legacyHeaders: false
@@ -81,10 +79,13 @@ const securityHeaders = (req, res, next) => {
 
 // Rotas
 router.post('/register', securityHeaders, validateRegister, async (req, res, next) => {
+  // ▼▼▼ CORREÇÃO 2: O logger é importado e obtido SOMENTE quando a rota é executada. ▼▼▼
+  const logger = require('../config/logger').getLogger();
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      logger.warn('Erro de validação no registro', { 
+      logger.warn('Erro de validação no registro', {
         errors: errors.array(),
         ip: req.ip,
         userAgent: req.get('user-agent')
@@ -93,13 +94,13 @@ router.post('/register', securityHeaders, validateRegister, async (req, res, nex
     }
 
     const { email, password, name } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 12); // Aumentado o salt rounds para 12
+    const hashedPassword = await bcrypt.hash(password, 12);
     const user = await User.create({ email, password: hashedPassword, name });
 
     const token = generateAuthToken(user.id);
     const userData = sanitizeUser(user);
 
-    logger.info('Novo usuário registrado', { 
+    logger.info('Novo usuário registrado', {
       userId: user.id,
       email: user.email,
       ip: req.ip
@@ -107,12 +108,12 @@ router.post('/register', securityHeaders, validateRegister, async (req, res, nex
     
     res.status(201)
       .setHeader('X-Auth-Token', token)
-      .json({ 
-        token, 
-        user: userData 
+      .json({
+        token,
+        user: userData
       });
   } catch (error) {
-    logger.error('Erro no registro', { 
+    logger.error('Erro no registro', {
       error: error.message,
       stack: error.stack,
       email: req.body.email,
@@ -123,10 +124,13 @@ router.post('/register', securityHeaders, validateRegister, async (req, res, nex
 });
 
 router.post('/login', securityHeaders, authLimiter, validateLogin, async (req, res, next) => {
+  // ▼▼▼ CORREÇÃO 3: A mesma correção é aplicada aqui. ▼▼▼
+  const logger = require('../config/logger').getLogger();
+
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      logger.warn('Erro de validação no login', { 
+      logger.warn('Erro de validação no login', {
         errors: errors.array(),
         ip: req.ip,
         userAgent: req.get('user-agent')
@@ -138,7 +142,7 @@ router.post('/login', securityHeaders, authLimiter, validateLogin, async (req, r
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      logger.warn('Tentativa de login com email não registrado', { 
+      logger.warn('Tentativa de login com email não registrado', {
         email,
         ip: req.ip,
         userAgent: req.get('user-agent')
@@ -148,7 +152,7 @@ router.post('/login', securityHeaders, authLimiter, validateLogin, async (req, r
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      logger.warn('Tentativa de login com senha inválida', { 
+      logger.warn('Tentativa de login com senha inválida', {
         email,
         ip: req.ip,
         userAgent: req.get('user-agent')
@@ -159,7 +163,7 @@ router.post('/login', securityHeaders, authLimiter, validateLogin, async (req, r
     const token = generateAuthToken(user.id);
     const userData = sanitizeUser(user);
 
-    logger.info('Login bem-sucedido', { 
+    logger.info('Login bem-sucedido', {
       userId: user.id,
       email: user.email,
       ip: req.ip
@@ -167,12 +171,12 @@ router.post('/login', securityHeaders, authLimiter, validateLogin, async (req, r
     
     res.status(200)
       .setHeader('X-Auth-Token', token)
-      .json({ 
-        token, 
-        user: userData 
+      .json({
+        token,
+        user: userData
       });
   } catch (error) {
-    logger.error('Erro no login', { 
+    logger.error('Erro no login', {
       error: error.message,
       stack: error.stack,
       email: req.body.email,
