@@ -23,14 +23,14 @@ const uploadImageToS3 = async (file) => {
         Key: fileName,
         Body: file.buffer,
         ContentType: file.mimetype,
-        ACL: 'public-read', // Permite acesso público à imagem
+        ACL: 'public-read', 
     });
 
     await s3Client.send(command);
     return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
 };
 
-// Função auxiliar para deletar imagem do S3
+
 const deleteImageFromS3 = async (imageUrl) => {
     if (!imageUrl) return;
 
