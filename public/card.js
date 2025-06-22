@@ -1,133 +1,209 @@
+/**
+ * @file card.js
+ * @description Script to render a specific card on card.html using data from the backend.
+ * @author Pedro Marques
+ * @version 1.2.0
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    const CardViewer = (() => {
+        const config = {
+            API_URL: window.location.hostname.includes('localhost')
+                ? 'http://localhost:3000/api'
+                : 'https://messagelove-backend.onrender.com/api',
+            PARTICLE_COLORS: [
+                'rgba(255, 182, 193, 0.7)', // Light pink
+                'rgba(219, 112, 147, 0.6)', // Pale violet red
+                'rgba(255, 245, 238, 0.5)', // Seashell white
+                'rgba(221, 160, 221, 0.6)'  // Plum purple
+            ],
+            PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)' // Hot pink glow
+        };
 
-const CardViewerApp = (() => {
-    // 1. Configurações
-    const config = {
-        API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3001/api/cards'
-            : 'https://messagelove-backend.onrender.com/api/cards',
-    };
+        const elements = {
+            unveilingScreen: document.getElementById('unveiling-screen'),
+            loadingState: document.getElementById('loading-state'),
+            unveilingContent: document.getElementById('unveiling-content'),
+            unveilingRecipientName: document.getElementById('unveiling-recipient-name'),
+            unveilingSenderName: document.getElementById('unveiling-sender-name'),
+            openCardBtn: document.getElementById('open-card-btn'),
+            cardPageHeader: document.getElementById('card-page-header'),
+            mainContent: document.getElementById('main-content'),
+            cardView: document.getElementById('card-view'),
+            recipientName: document.getElementById('card-nome'),
+            specialDate: document.getElementById('card-data'),
+            cardMessage: document.getElementById('card-mensagem'),
+            cardSender: document.getElementById('card-de'),
+            cardFotoContainer: document.getElementById('card-foto-container'),
+            cardVideoContainer: document.getElementById('card-video-container'),
+            errorState: document.getElementById('error-state'),
+            particleCanvas: document.getElementById('particle-canvas')
+        };
 
-    // 2. Seletores do DOM
-    const elements = {
-        unveilingScreen: document.getElementById('unveiling-screen'),
-        loadingState: document.getElementById('loading-state'),
-        unveilingContent: document.getElementById('unveiling-content'),
-        unveilingSenderName: document.getElementById('unveiling-sender-name'),
-        unveilingRecipientName: document.getElementById('unveiling-recipient-name'), // Novo elemento
-        openCardBtn: document.getElementById('open-card-btn'),
-        header: document.getElementById('card-page-header'),
-        mainContent: document.getElementById('main-content'),
-        footer: document.getElementById('card-page-footer'),
-        card: {
-            container: document.getElementById('card-view'),
-            recipient: document.getElementById('card-nome'),
-            date: document.getElementById('card-data'),
-            message: document.getElementById('card-mensagem'),
-            sender: document.getElementById('card-de'),
-            photoContainer: document.getElementById('card-foto-container'),
-            videoContainer: document.getElementById('card-video-container'),
-        },
-        errorState: document.getElementById('error-state'),
-    };
+        const api = {
+            async request(endpoint, options = {}) {
+                const token = localStorage.getItem('token');
+                const headers = { ...options.headers, 'Content-Type': 'application/json' };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                try {
+                    const response = await fetch(`${config.API_URL}${endpoint}`, { ...options, headers });
+                    const result = await response.text().then(text => text ? JSON.parse(text) : {});
+                    if (!response.ok) {
+                        const errorMessage = result.message || `Erro ${response.status}: ${response.statusText}`;
+                        const error = new Error(errorMessage);
+                        error.status = response.status;
+                        throw error;
+                    }
+                    return result;
+                } catch (error) {
+                    console.error(`API Error on ${endpoint}:`, error);
+                    throw error;
+                }
+            },
+            getCard: (id) => api.request(`/cards/${id}`)
+        };
 
-    // 3. Módulo de UI
-    const ui = {
-        showLoadingState() {
-            elements.loadingState.classList.remove('hidden');
-            elements.unveilingContent.classList.add('hidden');
-        },
-        showUnveilingScreen(data) {
-            elements.loadingState.classList.add('hidden');
-            elements.unveilingContent.classList.remove('hidden');
-            elements.unveilingSenderName.textContent = data.de || 'Alguém especial';
-            elements.unveilingRecipientName.textContent = data.para || 'Você';
-            elements.unveilingScreen.classList.add('visible');
-        },
-        revealCard() {
-            elements.unveilingScreen.classList.remove('visible');
-            setTimeout(() => {
-                elements.unveilingScreen.classList.add('hidden');
-                elements.header.classList.remove('hidden');
-                elements.mainContent.classList.remove('hidden');
-                elements.footer.classList.remove('hidden');
-                elements.card.container.classList.remove('hidden');
-                document.body.classList.add('card-is-open');
-            }, 500); // Alinhado com a transição do CSS
-        },
-        showErrorState(message) {
-            elements.unveilingScreen.classList.add('hidden');
-            elements.mainContent.classList.remove('hidden');
-            elements.card.container.classList.add('hidden');
-            elements.errorState.classList.remove('hidden');
-            elements.errorState.querySelector('p').textContent = message || 'Não foi possível carregar o cartão.';
-        },
-        populateCardData(data) {
-            elements.card.recipient.textContent = data.para || '';
-            elements.card.message.textContent = data.mensagem || '';
-            elements.card.sender.textContent = data.de ? `De: ${data.de}` : '';
+        const ui = {
+            showNotification(message, type = 'error') {
+                const notification = document.createElement('div');
+                notification.className = `p-4 text-sm rounded-lg ${type === 'error' ? 'bg-red-600' : 'bg-green-500'} text-white fixed top-4 right-4 z-50`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 5000);
+            },
+            renderUnveilingScreen(card) {
+                if (!card || !elements.unveilingRecipientName || !elements.unveilingSenderName) return;
+                elements.unveilingRecipientName.textContent = card.para || 'Destinatário';
+                elements.unveilingSenderName.textContent = card.de || 'Anônimo';
+                elements.loadingState?.classList.add('hidden');
+                elements.unveilingContent?.classList.remove('hidden');
+            },
+            renderCard(card) {
+                if (!card) return;
+                elements.recipientName.textContent = card.para || 'Destinatário';
+                elements.specialDate.textContent = card.createdAt ? new Date(card.createdAt).toLocaleDateString('pt-BR') : '';
+                elements.cardMessage.textContent = card.mensagem || '';
+                elements.cardSender.textContent = card.de || 'Anônimo';
+                if (card.fotoUrl && elements.cardFotoContainer) {
+                    const img = document.createElement('img');
+                    img.src = card.fotoUrl;
+                    img.alt = 'Imagem do cartão';
+                    img.className = 'max-w-full rounded';
+                    elements.cardFotoContainer.appendChild(img);
+                }
+                if (card.youtubeVideoId && elements.cardVideoContainer) {
+                    elements.cardVideoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${card.youtubeVideoId}?start=${card.youtubeStartTime || 0}" frameborder="0" allowfullscreen class="w-full h-64 rounded"></iframe>`;
+                }
+            },
+            showCardView() {
+                elements.unveilingScreen?.classList.remove('visible');
+                elements.cardPageHeader?.classList.remove('hidden');
+                elements.mainContent?.classList.remove('hidden');
+                elements.cardView?.classList.remove('hidden');
+                document.getElementById('card-page-footer')?.classList.remove('hidden');
+            },
+            showError(message = 'Erro ao carregar cartão.') {
+                elements.loadingState?.classList.add('hidden');
+                elements.unveilingScreen?.classList.remove('visible');
+                elements.errorState?.classList.remove('hidden');
+                this.showNotification(message, 'error');
+            }
+        };
 
-            if (data.dataEspecial) {
-                const date = new Date(data.dataEspecial);
-                elements.card.date.textContent = date.toLocaleDateString('pt-BR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
+        const particles = {
+            init() {
+                if (!elements.particleCanvas || !config.PARTICLE_COLORS) return;
+                const ctx = elements.particleCanvas.getContext('2d');
+                elements.particleCanvas.width = window.innerWidth;
+                elements.particleCanvas.height = window.innerHeight;
+
+                const particlesArray = [];
+                const numberOfParticles = Math.min((window.innerWidth * window.innerHeight) / 15000, 80);
+
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particlesArray.push({
+                        x: Math.random() * window.innerWidth,
+                        y: Math.random() * window.innerHeight,
+                        directionX: Math.random() * 0.3 - 0.15,
+                        directionY: Math.random() * 0.3 - 0.15,
+                        size: Math.random() * 3 + 2,
+                        color: config.PARTICLE_COLORS[Math.floor(Math.random() * config.PARTICLE_COLORS.length)],
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+
+                const animate = () => {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+                    ctx.fillRect(0, 0, elements.particleCanvas.width, elements.particleCanvas.height);
+
+                    particlesArray.forEach(particle => {
+                        particle.x += particle.directionX + Math.sin(particle.phase) * 0.3;
+                        particle.y += particle.directionY + Math.cos(particle.phase) * 0.3;
+                        particle.phase += 0.02;
+
+                        if (particle.x > elements.particleCanvas.width || particle.x < 0) particle.directionX = -particle.directionX;
+                        if (particle.y > elements.particleCanvas.height || particle.y < 0) particle.directionY = -particle.directionY;
+
+                        ctx.save();
+                        ctx.translate(particle.x, particle.y);
+                        ctx.scale(particle.size / 4, particle.size / 4);
+                        ctx.beginPath();
+                        ctx.moveTo(0, -3);
+                        ctx.bezierCurveTo(-3, -5, -6, -2, -6, 1);
+                        ctx.bezierCurveTo(-6, 4, -3, 6, 0, 3);
+                        ctx.bezierCurveTo(3, 6, 6, 4, 6, 1);
+                        ctx.bezierCurveTo(6, -2, 3, -5, 0, -3);
+                        ctx.closePath();
+                        ctx.fillStyle = particle.color;
+                        ctx.shadowColor = config.PARTICLE_GLOW;
+                        ctx.shadowBlur = 8;
+                        ctx.fill();
+                        ctx.restore();
+                    });
+
+                    requestAnimationFrame(animate);
+                };
+
+                animate();
+
+                window.addEventListener('resize', () => {
+                    elements.particleCanvas.width = window.innerWidth;
+                    elements.particleCanvas.height = window.innerHeight;
                 });
             }
+        };
 
-            if (data.fotoUrl) {
-                const img = document.createElement('img');
-                img.src = data.fotoUrl;
-                img.alt = `Foto enviada por ${data.de || 'anônimo'}`;
-                img.className = 'card-image';
-                img.loading = 'lazy';
-                elements.card.photoContainer.appendChild(img);
+        const init = async () => {
+            particles.init();
+            const urlParams = new URLSearchParams(window.location.search);
+            const cardId = urlParams.get('id');
+
+            if (!cardId) {
+                ui.showError('ID do cartão não fornecido.');
+                return;
             }
 
-            if (data.youtubeVideoId) {
-                this.createYouTubeIframe(data.youtubeVideoId);
+            try {
+                const response = await api.getCard(cardId);
+                // Normalizar resposta: garantir que seja um objeto, não um array
+                const card = Array.isArray(response) ? response[0] : response;
+                if (!card || typeof card !== 'object') {
+                    throw new Error('Cartão inválido ou não encontrado.');
+                }
+                ui.renderUnveilingScreen(card);
+                elements.openCardBtn?.addEventListener('click', () => {
+                    ui.renderCard(card);
+                    ui.showCardView();
+                }, { once: true });
+            } catch (error) {
+                const message = error.status === 404 ? 'Cartão não encontrado.' : error.message || 'Erro ao carregar cartão.';
+                ui.showError(message);
             }
-        },
-        createYouTubeIframe(videoId) {
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&rel=0&modestbranding=1&playsinline=1`;
-            iframe.title = 'Vídeo do YouTube do cartão';
-            iframe.className = 'video-frame';
-            iframe.loading = 'lazy';
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            iframe.allowFullscreen = true;
-            elements.card.videoContainer.appendChild(iframe);
-        },
-    };
+        };
 
-    // 4. Módulo de Dados
-    const dataModule = {
-        async fetchCard(cardId) {
-            if (!cardId) throw new Error('ID do cartão não fornecido na URL.');
-            const response = await fetch(`${config.API_BASE_URL}/${cardId}`);
-            if (!response.ok) {
-                throw new Error(`Erro ao buscar o cartão: ${response.statusText}`);
-            }
-            return response.json();
-        },
-    };
+        return { init };
+    })();
 
-    // 5. Inicialização
-    const init = async () => {
-        ui.showLoadingState();
-        try {
-            const cardId = new URLSearchParams(window.location.search).get('id');
-            const data = await dataModule.fetchCard(cardId);
-            ui.showUnveilingScreen(data);
-            ui.populateCardData(data);
-            elements.openCardBtn.addEventListener('click', ui.revealCard);
-        } catch (error) {
-            console.error('Erro ao inicializar o cartão:', error);
-            ui.showErrorState(error.message);
-        }
-    };
-
-    return { init };
-})();
-
-document.addEventListener('DOMContentLoaded', CardViewerApp.init);
+    CardViewer.init();
+});

@@ -101,10 +101,50 @@
             <!-- ========= VIEW 3: FORMULÁRIO DE CRIAÇÃO (Oculto) ========= -->
             <section id="creationSection" class="hidden w-full">
                 <h1 class="text-3xl sm:text-4xl font-bold text-white mb-6">Crie um Cartão Especial</h1>
-                <div class="bg-gray-800/50 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl">
-                    <p class="text-lg">O formulário de criação viria aqui.</p>
-                    <button id="showDashboardBtn" class="mt-4 text-fuchsia-400 hover:text-fuchsia-300">← Voltar ao
-                        Dashboard</button>
+                <div class="bg-gray-800/50 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl max-w-lg mx-auto">
+                    <form id="createCardForm" class="space-y-4">
+                        <div>
+                            <label for="de" class="block text-sm font-medium text-gray-300 mb-1">Remetente</label>
+                            <input type="text" id="de" name="de"
+                                class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                                placeholder="Seu nome" required>
+                        </div>
+                        <div>
+                            <label for="para" class="block text-sm font-medium text-gray-300 mb-1">Destinatário</label>
+                            <input type="text" id="para" name="para"
+                                class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                                placeholder="Nome do destinatário" required>
+                        </div>
+                        <div>
+                            <label for="mensagem" class="block text-sm font-medium text-gray-300 mb-1">Mensagem</label>
+                            <textarea id="mensagem" name="mensagem"
+                                class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                                rows="4" placeholder="Escreva sua mensagem especial..." required></textarea>
+                        </div>
+                        <div>
+                            <label for="foto" class="block text-sm font-medium text-gray-300 mb-1">Imagem
+                                (opcional)</label>
+                            <input type="file" id="foto" name="foto"
+                                accept="image/jpeg,image/png,image/webp"
+                                class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 file:bg-fuchsia-600 file:text-white file:border-none file:rounded file:px-4 file:py-2">
+                        </div>
+                        <div>
+                            <label for="youtubeVideoId" class="block text-sm font-medium text-gray-300 mb-1">Link do
+                                YouTube (opcional)</label>
+                            <input type="text" id="youtubeVideoId" name="youtubeVideoId"
+                                class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                                placeholder="ID do vídeo (ex.: dQw4w9WgXcQ)">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <button type="button" id="showDashboardBtn"
+                                class="text-fuchsia-400 hover:text-fuchsia-300 font-medium">← Voltar ao
+                                Dashboard</button>
+                            <button type="submit" id="createCardSubmitBtn"
+                                class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
+                                Criar Cartão
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </section>
 
@@ -203,7 +243,6 @@
     </div>
 
     <!-- Scripts -->
-
     <script src="script.js" defer></script>
 </body>
 

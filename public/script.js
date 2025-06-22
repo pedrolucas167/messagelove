@@ -1,15 +1,15 @@
 /**
  * @file script.js
- * @description Main script for the MessageLove application. Features elegant heart-shaped particle animations
- * for a romantic "correio elegante" theme, secure authentication, and UI interactions.
+ * @description Main script for the MessageLove application. Features heart-shaped particle animations,
+ * secure authentication, card creation, and UI interactions for a romantic "correio elegante" theme.
  * @author Pedro Marques
- * @version 6.3.1
+ * @version 6.5.0
  */
 document.addEventListener('DOMContentLoaded', () => {
     const MessageLoveApp = (() => {
         // Configuration
         const config = {
-            API_URL: window.location.hostname.includes('localhost') 
+            API_URL: window.location.hostname.includes('localhost')
                 ? 'http://localhost:3000/api' // Proxy for local dev
                 : 'https://messagelove-backend.onrender.com/api',
             PARTICLE_DENSITY: { mobile: 30000, desktop: 15000 },
@@ -44,6 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
             loginSubmitBtn: document.getElementById('loginSubmitBtn'),
             registerForm: document.getElementById('registerForm'),
             registerSubmitBtn: document.getElementById('registerSubmitBtn'),
+            createCardForm: document.getElementById('createCardForm'),
+            createCardSubmitBtn: document.getElementById('createCardSubmitBtn'),
+            showCreateFormBtn: document.getElementById('showCreateFormBtn'),
+            showDashboardBtn: document.getElementById('showDashboardBtn'),
             openLoginBtn: document.getElementById('openLoginBtn'),
             openRegisterBtn: document.getElementById('openRegisterBtn'),
             closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
@@ -54,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             logoutBtn: document.getElementById('logoutBtn'),
             appNotificationArea: document.getElementById('appNotificationArea'),
             userWelcomeMessage: document.getElementById('userWelcomeMessage'),
+            userCardsList: document.getElementById('userCardsList'),
             particleCanvas: document.getElementById('particle-canvas'),
             currentYear: document.getElementById('currentYear')
         };
@@ -65,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ctx = elements.particleCanvas.getContext('2d');
                 this.resizeCanvas();
 
-                // Interaction handlers (mouse and touch)
                 const updateInteractionPos = (e, isTouch = false) => {
                     const rect = elements.particleCanvas.getBoundingClientRect();
                     const clientX = isTouch ? e.touches[0].clientX : e.clientX;
@@ -86,12 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const animate = () => {
-                    // Soft fade for trails
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
                     ctx.fillRect(0, 0, elements.particleCanvas.width, elements.particleCanvas.height);
 
                     state.particlesArray.forEach(particle => {
-                        // Interaction attraction
                         if (state.interactionPos.x !== null && state.interactionPos.y !== null) {
                             const dx = state.interactionPos.x - particle.x;
                             const dy = state.interactionPos.y - particle.y;
@@ -103,25 +105,22 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
 
-                        // Sinusoidal motion
                         particle.phase += 0.02;
                         particle.x += particle.directionX + Math.sin(particle.phase) * 0.3;
                         particle.y += particle.directionY + Math.cos(particle.phase) * 0.3;
 
-                        // Bounce off edges
                         if (particle.x > elements.particleCanvas.width || particle.x < 0) particle.directionX = -particle.directionX;
                         if (particle.y > elements.particleCanvas.height || particle.y < 0) particle.directionY = -particle.directionY;
 
-                        // Draw heart-shaped particle
                         ctx.save();
                         ctx.translate(particle.x, particle.y);
-                        ctx.scale(particle.size / 4, particle.size / 4); // Scale heart size
+                        ctx.scale(particle.size / 4, particle.size / 4);
                         ctx.beginPath();
                         ctx.moveTo(0, -3);
                         ctx.bezierCurveTo(-3, -5, -6, -2, -6, 1);
                         ctx.bezierCurveTo(-6, 4, -3, 6, 0, 3);
                         ctx.bezierCurveTo(3, 6, 6, 4, 6, 1);
-                        ctx.bezierCurveTo(6, -2, 3, -5, 0, -3);
+                        ctx.bezierCurveTo(6, -2, -3, -5, 0, -3);
                         ctx.closePath();
                         ctx.fillStyle = particle.color;
                         ctx.shadowColor = config.PARTICLE_GLOW;
@@ -130,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         ctx.restore();
                     });
 
-                    // Draw connections
                     for (let i = 0; i < state.particlesArray.length; i++) {
                         for (let j = i + 1; j < state.particlesArray.length; j++) {
                             const p1 = state.particlesArray[i];
@@ -155,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.createParticles();
                 animate();
 
-                // Debounced resize handler
                 let resizeTimeout;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
@@ -168,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
             createParticles() {
                 state.particlesArray = [];
                 const density = window.innerWidth < 768 ? config.PARTICLE_DENSITY.mobile : config.PARTICLE_DENSITY.desktop;
-                const numberOfParticles = Math.min((elements.particleCanvas.height * elements.particleCanvas.width) / density, 80); // Cap for performance
-                
+                const numberOfParticles = Math.min((elements.particleCanvas.height * elements.particleCanvas.width) / density, 80);
+
                 for (let i = 0; i < numberOfParticles; i++) {
                     state.particlesArray.push({
                         x: Math.random() * elements.particleCanvas.width,
@@ -178,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         directionY: Math.random() * 0.3 - 0.15,
                         size: Math.random() * 3 + 2,
                         color: config.PARTICLE_COLORS[Math.floor(Math.random() * config.PARTICLE_COLORS.length)],
-                        phase: Math.random() * Math.PI * 2 // For sinusoidal motion
+                        phase: Math.random() * Math.PI * 2
                     });
                 }
             },
@@ -201,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
-                
+
                 try {
                     const response = await fetch(`${config.API_URL}${endpoint}`, { ...options, headers });
                     const result = await response.text().then(text => text ? JSON.parse(text) : {});
@@ -214,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else if (response.status === 429) {
                             errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
                         } else if (response.status === 0) {
-                            errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.';
+                            errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
                         }
                         const error = new Error(errorMessage);
                         error.status = response.status;
@@ -230,15 +227,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(error.message || 'Erro de conexão com o servidor.');
                 }
             },
-            login: (email, password) => api.request('/auth/login', { method: 'POST', body: JSON.stringify({ email: email.trim(), password }) }),
-            register: (name, email, password) => api.request('/auth/register', { method: 'POST', body: JSON.stringify({ name: name.trim(), email: email.trim(), password }) }),
-            getMyCards: () => api.request('/cards')
+            login: (email, password) => api.request('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email: email.trim(), password })
+            }),
+            register: (name, email, password) => api.request('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ name: name.trim(), email: email.trim(), password })
+            }),
+            getMyCards: () => api.request('/cards'),
+            createCard: (formData) => api.request('/cards', {
+                method: 'POST',
+                body: formData
+            })
         };
 
         // UI Module
         const ui = {
             showView(viewName) {
-                [elements.welcomeSection, elements.dashboardSection, elements.creationSection].forEach(section => 
+                [elements.welcomeSection, elements.dashboardSection, elements.creationSection].forEach(section =>
                     section?.classList.add('hidden'));
                 elements[`${viewName}Section`]?.classList.remove('hidden');
             },
@@ -249,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         elements.userWelcomeMessage.textContent = `Olá, ${state.currentUser.name}!`;
                     }
                     this.showView('dashboard');
+                    cards.loadUserCards();
                 } else {
                     elements.logoutBtn.classList.add('hidden');
                     this.showView('welcome');
@@ -259,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.disabled = isLoading;
                 btn.classList.toggle('opacity-75', isLoading);
                 btn.classList.toggle('cursor-not-allowed', isLoading);
-                btn.innerHTML = isLoading ? '<span class="btn-spinner inline-block mr-2"></span>Carregando...' : btn.dataset.originalText || btn.innerHTML;
+                btn.innerHTML = isLoading ? '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>Carregando...' : btn.dataset.originalText || btn.innerHTML;
                 if (!isLoading && !btn.dataset.originalText) {
                     btn.dataset.originalText = btn.innerHTML;
                 }
@@ -278,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 notification.className = `${baseClasses} ${typeClasses[type] || typeClasses.info} opacity-0 translate-y-4`;
                 notification.innerHTML = `
                     <span>${message}</span>
-                    <button class="notification__close" aria-label="Fechar notificação">×</button>
+                    <button class="notification__close absolute top-2 right-2 text-white hover:text-gray-200" aria-label="Fechar notificação">×</button>
                 `;
                 elements.appNotificationArea.appendChild(notification);
 
@@ -298,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, duration);
             },
             showAuthForm(formToShow) {
-                [elements.loginFormContainer, elements.registerFormContainer, elements.resetPasswordFormContainer].forEach(form => 
+                [elements.loginFormContainer, elements.registerFormContainer, elements.resetPasswordFormContainer].forEach(form =>
                     form?.classList.add('hidden'));
                 formToShow?.classList.remove('hidden');
             },
@@ -306,13 +314,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.authModal?.classList.remove('hidden');
                 setTimeout(() => {
                     elements.authModal?.classList.remove('opacity-0');
-                    elements.authModal?.querySelector('.modal-content')?.classList.remove('translate-y-10', 'scale-95');
+                    elements.authModal?.querySelector('.modal-content')?.classList.remove('scale-95');
                 }, 10);
                 this.showAuthForm(initialForm);
             },
             closeModal() {
                 elements.authModal?.classList.add('opacity-0');
-                elements.authModal?.querySelector('.modal-content')?.classList.add('translate-y-10', 'scale-95');
+                elements.authModal?.querySelector('.modal-content')?.classList.add('scale-95');
                 setTimeout(() => elements.authModal?.classList.add('hidden'), 300);
             },
             updateFooterYear() {
@@ -334,8 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ui.closeModal();
                 elements.loginForm?.reset();
                 elements.registerForm?.reset();
-                const welcomeMessage = isRegistration 
-                    ? `Bem-vindo, ${result.user.name}!` 
+                const welcomeMessage = isRegistration
+                    ? `Bem-vindo, ${result.user.name}!`
                     : `Login realizado com sucesso!`;
                 ui.showNotification(welcomeMessage, 'success');
                 ui.updateAuthUI();
@@ -398,11 +406,90 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // Card Module
+        const cards = {
+            sanitizeInput(input) {
+                return input.replace(/[<>&"']/g, '');
+            },
+            async create(event) {
+                event.preventDefault();
+                if (!state.currentUser) {
+                    ui.showNotification('Faça login para criar um cartão.', 'warning');
+                    ui.openModal(elements.loginFormContainer);
+                    return;
+                }
+                ui.setButtonLoading(elements.createCardSubmitBtn, true);
+
+                try {
+                    const formData = new FormData(elements.createCardForm);
+                    const de = this.sanitizeInput(formData.get('de') || state.currentUser.name);
+                    const para = this.sanitizeInput(formData.get('para') || '');
+                    const mensagem = this.sanitizeInput(formData.get('mensagem') || '');
+                    const youtubeVideoId = this.sanitizeInput(formData.get('youtubeVideoId') || '');
+                    formData.set('de', de);
+                    formData.set('para', para);
+                    formData.set('mensagem', mensagem);
+                    formData.set('youtubeVideoId', youtubeVideoId);
+
+                    if (!de || !para || !mensagem) {
+                        throw new Error('Por favor, preencha remetente, destinatário e mensagem.');
+                    }
+
+                    const result = await api.createCard(formData);
+                    ui.showNotification('Cartão criado com sucesso!', 'success');
+                    ui.showView('dashboard');
+                    window.location.href = `card.html?id=${result.id}`;
+                } catch (error) {
+                    ui.showNotification(error.message || 'Erro ao criar cartão.', 'error');
+                } finally {
+                    ui.setButtonLoading(elements.createCardSubmitBtn, false);
+                    elements.createCardForm.reset();
+                }
+            },
+            async loadUserCards() {
+                if (!state.currentUser) return;
+                try {
+                    const cards = await api.getMyCards();
+                    elements.userCardsList.innerHTML = '';
+                    if (cards.length === 0) {
+                        elements.userCardsList.innerHTML = `
+                            <div class="bg-gray-700 p-4 rounded-lg text-gray-400">
+                                Você ainda não criou nenhum cartão. Crie um agora!
+                            </div>
+                        `;
+                        return;
+                    }
+                    cards.forEach(card => {
+                        const cardElement = document.createElement('div');
+                        cardElement.className = 'bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors';
+                        cardElement.innerHTML = `
+                            <h3 class="text-lg font-semibold text-white">Para: ${card.para}</h3>
+                            <p class="text-gray-400 truncate">${card.mensagem}</p>
+                            <p class="text-sm text-gray-500">Criado em: ${new Date(card.createdAt).toLocaleDateString('pt-BR')}</p>
+                            <a href="card.html?id=${card.id}" class="text-fuchsia-400 hover:text-fuchsia-300 mt-2 inline-block">Ver cartão</a>
+                        `;
+                        elements.userCardsList.appendChild(cardElement);
+                    });
+                } catch (error) {
+                    ui.showNotification('Erro ao carregar seus cartões.', 'error');
+                }
+            },
+            showCreationForm() {
+                ui.showView('creation');
+            },
+            showDashboard() {
+                ui.showView('dashboard');
+            }
+        };
+
         // Event Binding
         const bindEvents = () => {
             elements.logoutBtn?.addEventListener('click', auth.logout.bind(auth));
             elements.loginForm?.addEventListener('submit', auth.login.bind(auth));
             elements.registerForm?.addEventListener('submit', auth.register.bind(auth));
+            elements.createCardForm?.addEventListener('submit', cards.create.bind(cards));
+            elements.showCreateFormBtn?.addEventListener('click', cards.showCreationForm.bind(cards));
+            elements.showDashboardBtn?.addEventListener('click', cards.showDashboard.bind(cards));
             elements.openLoginBtn?.addEventListener('click', () => ui.openModal(elements.loginFormContainer));
             elements.openRegisterBtn?.addEventListener('click', () => ui.openModal(elements.registerFormContainer));
             elements.closeAuthModalBtn?.addEventListener('click', ui.closeModal.bind(ui));
