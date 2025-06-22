@@ -5,7 +5,7 @@ const { body, validationResult } = require('express-validator');
 const path = require('path');
 const { authenticate } = require('../middlewares');
 const db = require('../models');
-const logger = require('./logger'); // Importando seu logger personalizado
+// ▼▼▼ CORREÇÃO: A importação do logger foi REMOVIDA do topo. ▼▼▼
 const s3Service = require('../services/s3Service');
 
 const router = express.Router();
@@ -13,6 +13,9 @@ const router = express.Router();
 // Configuração do Multer com logging aprimorado
 const configureMulter = () => {
   const fileFilter = (req, file, cb) => {
+    // Pegamos o logger aqui, pois esta função pode ser chamada antes das rotas.
+    const logger = require('../config/logger').getLogger();
+
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.mimetype)) {
       logger.http(`Tentativa de upload com tipo não permitido: ${file.mimetype}`, {
@@ -34,21 +37,22 @@ const configureMulter = () => {
 
 const upload = configureMulter();
 
-// Validações com logging detalhado
+// Validações
 const validateCard = [
   body('de').trim().notEmpty().withMessage('Remetente é obrigatório'),
   body('para').trim().notEmpty().withMessage('Destinatário é obrigatório'),
   body('mensagem').trim().notEmpty().withMessage('Mensagem é obrigatória'),
-  body('data').optional().isISO8601().toDate()
-    .withMessage('Formato de data inválido (use ISO8601)'),
+  body('data').optional().isISO8601().toDate().withMessage('Formato de data inválido (use ISO8601)'),
   body('youtubeVideoId').optional().isString(),
-  body('youtubeStartTime').optional().isInt({ min: 0 })
-    .withMessage('Tempo inicial deve ser um número inteiro positivo')
+  body('youtubeStartTime').optional().isInt({ min: 0 }).withMessage('Tempo inicial deve ser um número inteiro positivo')
 ];
 
-// Handlers com logging completo
+// Handlers
 const handleCardCreation = async (req, res, next) => {
+  // ▼▼▼ CORREÇÃO: O logger é importado e obtido DENTRO da função handler. ▼▼▼
+  const logger = require('../config/logger').getLogger();
   const startTime = Date.now();
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -96,6 +100,9 @@ const handleCardCreation = async (req, res, next) => {
 };
 
 const handleGetCard = async (req, res, next) => {
+  // ▼▼▼ CORREÇÃO: O logger é importado e obtido DENTRO da função handler. ▼▼▼
+  const logger = require('../config/logger').getLogger();
+
   try {
     logger.debug(`Buscando cartão ${req.params.id}`);
     const card = await db.Card.findByPk(req.params.id);
@@ -124,6 +131,9 @@ const handleGetCard = async (req, res, next) => {
 
 // Funções auxiliares
 const handleFileUpload = async (file, userId) => {
+  // ▼▼▼ CORREÇÃO: O logger é importado e obtido DENTRO da função auxiliar. ▼▼▼
+  const logger = require('../config/logger').getLogger();
+  
   try {
     logger.debug('Iniciando upload de arquivo', {
       originalname: file.originalname,
