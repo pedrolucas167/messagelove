@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     // Suas opções exatamente como estavam:
-    sequelize, // Passamos a instância do sequelize aqui
+    sequelize, 
     modelName: 'User',
     timestamps: true,
     tableName: 'Users',

@@ -28,7 +28,7 @@ const setupSecurity = (app) => {
 
     const corsOptions = {
         origin: (origin, callback) => {
-            // Permitir requisições sem origem (ex.: Postman) ou origens na lista
+            // Permitir requisições sem origem.
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, origin || '*');
             } else {
@@ -43,7 +43,7 @@ const setupSecurity = (app) => {
     };
     app.use(cors(corsOptions));
 
-    /* APRIMORADO: Política de Segurança de Conteúdo (CSP) mais flexível e segura */
+
     app.use(helmet({
         contentSecurityPolicy: {
             directives: {
