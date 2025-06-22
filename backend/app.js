@@ -19,7 +19,7 @@ const initLogger = winston.createLogger({
 const verifyEssentialFiles = () => {
   const essentialFiles = {
     middlewares: ['auth.js'],
-    routes: ['cardRoutes.js', 'authRoutes.js'],
+    routes: ['cardroutes.js', 'authroutes.js'],
     models: ['index.js']
   };
 
@@ -55,7 +55,7 @@ const verifyEssentialFiles = () => {
 verifyEssentialFiles();
 
 // Importações após verificação
-const cardRoutes = require('./routes/cardRoutes');
+const cardRoutes = require('./routes/cardroutes');
 const authRoutes = require('./routes/authroutes');
 const db = require('./models');
 
