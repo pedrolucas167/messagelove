@@ -23,87 +23,20 @@
     <meta property="og:title" content="MessageLove - Crie Cartões Especiais">
     <meta property="og:description" content="Crie e compartilhe cartões de amor com mensagens, fotos e vídeos.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://messagelove-frontend.vercel.app">
+    <meta property="og:url" content="https://messagelive-frontend.vercel.app">
     <meta property="og:image" content="/assets/og-image.jpg">
 
-    <style>
-        /* Estilização base e customizações */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #111827; /* bg-gray-900 */
-            color: #d1d5db; /* text-gray-300 */
-            overscroll-behavior-y: none;
-        }
-        #particle-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.25;
-        }
-        .modal-overlay {
-            transition: opacity 0.3s ease-in-out;
-        }
-        .modal-content {
-            transition: transform 0.3s ease-in-out;
-        }
-        .btn-spinner {
-            border-top-color: transparent;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .auth-form-container {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        /*
-         * ===============================================
-         * MEDIA QUERIES CUSTOMIZADAS PARA RESPONSIVIDADE FINA (APRIMORADO)
-         * ===============================================
-         */
-        @media (max-width: 640px) { /* Telas menores que 'sm' do Tailwind */
-            #dashboardSection .flex-col {
-                align-items: flex-start;
-            }
-            #dashboardSection h2 {
-                font-size: 1.5rem; /* Reduz o título do dashboard em telas pequenas */
-            }
-        }
-        
-        @media (max-width: 480px) { /* Telas muito pequenas (e.g., iPhone SE) */
-            #welcomeSection h1 {
-                font-size: 3.25rem;
- /* Garante que o título principal não seja excessivamente grande */
-                line-height: 1.1;
-            }
-            #authModal h2 {
-                font-size: 1.5rem; /* Reduz o título do modal */
-            }
-        }
-
-        @media (max-width: 375px) { /* Telas extra pequenas */
-            #welcomeSection h1 {
-                font-size: 2.75rem; /* 44px, ainda menor para o menor viewport */
-            }
-            #welcomeSection p {
-                font-size: 0.95rem; /* Ajusta o parágrafo */
-            }
-        }
-    </style>
+    <!-- Link para o CSS externo -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="antialiased flex flex-col min-h-screen">
     <canvas id="particle-canvas"></canvas>
 
     <!-- Área de Notificações da Aplicação -->
     <div id="appNotificationArea" aria-live="polite" class="fixed top-5 right-5 z-50 space-y-3 w-full max-w-xs sm:max-w-sm"></div>
-
     <!-- Cabeçalho Principal -->
     <header class="absolute top-0 left-0 right-0 p-4 sm:p-6 z-10">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex justify-between">
             <a href="/" class="text-2xl font-bold text-white tracking-wider" aria-label="Messagelove - Página inicial">
                 Message<span class="text-fuchsia-500">Love</span>
             </a>
@@ -233,109 +166,7 @@
         </div>
     </div>
     
-    <!-- Script para animação de partículas e interatividade da UI -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para animação de partículas
-            const canvas = document.getElementById('particle-canvas');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                let particlesArray;
-
-                const createParticles = () => {
-                    particlesArray = [];
-                    // APRIMORADO: Menos partículas em telas menores para melhor performance
-                    const particleDensity = window.innerWidth < 768 ? 20000 : 9000;
-                    const numberOfParticles = (canvas.height * canvas.width) / particleDensity;
-                    
-                    for (let i = 0; i < numberOfParticles; i++) {
-                        const size = Math.random() * 2 + 1;
-                        const x = Math.random() * canvas.width;
-                        const y = Math.random() * canvas.height;
-                        const directionX = Math.random() * 0.4 - 0.2;
-                        const directionY = Math.random() * 0.4 - 0.2;
-                        const color = 'rgba(217, 70, 239, 0.5)'; // Fuchsia color
-                        particlesArray.push({ x, y, directionX, directionY, size, color });
-                    }
-                };
-
-                const animateParticles = () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    for (let i = 0; i < particlesArray.length; i++) {
-                        const particle = particlesArray[i];
-                        particle.x += particle.directionX;
-                        particle.y += particle.directionY;
-                        if (particle.x > canvas.width || particle.x < 0) particle.directionX = -particle.directionX;
-                        if (particle.y > canvas.height || particle.y < 0) particle.directionY = -particle.directionY;
-                        ctx.beginPath();
-                        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2, false);
-                        ctx.fillStyle = particle.color;
-                        ctx.fill();
-                    }
-                    requestAnimationFrame(animateParticles);
-                };
-
-                createParticles();
-                animateParticles();
-
-                let resizeTimeout;
-                window.addEventListener('resize', () => {
-                    clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(() => {
-                        canvas.width = window.innerWidth;
-                        canvas.height = window.innerHeight;
-                        createParticles();
-                    }, 250);
-                });
-            }
-
-            // Lógica de interatividade da UI (Modals e troca de formulários)
-            const authModal = document.getElementById('authModal');
-            if (authModal) {
-                const loginFormContainer = document.getElementById('loginFormContainer');
-                const registerFormContainer = document.getElementById('registerFormContainer');
-                const resetPasswordFormContainer = document.getElementById('resetPasswordFormContainer');
-
-                const showAuthForm = (formToShow) => {
-                    [loginFormContainer, registerFormContainer, resetPasswordFormContainer].forEach(form => {
-                        if (form) form.classList.add('hidden');
-                    });
-                    if (formToShow) formToShow.classList.remove('hidden');
-                };
-
-                const openModal = (initialForm) => {
-                    authModal.classList.remove('hidden');
-                    setTimeout(() => authModal.classList.remove('opacity-0'), 10);
-                    authModal.querySelector('.modal-content').classList.remove('scale-95');
-                    showAuthForm(initialForm);
-                };
-                
-                const closeModal = () => {
-                    authModal.classList.add('opacity-0');
-                    authModal.querySelector('.modal-content').classList.add('scale-95');
-                    setTimeout(() => authModal.classList.add('hidden'), 300);
-                };
-
-                document.getElementById('openLoginBtn')?.addEventListener('click', () => openModal(loginFormContainer));
-                document.getElementById('openRegisterBtn')?.addEventListener('click', () => openModal(registerFormContainer));
-                document.getElementById('closeAuthModalBtn')?.addEventListener('click', closeModal);
-                authModal.addEventListener('click', (e) => {
-                    if(e.target === authModal) closeModal();
-                });
-                
-                document.getElementById('showRegisterBtn')?.addEventListener('click', () => showAuthForm(registerFormContainer));
-                document.getElementById('showLoginBtn')?.addEventListener('click', () => showAuthForm(loginFormContainer));
-                document.getElementById('showForgotPasswordBtn')?.addEventListener('click', () => showAuthForm(resetPasswordFormContainer));
-                document.getElementById('showLoginFromResetBtn')?.addEventListener('click', () => showAuthForm(loginFormContainer));
-            }
-            
-            // Lógica para o ano no rodapé
-            const currentYearEl = document.getElementById('currentYear');
-            if (currentYearEl) currentYearEl.textContent = new Date().getFullYear();
-        });
-    </script>
+    <!-- Scripts -->
     <script src="script.js" defer></script>
 </body>
 </html>
