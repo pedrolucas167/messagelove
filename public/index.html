@@ -1,206 +1,269 @@
 <!DOCTYPE html>
-<html lang="pt-BR" dir="ltr" class="no-js">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messagelove - Crie Cartões Especiais Personalizados</title>
-    <meta name="description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
-    <meta name="theme-color" content="#e91e63">
+    <title>MessageLove - Crie e Compartilhe Cartões de Amor</title>
+    <meta name="description" content="A plataforma definitiva para criar cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
+    <meta name="theme-color" content="#c026d3">
 
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com;
-        frame-src 'self' https://www.youtube.com;
-        img-src 'self' data: https: https://messagelove-bucket.s3.us-east-1.amazonaws.com;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001 https://www.youtube.com https://messagelove-bucket.s3.us-east-1.amazonaws.com;
-    ">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="preconnect" href="https://messagelove-backend.onrender.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Ícones e Manifesto -->
     <link rel="icon" href="/coracao.png" type="image/png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-
-    <meta property="og:title" content="Messagelove - Crie Cartões Especiais">
-    <meta property="og:description" content="Crie cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
+    
+    <!-- Configurações Adicionais e OG Tags -->
+    <meta property="og:title" content="MessageLove - Crie Cartões Especiais">
+    <meta property="og:description" content="Crie e compartilhe cartões de amor com mensagens, fotos e vídeos.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://messagelove-frontend.vercel.app">
     <meta property="og:image" content="/assets/og-image.jpg">
-    <meta property="og:locale" content="pt_BR">
-</head>
-<body>
-    <script>document.documentElement.classList.replace('no-js', 'js');</script>
 
-    <header class="main-header" role="banner">
-        <nav class="header-nav">
-            <a href="/" class="header-logo" aria-label="Messagelove - Página inicial">MessageLove</a>
-            <button id="logoutBtn" class="btn btn--tertiary" hidden aria-label="Sair da sessão">Sair</button>
-        </nav>
+    <style>
+        /* Estilização base e customizações */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+        .btn-spinner {
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .auth-form-container {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Área de Notificações da Aplicação -->
+    <div id="appNotificationArea" aria-live="polite" class="fixed top-5 right-5 z-50 space-y-3"></div>
+
+    <!-- Cabeçalho Principal -->
+    <header class="absolute top-0 left-0 right-0 p-4 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-white tracking-wider" aria-label="Messagelove - Página inicial">
+                Message<span class="text-fuchsia-500">Love</span>
+            </a>
+            <button id="logoutBtn" class="hidden text-sm font-medium text-gray-300 hover:text-white transition-colors" aria-label="Sair da sessão">
+                Sair &rarr;
+            </button>
+        </div>
     </header>
 
-    <main class="main-content" role="main">
-        <div class="container">
-            <section id="cardSection" hidden>
-                <h1>Crie um Cartão Especial</h1>
-                <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos.</p>
-                <form id="cardForm" class="card-form" novalidate>
-                    <fieldset class="form-section">
-                        <legend class="section-title">Informações do Cartão</legend>
-                        <div class="form-group">
-                            <label for="deInput" class="required-field">Seu Nome (Remetente)</label>
-                            <input type="text" id="deInput" name="de" class="form-input" required placeholder="Quem está enviando?" aria-required="true">
-                        </div>
-                        <div class="form-group">
-                            <label for="nome" class="required-field">Nome do Destinatário</label>
-                            <input type="text" id="nome" name="para" class="form-input" required placeholder="Para quem é este cartão?" aria-required="true">
-                        </div>
-                        <div class="form-group">
-                            <label for="data">Data Especial (Opcional)</label>
-                            <input type="date" id="data" name="data" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label for="mensagem" class="required-field">Sua Mensagem</label>
-                            <textarea id="mensagem" name="mensagem" class="form-input" required placeholder="Escreva sua mensagem especial..." aria-required="true"></textarea>
-                        </div>
-                    </fieldset>
-                    <fieldset class="form-section">
-                        <legend class="section-title">Adicionais (Opcional)</legend>
-                        <div class="form-group file-upload">
-                            <label for="fotoUpload">Adicionar Foto</label>
-                            <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/webp" aria-describedby="fotoUploadHint">
-                            <span id="fotoUploadHint" class="field-hint">Formatos aceitos: JPEG, PNG, WebP</span>
-                            <div class="preview-container" hidden data-js="preview-container">
-                                <img class="preview" alt="Pré-visualização da foto" data-js="foto-preview">
-                                <button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto">×</button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="youtubeUrlInput">Link do YouTube</label>
-                            <div class="youtube-input-group">
-                                <input type="url" id="youtubeUrlInput" class="form-input" placeholder="Cole o link do vídeo aqui" aria-describedby="youtubeUrlHint">
-                                <span id="youtubeUrlHint" class="field-hint">Ex.: https://www.youtube.com/watch?v=...</span>
-                                <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary">Adicionar</button>
-                            </div>
-                            <div class="youtube-time-group">
-                                <label for="youtubeStartTimeInput">Tempo inicial (segundos)</label>
-                                <input type="number" id="youtubeStartTimeInput" name="youtubeStartTime" min="0" class="form-input" placeholder="Ex.: 30" aria-describedby="youtubeStartTimeHint">
-                                <span id="youtubeStartTimeHint" class="field-hint">Tempo em segundos onde o vídeo começará</span>
-                            </div>
-                            <div id="youtubeError" class="youtube-error" role="alert"></div>
-                        </div>
-                        <div id="youtubePreviewContainer" class="youtube-preview-container">
-                            <div class="youtube-player-wrapper">
-                                <iframe id="youtubePlayer" allowfullscreen title="Pré-visualização do vídeo do YouTube"></iframe>
-                            </div>
-                        </div>
-                        <input type="hidden" id="youtubeVideoIdInputHidden" name="youtubeVideoId">
-                    </fieldset>
-                    <div class="form-group form-actions">
-                        <button type="submit" class="btn btn--primary" id="submitBtn">
-                            <span class="btn-text">Criar Cartão</span>
-                            <span class="btn-loading" aria-hidden="true" hidden>
-                                <span class="btn-spinner"></span> Processando...
-                            </span>
-                        </button>
-                    </div>
-                </form>
+    <main class="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
+        <div class="container mx-auto text-center w-full max-w-4xl">
+
+            <!-- ========= VIEW 1: TELA DE BOAS-VINDAS (Padrão) ========= -->
+            <section id="welcomeSection" class="">
+                <h1 class="text-6xl md:text-8xl font-black text-white mb-4">
+                    Message<span class="text-fuchsia-500">Love</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+                    A forma mais especial de dizer "eu te amo". Crie cartões digitais com fotos, vídeos e mensagens que tocam o coração.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <button id="openLoginBtn" class="w-full sm:w-auto bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
+                        Entrar
+                    </button>
+                    <button id="openRegisterBtn" class="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105">
+                        Cadastre-se grátis
+                    </button>
+                </div>
             </section>
 
-            <div id="authModal" class="modal-overlay">
-                <div class="modal-content auth-form">
-                    <button id="closeAuthModalBtn" class="modal-close-btn" aria-label="Fechar modal de autenticação">×</button>
-                    <div id="loginFormContainer">
-                        <h2>Faça Login</h2>
-                        <form id="loginForm" class="auth-form" novalidate>
-                            <div class="form-group">
-                                <label for="loginEmail" class="required-field">E-mail</label>
-                                <input type="email" id="loginEmail" name="email" class="form-input" required placeholder="Seu e-mail" aria-required="true" aria-describedby="loginEmailHint">
-                                <span id="loginEmailHint" class="field-hint">Ex.: usuario@exemplo.com</span>
-                            </div>
-                            <div class="form-group">
-                                <label for="loginPassword" class="required-field">Senha</label>
-                                <input type="password" id="loginPassword" name="password" class="form-input" required placeholder="Sua senha" aria-required="true" minlength="8">
-                            </div>
-                            <div class="form-group form-actions">
-                                <button type="submit" class="btn btn--primary" id="loginSubmitBtn">
-                                    <span class="btn-text">Entrar</span>
-                                    <span class="btn-loading" aria-hidden="true" hidden>
-                                        <span class="btn-spinner"></span> Entrando...
-                                    </span>
-                                </button>
-                            </div>
-                            <p>
-                                Não tem conta? <button type="button" id="showRegisterBtn" class="auth-link">Cadastre-se</button>
-                            </p>
-                        </form>
+            <!-- ========= VIEW 2: DASHBOARD DO USUÁRIO (Oculto) ========= -->
+            <section id="dashboardSection" class="hidden text-left">
+                <div class="bg-gray-800/50 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                           <h2 id="userWelcomeMessage" class="text-2xl font-bold text-white">Olá, Pedro!</h2>
+                           <p class="text-gray-400">Aqui estão seus cartões criados.</p>
+                        </div>
+                        <button id="showCreateFormBtn" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                           + Criar Novo Cartão
+                        </button>
                     </div>
-                    <div id="registerFormContainer" hidden>
-                        <h2>Cadastre-se</h2>
-                        <form id="registerForm" class="auth-form" novalidate>
-                            <div class="form-group">
-                                <label for="registerEmail" class="required-field">E-mail</label>
-                                <input type="email" id="registerEmail" name="email" class="form-input" required placeholder="Seu e-mail" aria-required="true" aria-describedby="registerEmailHint">
-                                <span id="registerEmailHint" class="field-hint">Ex.: usuario@exemplo.com</span>
-                            </div>
-                            <div class="form-group">
-                                <label for="registerPassword" class="required-field">Senha</label>
-                                <input type="password" id="registerPassword" name="password" class="form-input" required placeholder="Crie uma senha" aria-required="true" minlength="8" aria-describedby="registerPasswordHint">
-                                <span id="registerPasswordHint" class="field-hint">Mínimo 8 caracteres</span>
-                            </div>
-                            <div class="form-group">
-                                <label for="registerConfirmPassword" class="required-field">Confirmar Senha</label>
-                                <input type="password" id="registerConfirmPassword" name="confirmPassword" class="form-input" required placeholder="Confirme sua senha" aria-required="true" minlength="8">
-                            </div>
-                            <div class="form-group form-actions">
-                                <button type="submit" class="btn btn--primary" id="registerSubmitBtn">
-                                    <span class="btn-text">Cadastrar</span>
-                                    <span class="btn-loading" aria-hidden="true" hidden>
-                                        <span class="btn-spinner"></span> Cadastrando...
-                                    </span>
-                                </button>
-                            </div>
-                            <p>
-                                Já tem conta? <button type="button" id="showLoginBtn" class="auth-link">Faça login</button>
-                            </p>
-                        </form>
+                    <div id="userCardsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Os cartões do usuário serão inseridos aqui pelo script.js -->
+                        <div class="bg-gray-700 p-4 rounded-lg"><p class="text-gray-400">Carregando seus cartões...</p></div>
                     </div>
                 </div>
-            </div>
+            </section>
+            
+            <!-- ========= VIEW 3: FORMULÁRIO DE CRIAÇÃO (Oculto) ========= -->
+            <section id="creationSection" class="hidden">
+                 <!-- Seu formulário de criação de cartão (#cardForm) pode ser inserido aqui, estilizado com Tailwind. -->
+                 <h1 class="text-4xl font-bold text-white mb-6">Crie um Cartão Especial</h1>
+                 <div class="bg-gray-800/50 backdrop-blur-sm p-8 rounded-xl shadow-2xl">
+                    <p class="text-lg">O formulário de criação viria aqui.</p>
+                    <button id="showDashboardBtn" class="mt-4 text-fuchsia-400 hover:text-fuchsia-300">&larr; Voltar ao Dashboard</button>
+                </div>
+            </section>
 
-            <div id="successModal" class="modal-overlay" hidden>
-                <div class="modal-content">
-                    <button id="closeModalBtn" class="modal-close-btn" aria-label="Fechar modal de sucesso">×</button>
-                    <h2>Cartão Criado! ✨</h2>
-                    <p>Compartilhe este link com aquela pessoa especial:</p>
-                    <div class="link-container">
-                        <input type="text" id="generatedCardLink" readonly aria-label="Link do cartão gerado">
-                        <button type="button" id="copyLinkBtn" class="btn btn--secondary" aria-label="Copiar link do cartão">Copiar</button>
-                    </div>
-                    <div class="modal-actions">
-                        <a href="#" id="viewCardBtn" class="btn btn--primary" target="_blank" rel="noopener noreferrer">Ver Cartão</a>
-                        <button type="button" id="createAnotherBtn" class="btn btn--tertiary">Criar Outro Cartão</button>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
-    <footer class="main-footer" role="contentinfo">
-        <div class="container">
-            <p>
-                <span>Messagelove © <span id="currentYear"></span></span>
-                <span>Feito com <span aria-label="coração">❤️</span> por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Pedro Marques</a></span>
-            </p>
-        </div>
-    </footer>
+    <!-- ========= MODAL DE AUTENTICAÇÃO ========= -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 opacity-0">
+        <div class="modal-content bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-8 transform scale-95">
+            <button id="closeAuthModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors" aria-label="Fechar modal">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            
+            <!-- Container do Formulário de Login -->
+            <div id="loginFormContainer" class="auth-form-container">
+                <h2 class="text-3xl font-bold text-white text-center mb-6">Bem-vindo de volta!</h2>
+                <form id="loginForm" novalidate>
+                    <!-- Campos do formulário de login (email, senha) -->
+                    <div class="mb-4">
+                        <label for="loginEmail" class="block text-sm font-medium text-gray-300 mb-1">E-mail</label>
+                        <input type="email" id="loginEmail" name="email" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="loginPassword" class="block text-sm font-medium text-gray-300 mb-1">Senha</label>
+                        <input type="password" id="loginPassword" name="password" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
+                    </div>
+                    <button type="submit" id="loginSubmitBtn" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105">Entrar</button>
+                </form>
+                <div class="text-center mt-6 text-sm">
+                    <button type="button" id="showForgotPasswordBtn" class="text-fuchsia-400 hover:text-fuchsia-300">Esqueceu a senha?</button>
+                    <p class="text-gray-400 mt-2">Não tem uma conta? <button type="button" id="showRegisterBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Cadastre-se</button></p>
+                </div>
+            </div>
 
-    <div id="appNotificationArea" aria-live="polite"></div>
-    <canvas id="particle-canvas"></canvas>
-    <script src="https://www.youtube.com/iframe_api" async></script>
-    <script src="script.js" defer></script>
+            <!-- Container do Formulário de Registro (Oculto) -->
+            <div id="registerFormContainer" class="auth-form-container hidden">
+                <h2 class="text-3xl font-bold text-white text-center mb-6">Crie sua conta</h2>
+                 <!-- Campos do formulário de registro -->
+                <p class="text-center text-gray-400">Já tem conta? <button type="button" id="showLoginBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Faça login</button></p>
+            </div>
+            
+            <!-- Container de Recuperar Senha (Oculto) -->
+            <div id="resetPasswordFormContainer" class="auth-form-container hidden">
+                <h2 class="text-3xl font-bold text-white text-center mb-6">Recuperar Senha</h2>
+                <!-- Campos do formulário de reset -->
+                <p class="text-center text-gray-400">&larr; Voltar para o <button type="button" id="showLoginFromResetBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Login</button></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script para animação de partículas e interatividade da UI -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica para animação de partículas
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let particlesArray;
+
+            const createParticles = () => {
+                particlesArray = [];
+                const numberOfParticles = (canvas.height * canvas.width) / 9000;
+                for (let i = 0; i < numberOfParticles; i++) {
+                    const size = Math.random() * 2 + 1;
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const directionX = Math.random() * 0.4 - 0.2;
+                    const directionY = Math.random() * 0.4 - 0.2;
+                    const color = 'rgba(217, 70, 239, 0.5)'; // Fuchsia color
+                    particlesArray.push({ x, y, directionX, directionY, size, color });
+                }
+            };
+
+            const animateParticles = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particlesArray.length; i++) {
+                    const particle = particlesArray[i];
+                    particle.x += particle.directionX;
+                    particle.y += particle.directionY;
+                    if (particle.x > canvas.width || particle.x < 0) particle.directionX = -particle.directionX;
+                    if (particle.y > canvas.height || particle.y < 0) particle.directionY = -particle.directionY;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2, false);
+                    ctx.fillStyle = particle.color;
+                    ctx.fill();
+                }
+                requestAnimationFrame(animateParticles);
+            };
+
+            createParticles();
+            animateParticles();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                createParticles();
+            });
+
+            // Lógica de interatividade da UI (Modals e troca de formulários)
+            const authModal = document.getElementById('authModal');
+            const loginFormContainer = document.getElementById('loginFormContainer');
+            const registerFormContainer = document.getElementById('registerFormContainer');
+            const resetPasswordFormContainer = document.getElementById('resetPasswordFormContainer');
+
+            const showAuthForm = (formToShow) => {
+                [loginFormContainer, registerFormContainer, resetPasswordFormContainer].forEach(form => {
+                    form.classList.add('hidden', 'opacity-0', 'scale-95');
+                });
+                formToShow.classList.remove('hidden');
+                setTimeout(() => formToShow.classList.remove('opacity-0', 'scale-95'), 10);
+            };
+
+            const openModal = (initialForm) => {
+                authModal.classList.remove('hidden');
+                setTimeout(() => authModal.classList.remove('opacity-0'), 10);
+                authModal.querySelector('.modal-content').classList.remove('scale-95');
+                showAuthForm(initialForm);
+            };
+            
+            const closeModal = () => {
+                authModal.classList.add('opacity-0');
+                authModal.querySelector('.modal-content').classList.add('scale-95');
+                setTimeout(() => authModal.classList.add('hidden'), 300);
+            };
+
+            document.getElementById('openLoginBtn').addEventListener('click', () => openModal(loginFormContainer));
+            document.getElementById('openRegisterBtn').addEventListener('click', () => openModal(registerFormContainer));
+            document.getElementById('closeAuthModalBtn').addEventListener('click', closeModal);
+            authModal.addEventListener('click', (e) => {
+                if(e.target === authModal) closeModal();
+            });
+            
+            document.getElementById('showRegisterBtn').addEventListener('click', () => showAuthForm(registerFormContainer));
+            document.getElementById('showLoginBtn').addEventListener('click', () => showAuthForm(loginFormContainer));
+            document.getElementById('showForgotPasswordBtn').addEventListener('click', () => showAuthForm(resetPasswordFormContainer));
+            document.getElementById('showLoginFromResetBtn').addEventListener('click', () => showAuthForm(loginFormContainer));
+        });
+    </script>
 </body>
 </html>
+<script src="/script.js"></script>
