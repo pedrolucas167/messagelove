@@ -1,4 +1,4 @@
-// /backend/app.js - Versão com correção definitiva de CORS
+// /backend/app.js - Versão com correção definitiva de CORS e Nomes de Arquivo
 
 require('dotenv').config();
 
@@ -10,20 +10,14 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
-
-// ▼▼▼ PASSO 1: IMPORTAÇÃO DO LOGGER SINGLETON ▼▼▼
-// Esta abordagem evita dependências circulares de uma vez por todas.
-const logger = require('./config/logger');
-
-// --- VERIFICAÇÃO DE ARQUIVOS (Opcional, mas útil) ---
-// Se mantiver, garanta que ele use o logger importado acima.
-// (O código de verificação pode ser mantido ou removido para simplificar)
+const logger = require('./config/logger'); // Importa o logger singleton
 
 // --- IMPORTAÇÕES LOCAIS ---
+// ▼▼▼ A CORREÇÃO ESTÁ AQUI ▼▼▼
+// Garante que os nomes dos arquivos (case-sensitive) estão corretos.
 const cardRoutes = require('./routes/cardRoutes');
-const authRoutes = require('./routes/authroutes');
+const authRoutes = require('./routes/authRoutes'); 
 const db = require('./models');
-// --- FIM DAS IMPORTAÇÕES LOCAIS ---
 
 const startServer = async () => {
   try {
@@ -31,41 +25,31 @@ const startServer = async () => {
     const app = express();
 
     // ==================================================================
-    // ▼▼▼ INÍCIO DA CONFIGURAÇÃO DE CORS E SEGURANÇA (ORDEM CRÍTICA) ▼▼▼
+    // ORDEM CRÍTICA DE MIDDLEWARES
+    // ==================================================================
 
     // 1. Confiar no Proxy do Render
-    // Essencial para o rate-limit e logging de IP funcionarem corretamente.
     app.set('trust proxy', 1);
 
     // 2. Configuração de CORS Definitiva
-    // Logamos a variável de ambiente para ter certeza de que está sendo lida.
     logger.info(`Origens permitidas pelo CORS: [${process.env.ALLOWED_ORIGINS || 'NÃO DEFINIDO, USANDO *'}]`);
     const corsOptions = {
       origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // OPTIONS é crucial
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
-      credentials: true,
-      preflightContinue: false, // Responde diretamente à requisição OPTIONS
-      optionsSuccessStatus: 204 // Status padrão para pre-flight bem-sucedido
+      optionsSuccessStatus: 204
     };
-    
-    // O Express lida com a requisição OPTIONS automaticamente com este middleware.
     app.use(cors(corsOptions));
     
-    // 3. Middlewares de Segurança e Otimização
+    // 3. Middlewares de Segurança, Otimização e Parsing
     app.use(helmet());
     app.use(compression());
-    
-    // 4. Middlewares de Parsing (DEPOIS do CORS)
     app.use(express.json({ limit: '10kb' }));
     app.use(express.urlencoded({ extended: true }));
 
-    // 5. Rate Limiting
+    // 4. Rate Limiting
     const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
     app.use(limiter);
-
-    // ▲▲▲ FIM DA CONFIGURAÇÃO DE CORS E SEGURANÇA ▲▲▲
-    // ==================================================================
 
     // Conexão com o Banco de Dados
     logger.info('Conectando ao banco de dados...');
@@ -113,4 +97,3 @@ const startServer = async () => {
 };
 
 startServer();
-
