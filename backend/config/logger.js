@@ -1,63 +1,174 @@
-const winston = require('winston');
+const express = require('express');
+const multer = require('multer');
+const { nanoid } = require('nanoid');
+const { body, validationResult } = require('express-validator');
 const path = require('path');
+const { authenticate } = require('../middlewares');
+const db = require('../models');
+const logger = require('./logger'); // Importando seu logger personalizado
+const s3Service = require('../services/s3Service');
 
-// Define os níveis de log e suas cores para o console
-const logLevels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
+const router = express.Router();
+
+// Configuração do Multer com logging aprimorado
+const configureMulter = () => {
+  const fileFilter = (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      logger.http(`Tentativa de upload com tipo não permitido: ${file.mimetype}`, {
+        ip: req.ip,
+        originalname: file.originalname
+      });
+      return cb(new Error('Apenas imagens JPEG, PNG ou WebP são permitidas'), false);
+    }
+    logger.debug(`Arquivo aceito para upload: ${file.originalname}`);
+    cb(null, true);
+  };
+
+  return multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter
+  });
 };
 
-const levelColors = {
-  error: 'red',
-  warn: 'yellow',
-  info: 'green',
-  http: 'magenta',
-  debug: 'white',
-};
-winston.addColors(levelColors);
+const upload = configureMulter();
 
-
-// Formato do log para o console
-const consoleFormat = winston.format.combine(
-  winston.format.colorize({ all: true }),
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.printf(
-    (info) => `[${info.timestamp}] ${info.level}: ${info.message}`
-  )
-);
-
-// Formato do log para arquivos
-const fileFormat = winston.format.combine(
-  winston.format.timestamp(),
-  winston.format.json()
-);
-
-
-// Define os "transportes" (onde os logs serão salvos/exibidos)
-const transports = [
-  // Sempre exibir todos os logs no console em ambiente de desenvolvimento
-  new winston.transports.Console({
-    format: consoleFormat,
-  }),
- 
-  new winston.transports.File({
-    level: 'error',
-    filename: path.join(__dirname, '..', 'logs', 'error.log'),
-    format: fileFormat,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-  }),
+// Validações com logging detalhado
+const validateCard = [
+  body('de').trim().notEmpty().withMessage('Remetente é obrigatório'),
+  body('para').trim().notEmpty().withMessage('Destinatário é obrigatório'),
+  body('mensagem').trim().notEmpty().withMessage('Mensagem é obrigatória'),
+  body('data').optional().isISO8601().toDate()
+    .withMessage('Formato de data inválido (use ISO8601)'),
+  body('youtubeVideoId').optional().isString(),
+  body('youtubeStartTime').optional().isInt({ min: 0 })
+    .withMessage('Tempo inicial deve ser um número inteiro positivo')
 ];
 
+// Handlers com logging completo
+const handleCardCreation = async (req, res, next) => {
+  const startTime = Date.now();
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      logger.warn('Validação falhou', {
+        errors: errors.array(),
+        body: req.body,
+        user: req.user?.userId
+      });
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-// Cria a instância do logger
-const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
-  levels: logLevels,
-  transports,
+    logger.http('Iniciando criação de cartão', {
+      user: req.user.userId,
+      hasFile: !!req.file
+    });
+
+    const fotoUrl = req.file ? await handleFileUpload(req.file, req.user.userId) : null;
+
+    const cardData = buildCardData(req.body, req.user.userId, fotoUrl);
+    const newCard = await db.Card.create(cardData);
+
+    logger.info('Cartão criado com sucesso', {
+      cardId: newCard.id,
+      duration: `${Date.now() - startTime}ms`,
+      userId: req.user.userId
+    });
+
+    res.status(201).json({
+      success: true,
+      cardId: newCard.id,
+      fotoUrl,
+      mensagem: newCard.mensagem
+    });
+
+  } catch (error) {
+    logger.error('Falha ao criar cartão', {
+      error: error.message,
+      stack: error.stack,
+      body: req.body,
+      userId: req.user?.userId,
+      duration: `${Date.now() - startTime}ms`
+    });
+    next(error);
+  }
+};
+
+const handleGetCard = async (req, res, next) => {
+  try {
+    logger.debug(`Buscando cartão ${req.params.id}`);
+    const card = await db.Card.findByPk(req.params.id);
+    
+    if (!card) {
+      logger.warn('Cartão não encontrado', { cardId: req.params.id });
+      return res.status(404).json({ message: 'Cartão não encontrado' });
+    }
+    
+    logger.http(`Cartão recuperado: ${card.id}`, {
+      cardId: card.id,
+      accessedBy: req.ip
+    });
+    
+    res.json(card);
+    
+  } catch (error) {
+    logger.error('Falha ao buscar cartão', {
+      error: error.message,
+      cardId: req.params.id,
+      stack: error.stack
+    });
+    next(error);
+  }
+};
+
+// Funções auxiliares
+const handleFileUpload = async (file, userId) => {
+  try {
+    logger.debug('Iniciando upload de arquivo', {
+      originalname: file.originalname,
+      size: file.size,
+      userId
+    });
+    
+    const fotoUrl = await s3Service.uploadFile(file);
+    
+    logger.info('Upload de arquivo concluído', {
+      url: fotoUrl,
+      userId
+    });
+    
+    return fotoUrl;
+  } catch (error) {
+    logger.error('Falha no upload de arquivo', {
+      error: error.message,
+      originalname: file.originalname,
+      userId
+    });
+    throw error;
+  }
+};
+
+const buildCardData = (body, userId, fotoUrl) => ({
+  id: nanoid(10),
+  de: body.de,
+  para: body.para,
+  mensagem: body.mensagem,
+  data: body.data || null,
+  youtubeVideoId: body.youtubeVideoId || null,
+  youtubeStartTime: body.youtubeStartTime ? parseInt(body.youtubeStartTime, 10) : 0,
+  fotoUrl,
+  userId
 });
 
-module.exports = logger;
+// Rotas
+router.post('/cards', 
+  authenticate, 
+  upload.single('foto'), 
+  validateCard, 
+  handleCardCreation
+);
+
+router.get('/cards/:id', handleGetCard);
+
+module.exports = router;
