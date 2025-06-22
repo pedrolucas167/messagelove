@@ -7,15 +7,11 @@ const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { User } = require('../models');
 
-// ▼▼▼ CORREÇÃO: Importamos o logger diretamente. Sem 'getLogger'. ▼▼▼
 const logger = require('../config/logger');
 
 const router = express.Router();
 
-// ... (todo o resto do seu código de rotas permanece EXATAMENTE igual)
-// Não precisa mais do 'require' dentro de cada rota.
 
-// Rotas
 router.post('/register', async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -26,7 +22,6 @@ router.post('/register', async (req, res, next) => {
       });
       return res.status(400).json({ errors: errors.array() });
     }
-    // ... resto da sua lógica
     const { email, password, name } = req.body;
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = await User.create({ email, password: hashedPassword, name });

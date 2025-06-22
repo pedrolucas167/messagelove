@@ -10,11 +10,9 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
-const logger = require('./config/logger'); // Importa o logger singleton
+const logger = require('./config/logger'); 
 
-// --- IMPORTAÇÕES LOCAIS ---
-// ▼▼▼ A CORREÇÃO ESTÁ AQUI ▼▼▼
-// Garante que os nomes dos arquivos (case-sensitive) estão corretos.
+
 const cardRoutes = require('./routes/cardRoutes');
 const authRoutes = require('./routes/authRoutes'); 
 const db = require('./models');
@@ -24,9 +22,7 @@ const startServer = async () => {
     logger.info('Iniciando o servidor...');
     const app = express();
 
-    // ==================================================================
-    // ORDEM CRÍTICA DE MIDDLEWARES
-    // ==================================================================
+  
 
     // 1. Confiar no Proxy do Render
     app.set('trust proxy', 1);
@@ -41,7 +37,7 @@ const startServer = async () => {
     };
     app.use(cors(corsOptions));
     
-    // 3. Middlewares de Segurança, Otimização e Parsing
+
     app.use(helmet());
     app.use(compression());
     app.use(express.json({ limit: '10kb' }));
@@ -56,18 +52,15 @@ const startServer = async () => {
     await db.sequelize.authenticate();
     logger.info('Conexão com o banco estabelecida com sucesso.');
     
-    // Sincronização (se necessário)
     if (process.env.SYNC_DB === 'true') {
       logger.warn('Sincronizando modelos com o banco...');
       await db.sequelize.sync({ alter: true });
     }
     
-    // Rotas da Aplicação
     app.get('/health', (req, res) => res.status(200).json({ status: 'online' }));
     app.use('/api/cards', cardRoutes);
     app.use('/api/auth', authRoutes);
     
-    // Tratamento de Erro Global (sempre por último)
     app.use((err, req, res, next) => {
       logger.error('Erro não tratado na aplicação:', { 
         message: err.message, 

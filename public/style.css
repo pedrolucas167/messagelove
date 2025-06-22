@@ -1,9 +1,4 @@
-/*
- * @file style.css
- * @description Folha de estilos principal e unificada para o projeto Messagelove.
- * @author Pedro Marques
- * @version 4.2.0 (Unified Stylesheet com suporte a autenticação e youtubeStartTime)
- */
+
 
 /* Importação da fonte base */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');

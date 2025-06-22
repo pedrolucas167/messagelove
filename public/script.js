@@ -1,10 +1,4 @@
-/**
- * @file script.js
- * @description Script principal para a aplicação MessageLove. Gerencia as "views" (telas),
- * autenticação, interatividade da UI, e a lógica de criação e visualização de cartões.
- * @author Pedro Marques
- * @version 4.1.0
- */
+
 const MessageLoveApp = (() => {
     // 1. ================= MÓDULO DE CONFIGURAÇÃO E ESTADO =================
     const config = {
@@ -243,15 +237,11 @@ const MessageLoveApp = (() => {
     return { init };
 })();
 
-// O script principal da aplicação é inicializado aqui.
 MessageLoveApp.init();
 
-// O script de interatividade da UI (partículas, modal) que já está no HTML
-// pode permanecer lá, mas vamos garantir que ele ouça nossos eventos customizados.
+
 document.addEventListener('open-auth-modal', (e) => {
-    // Esta função deve estar acessível globalmente ou o script no HTML deve ser adaptado
-    // para expor uma função que possa ser chamada aqui.
-    // Exemplo: window.openAuthModal(e.detail);
+ 
     const authModal = document.getElementById('authModal');
     const loginFormContainer = document.getElementById('loginFormContainer');
     const registerFormContainer = document.getElementById('registerFormContainer');

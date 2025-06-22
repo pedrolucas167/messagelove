@@ -1,9 +1,4 @@
-/**
- * @file card.js
- * @description Script para a página de VISUALIZAÇÃO de cartões (card.html), lida com a revelação e exibição do cartão.
- * @author Pedro Marques
- * @version 3.1.0
- */
+
 const CardViewerApp = (() => {
     // 1. Configurações
     const config = {

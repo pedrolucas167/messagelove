@@ -55,10 +55,8 @@ const handleCreateCard = async (req, res) => {
             return res.status(400).json({ error: 'Nome e mensagem são obrigatórios.' });
         }
 
-        // Processar a imagem, se presente
         const fotoUrl = req.file ? await uploadImageToS3(req.file) : null;
 
-        // Criar o cartão no banco via cardService
         const card = await cardService.createCard({
             nome,
             data: data || null,
@@ -74,7 +72,6 @@ const handleCreateCard = async (req, res) => {
     }
 };
 
-// Buscar um cartão por ID
 const handleGetCard = async (req, res) => {
     try {
         const { id } = req.params;
@@ -91,7 +88,6 @@ const handleGetCard = async (req, res) => {
     }
 };
 
-// Buscar todos os cartões
 const handleGetAllCards = async (req, res) => {
     try {
         const cards = await cardService.getAllCards();
@@ -114,7 +110,6 @@ const handleUpdateCard = async (req, res) => {
             return res.status(404).json({ error: 'Cartão não encontrado.' });
         }
 
-        // Processar nova imagem, se presente
         let fotoUrl = existingCard.foto;
         if (req.file) {
             // Deletar imagem antiga do S3, se existir

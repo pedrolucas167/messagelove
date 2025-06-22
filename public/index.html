@@ -7,19 +7,15 @@
     <meta name="description" content="A plataforma definitiva para criar cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
     <meta name="theme-color" content="#c026d3">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     
-    <!-- Ícones e Manifesto -->
-    <link rel="icon" href="/coracao.png" type="image/png">
+    <link rel="icon" href="coracao3.png" type="image/png">
     <link rel="manifest" href="/manifest.webmanifest">
     
-    <!-- Configurações Adicionais e OG Tags -->
     <meta property="og:title" content="MessageLove - Crie Cartões Especiais">
     <meta property="og:description" content="Crie e compartilhe cartões de amor com mensagens, fotos e vídeos.">
     <meta property="og:type" content="website">
@@ -27,7 +23,6 @@
     <meta property="og:image" content="/assets/og-image.jpg">
 
     <style>
-        /* Estilização base e customizações */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #111827; /* bg-gray-900 */
@@ -60,7 +55,7 @@
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased flex flex-col min-h-screen">
     <canvas id="particle-canvas"></canvas>
 
     <!-- Área de Notificações da Aplicação -->
@@ -78,7 +73,7 @@
         </div>
     </header>
 
-    <main class="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
+    <main class="relative flex-grow flex items-center justify-center p-4 overflow-hidden">
         <div class="container mx-auto text-center w-full max-w-4xl">
 
             <!-- ========= VIEW 1: TELA DE BOAS-VINDAS (Padrão) ========= -->
@@ -131,18 +126,28 @@
         </div>
     </main>
 
-    <!-- ========= MODAL DE AUTENTICAÇÃO ========= -->
+    <footer class="text-center py-6 px-4 text-sm text-gray-500">
+        <div class="container mx-auto">
+            <p class="mb-1">
+                Feito com <span class="text-fuchsia-500" aria-label="coração">❤</span> por 
+                <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-400 hover:text-fuchsia-400 transition-colors">
+                    Pedro Marques
+                </a>
+            </p>
+            <p>MessageLove &copy; <span id="currentYear"></span></p>
+        </div>
+    </footer>
+
+
     <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 opacity-0">
         <div class="modal-content bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-8 transform scale-95">
             <button id="closeAuthModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors" aria-label="Fechar modal">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             
-            <!-- Container do Formulário de Login -->
             <div id="loginFormContainer" class="auth-form-container">
                 <h2 class="text-3xl font-bold text-white text-center mb-6">Bem-vindo de volta!</h2>
                 <form id="loginForm" novalidate>
-                    <!-- Campos do formulário de login (email, senha) -->
                     <div class="mb-4">
                         <label for="loginEmail" class="block text-sm font-medium text-gray-300 mb-1">E-mail</label>
                         <input type="email" id="loginEmail" name="email" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
@@ -159,23 +164,18 @@
                 </div>
             </div>
 
-            <!-- Container do Formulário de Registro (Oculto) -->
             <div id="registerFormContainer" class="auth-form-container hidden">
                 <h2 class="text-3xl font-bold text-white text-center mb-6">Crie sua conta</h2>
-                 <!-- Campos do formulário de registro -->
                 <p class="text-center text-gray-400">Já tem conta? <button type="button" id="showLoginBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Faça login</button></p>
             </div>
             
-            <!-- Container de Recuperar Senha (Oculto) -->
             <div id="resetPasswordFormContainer" class="auth-form-container hidden">
                 <h2 class="text-3xl font-bold text-white text-center mb-6">Recuperar Senha</h2>
-                <!-- Campos do formulário de reset -->
                 <p class="text-center text-gray-400">&larr; Voltar para o <button type="button" id="showLoginFromResetBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Login</button></p>
             </div>
         </div>
     </div>
     
-    <!-- Script para animação de partículas e interatividade da UI -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Lógica para animação de partículas
@@ -262,8 +262,10 @@
             document.getElementById('showLoginBtn').addEventListener('click', () => showAuthForm(loginFormContainer));
             document.getElementById('showForgotPasswordBtn').addEventListener('click', () => showAuthForm(resetPasswordFormContainer));
             document.getElementById('showLoginFromResetBtn').addEventListener('click', () => showAuthForm(loginFormContainer));
+            
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
         });
     </script>
+    <script src="script.js"></script>
 </body>
 </html>
-<script src="/script.js"></script>
