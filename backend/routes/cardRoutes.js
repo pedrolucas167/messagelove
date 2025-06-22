@@ -1,11 +1,16 @@
-// /backend/routes/cardRoutes.js - Versão com o padrão Singleton e correção do Multer
+// /backend/routes/cardRoutes.js - Versão com importação de middleware corrigida
 
 const express = require('express');
 const multer = require('multer');
 const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const path = require('path');
-const { authenticate } = require('../middlewares/auth'); 
+
+// ▼▼▼ CORREÇÃO APLICADA AQUI ▼▼▼
+// O erro 'got a [object Undefined]' geralmente ocorre quando a importação e exportação não coincidem.
+// Esta importação agora presume que seu arquivo /middlewares/auth.js exporta a função diretamente, assim:
+// module.exports = authenticate;
+const authenticate = require('../middlewares/auth');
 
 const logger = require('../config/logger');
 const db = require('../models');
@@ -20,7 +25,6 @@ const upload = multer({
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!allowedTypes.includes(file.mimetype)) {
             logger.warn(`Tentativa de upload com tipo de arquivo não permitido: ${file.mimetype}`, { ip: req.ip });
-            // Cria um erro específico para o Multer
             const error = new Error('Apenas imagens JPEG, PNG ou WebP são permitidas');
             error.code = 'LIMIT_FILE_TYPE';
             return cb(error, false);
@@ -38,7 +42,6 @@ const validateCard = [
 
 // Handlers
 const handleCardCreation = async (req, res, next) => {
-  const startTime = Date.now();
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -103,6 +106,7 @@ const handleGetCardById = async (req, res, next) => {
 };
 
 
+// Rotas
 router.post('/', 
   authenticate, 
   upload.single('foto'), 
@@ -111,6 +115,6 @@ router.post('/',
 );
 
 router.get('/', authenticate, handleGetMyCards);
-router.get('/:id', handleGetCardById);    
+router.get('/:id', handleGetCardById);
 
 module.exports = router;
