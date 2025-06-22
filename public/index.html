@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MessageLove - Crie e Compartilhe Cartões de Amor</title>
-    <meta name="description" content="A plataforma definitiva para criar cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
+    <meta name="description"
+        content="A plataforma definitiva para criar cartões especiais com mensagens personalizadas, fotos e vídeos do YouTube para presentear quem você ama.">
     <meta name="theme-color" content="#c026d3">
 
     <!-- Tailwind CSS -->
@@ -14,11 +16,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    
+
     <!-- Ícones e Manifesto -->
     <link rel="icon" href="coracao3.png" type="image/png">
     <link rel="manifest" href="manifest.webmanifest">
-    
+
     <!-- OG Tags -->
     <meta property="og:title" content="MessageLove - Crie Cartões Especiais">
     <meta property="og:description" content="Crie e compartilhe cartões de amor com mensagens, fotos e vídeos.">
@@ -27,24 +29,28 @@
     <meta property="og:image" content="/assets/og-image.jpg">
 
     <!-- Link para o CSS externo -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="antialiased flex flex-col min-h-screen">
     <canvas id="particle-canvas"></canvas>
 
     <!-- Área de Notificações da Aplicação -->
-    <div id="appNotificationArea" aria-live="polite" class="fixed top-5 right-5 z-50 space-y-3 w-full max-w-xs sm:max-w-sm"></div>
+    <div id="appNotificationArea" aria-live="polite"
+        class="fixed top-5 right-5 z-50 space-y-3 w-full max-w-xs sm:max-w-sm"></div>
     <!-- Cabeçalho Principal -->
-    <header class="absolute top-0 left-0 right-0 p-4 sm:p-6 z-10">
-        <div class="container mx-auto flex justify-between">
-            <a href="/" class="text-2xl font-bold text-white tracking-wider" aria-label="Messagelove - Página inicial">
-                Message<span class="text-fuchsia-500">Love</span>
-            </a>
+ <header class="absolute top-0 left-0 right-0 p-4 sm:p-6 z-10">
+    <div class="container mx-auto flex items-center">
+        <a href="/" class="text-2xl font-bold text-white tracking-wider" aria-label="MessageLove - Página inicial">
+            Message<span class="text-fuchsia-500">Love</span>
+        </a>
+        <nav class="ml-auto">
             <button id="logoutBtn" class="hidden text-sm font-medium text-gray-300 hover:text-white transition-colors" aria-label="Sair da sessão">
-                Sair →
+                Sair &rarr;
             </button>
-        </div>
-    </header>
+        </nav>
+    </div>
+</header>
 
     <main class="relative flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
         <div class="container mx-auto text-center w-full max-w-5xl xl:max-w-6xl">
@@ -55,13 +61,16 @@
                     Message<span class="text-fuchsia-500">Love</span>
                 </h1>
                 <p class="text-base sm:text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                    A forma mais especial de dizer "eu te amo". Crie cartões digitais com fotos, vídeos e mensagens que tocam o coração.
+                    A forma mais especial de dizer "eu te amo". Crie cartões digitais com fotos, vídeos e mensagens que
+                    tocam o coração.
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <button id="openLoginBtn" class="w-full sm:w-auto bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
+                    <button id="openLoginBtn"
+                        class="w-full sm:w-auto bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
                         Entrar
                     </button>
-                    <button id="openRegisterBtn" class="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105">
+                    <button id="openRegisterBtn"
+                        class="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105">
                         Cadastre-se grátis
                     </button>
                 </div>
@@ -72,26 +81,31 @@
                 <div class="bg-gray-800/50 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <div>
-                           <h2 id="userWelcomeMessage" class="text-2xl lg:text-3xl font-bold text-white">Olá, Pedro!</h2>
-                           <p class="text-gray-400">Aqui estão seus cartões criados.</p>
+                            <h2 id="userWelcomeMessage" class="text-2xl lg:text-3xl font-bold text-white">Olá, Pedro!
+                            </h2>
+                            <p class="text-gray-400">Aqui estão seus cartões criados.</p>
                         </div>
-                        <button id="showCreateFormBtn" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex-shrink-0">
-                           + Criar Novo Cartão
+                        <button id="showCreateFormBtn"
+                            class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex-shrink-0">
+                            + Criar Novo Cartão
                         </button>
                     </div>
                     <div id="userCardsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         <!-- Os cartões do usuário serão inseridos aqui pelo script.js -->
-                        <div class="bg-gray-700 p-4 rounded-lg"><p class="text-gray-400">Carregando seus cartões...</p></div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <p class="text-gray-400">Carregando seus cartões...</p>
+                        </div>
                     </div>
                 </div>
             </section>
-            
+
             <!-- ========= VIEW 3: FORMULÁRIO DE CRIAÇÃO (Oculto) ========= -->
             <section id="creationSection" class="hidden w-full">
-                 <h1 class="text-3xl sm:text-4xl font-bold text-white mb-6">Crie um Cartão Especial</h1>
-                 <div class="bg-gray-800/50 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl">
+                <h1 class="text-3xl sm:text-4xl font-bold text-white mb-6">Crie um Cartão Especial</h1>
+                <div class="bg-gray-800/50 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl">
                     <p class="text-lg">O formulário de criação viria aqui.</p>
-                    <button id="showDashboardBtn" class="mt-4 text-fuchsia-400 hover:text-fuchsia-300">← Voltar ao Dashboard</button>
+                    <button id="showDashboardBtn" class="mt-4 text-fuchsia-400 hover:text-fuchsia-300">← Voltar ao
+                        Dashboard</button>
                 </div>
             </section>
 
@@ -102,8 +116,9 @@
     <footer class="text-center py-6 px-4 text-sm text-gray-500">
         <div class="container mx-auto">
             <p class="mb-1">
-                Feito com <span class="text-fuchsia-500" aria-label="coração">❤</span> por 
-                <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="font-medium text-gray-400 hover:text-fuchsia-400 transition-colors">
+                Feito com <span class="text-fuchsia-500" aria-label="coração">❤</span> por
+                <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noopener noreferrer"
+                    class="font-medium text-gray-400 hover:text-fuchsia-400 transition-colors">
                     Pedro Marques
                 </a>
             </p>
@@ -112,28 +127,41 @@
     </footer>
 
     <!-- ========= MODAL DE AUTENTICAÇÃO ========= -->
-    <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 opacity-0">
+    <div id="authModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 opacity-0">
         <div class="modal-content bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6 sm:p-8 transform scale-95">
-            <button id="closeAuthModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors" aria-label="Fechar modal">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <button id="closeAuthModalBtn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+                aria-label="Fechar modal">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
-            
+
             <div id="loginFormContainer" class="auth-form-container">
                 <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-6">Bem-vindo de volta!</h2>
                 <form id="loginForm" novalidate>
                     <div class="mb-4">
                         <label for="loginEmail" class="block text-sm font-medium text-gray-300 mb-1">E-mail</label>
-                        <input type="email" id="loginEmail" name="email" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
+                        <input type="email" id="loginEmail" name="email"
+                            class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                            required>
                     </div>
                     <div class="mb-6">
                         <label for="loginPassword" class="block text-sm font-medium text-gray-300 mb-1">Senha</label>
-                        <input type="password" id="loginPassword" name="password" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
+                        <input type="password" id="loginPassword" name="password"
+                            class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                            required>
                     </div>
-                    <button type="submit" id="loginSubmitBtn" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105">Entrar</button>
+                    <button type="submit" id="loginSubmitBtn"
+                        class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105">Entrar</button>
                 </form>
                 <div class="text-center mt-6 text-sm">
-                    <button type="button" id="showForgotPasswordBtn" class="text-fuchsia-400 hover:text-fuchsia-300">Esqueceu a senha?</button>
-                    <p class="text-gray-400 mt-2">Não tem uma conta? <button type="button" id="showRegisterBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Cadastre-se</button></p>
+                    <button type="button" id="showForgotPasswordBtn"
+                        class="text-fuchsia-400 hover:text-fuchsia-300">Esqueceu a senha?</button>
+                    <p class="text-gray-400 mt-2">Não tem uma conta? <button type="button" id="showRegisterBtn"
+                            class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Cadastre-se</button></p>
                 </div>
             </div>
 
@@ -142,31 +170,42 @@
                 <form id="registerForm" novalidate>
                     <div class="mb-4">
                         <label for="registerName" class="block text-sm font-medium text-gray-300 mb-1">Nome</label>
-                        <input type="text" id="registerName" name="name" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
+                        <input type="text" id="registerName" name="name"
+                            class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                            required>
                     </div>
                     <div class="mb-4">
                         <label for="registerEmail" class="block text-sm font-medium text-gray-300 mb-1">E-mail</label>
-                        <input type="email" id="registerEmail" name="email" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
+                        <input type="email" id="registerEmail" name="email"
+                            class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                            required>
                     </div>
                     <div class="mb-6">
                         <label for="registerPassword" class="block text-sm font-medium text-gray-300 mb-1">Senha</label>
-                        <input type="password" id="registerPassword" name="password" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" required>
+                        <input type="password" id="registerPassword" name="password"
+                            class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition"
+                            required>
                     </div>
-                    <button type="submit" id="registerSubmitBtn" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105">Cadastrar</button>
+                    <button type="submit" id="registerSubmitBtn"
+                        class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-105">Cadastrar</button>
                 </form>
                 <div class="text-center mt-6 text-sm">
-                    <p class="text-gray-400">Já tem conta? <button type="button" id="showLoginBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Faça login</button></p>
+                    <p class="text-gray-400">Já tem conta? <button type="button" id="showLoginBtn"
+                            class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Faça login</button></p>
                 </div>
             </div>
-            
+
             <div id="resetPasswordFormContainer" class="auth-form-container hidden">
                 <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-6">Recuperar Senha</h2>
-                <p class="text-center text-gray-400">← Voltar para o <button type="button" id="showLoginFromResetBtn" class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Login</button></p>
+                <p class="text-center text-gray-400">← Voltar para o <button type="button" id="showLoginFromResetBtn"
+                        class="font-bold text-fuchsia-400 hover:text-fuchsia-300">Login</button></p>
             </div>
         </div>
     </div>
-    
+
     <!-- Scripts -->
+
     <script src="script.js" defer></script>
 </body>
+
 </html>

@@ -25,12 +25,18 @@ const setupSecurity = (app) => {
     };
     app.use(cors(corsOptions));
 
+    /* APRIMORADO: Política de Segurança de Conteúdo (CSP) mais flexível e segura */
     app.use(helmet({
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
                 scriptSrc: ["'self'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
+                styleSrc: ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
+                fontSrc: ["'self'", "https://fonts.gstatic.com"],
+                imgSrc: ["'self'", "data:"],
+                connectSrc: ["'self'"],
+                objectSrc: ["'none'"],
+                upgradeInsecureRequests: [],
             },
         },
     }));
@@ -82,7 +88,7 @@ const setupErrorHandling = (app) => {
       });
       const isProduction = process.env.NODE_ENV === 'production';
       res.status(err.status || 500).json({
-        error: isProduction ? 'Ocorreu um erro inesperado no servidor.' : 'Erro interno do servidor.'
+        error: isProduction ? 'Ocorreu um erro inesperado no servidor.' : err.message
       });
     });
 };
@@ -112,6 +118,19 @@ const startServer = async () => {
             });
         });
     };
+
+    /* ADICIONADO: Captura de erros não tratados que podem derrubar o processo Node.js */
+    process.on('unhandledRejection', (reason, promise) => {
+        logger.error('Unhandled Rejection at:', { promise, reason: reason.stack || reason });
+        // Aplicações em estados desconhecidos por rejeições de promise devem ser reiniciadas.
+        gracefulShutdown('unhandledRejection');
+    });
+    
+    process.on('uncaughtException', (error) => {
+        logger.error('Uncaught Exception thrown:', { error: error.stack });
+        // 'uncaughtException' indica um erro grave. O processo DEVE ser encerrado.
+        gracefulShutdown('uncaughtException');
+    });
 
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));

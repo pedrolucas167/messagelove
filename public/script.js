@@ -1,9 +1,9 @@
 /**
  * @file script.js
- * @description Main script for the MessageLove application. Manages particle animations, UI interactions,
- * authentication, and API communication.
+ * @description Main script for the MessageLove application. Features elegant heart-shaped particle animations
+ * for a romantic "correio elegante" theme, secure authentication, and UI interactions.
  * @author Pedro Marques
- * @version 6.1.0
+ * @version 6.3.0
  */
 document.addEventListener('DOMContentLoaded', () => {
     const MessageLoveApp = (() => {
@@ -12,22 +12,30 @@ document.addEventListener('DOMContentLoaded', () => {
             API_URL: window.location.hostname.includes('localhost') 
                 ? 'http://localhost:3001/api' 
                 : 'https://messagelove-backend.onrender.com/api',
-            PARTICLE_DENSITY: { mobile: 20000, desktop: 9000 },
+            PARTICLE_DENSITY: { mobile: 30000, desktop: 15000 },
+            PARTICLE_CONNECTION_DISTANCE: 80,
+            PARTICLE_INTERACTION_RADIUS: 120,
+            PARTICLE_COLORS: [
+                'rgba(255, 182, 193, 0.7)', // Light pink
+                'rgba(219, 112, 147, 0.6)', // Pale violet red
+                'rgba(255, 245, 238, 0.5)', // Seashell white
+                'rgba(221, 160, 221, 0.6)'  // Plum purple
+            ],
+            PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)' // Hot pink glow
         };
 
         // Application state
         const state = {
             currentUser: null,
             particlesArray: [],
+            interactionPos: { x: null, y: null }
         };
 
         // DOM elements
         const elements = {
-            // Sections
             welcomeSection: document.getElementById('welcomeSection'),
             dashboardSection: document.getElementById('dashboardSection'),
             creationSection: document.getElementById('creationSection'),
-            // Authentication
             authModal: document.getElementById('authModal'),
             loginFormContainer: document.getElementById('loginFormContainer'),
             registerFormContainer: document.getElementById('registerFormContainer'),
@@ -43,12 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoginBtn: document.getElementById('showLoginBtn'),
             showForgotPasswordBtn: document.getElementById('showForgotPasswordBtn'),
             showLoginFromResetBtn: document.getElementById('showLoginFromResetBtn'),
-            // Other UI
             logoutBtn: document.getElementById('logoutBtn'),
             appNotificationArea: document.getElementById('appNotificationArea'),
             userWelcomeMessage: document.getElementById('userWelcomeMessage'),
             particleCanvas: document.getElementById('particle-canvas'),
-            currentYear: document.getElementById('currentYear'),
+            currentYear: document.getElementById('currentYear')
         };
 
         // Particle Animation Module
@@ -57,47 +64,121 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!elements.particleCanvas) return;
                 const ctx = elements.particleCanvas.getContext('2d');
                 this.resizeCanvas();
-                
+
+                // Interaction handlers (mouse and touch)
+                const updateInteractionPos = (e, isTouch = false) => {
+                    const rect = elements.particleCanvas.getBoundingClientRect();
+                    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+                    state.interactionPos.x = clientX - rect.left;
+                    state.interactionPos.y = clientY - rect.top;
+                };
+
+                window.addEventListener('mousemove', updateInteractionPos);
+                window.addEventListener('touchmove', (e) => updateInteractionPos(e, true));
+                window.addEventListener('mouseleave', () => {
+                    state.interactionPos.x = null;
+                    state.interactionPos.y = null;
+                });
+                window.addEventListener('touchend', () => {
+                    state.interactionPos.x = null;
+                    state.interactionPos.y = null;
+                });
+
                 const animate = () => {
-                    ctx.clearRect(0, 0, elements.particleCanvas.width, elements.particleCanvas.height);
+                    // Soft fade for trails
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+                    ctx.fillRect(0, 0, elements.particleCanvas.width, elements.particleCanvas.height);
+
                     state.particlesArray.forEach(particle => {
-                        particle.x += particle.directionX;
-                        particle.y += particle.directionY;
+                        // Interaction attraction
+                        if (state.interactionPos.x !== null && state.interactionPos.y !== null) {
+                            const dx = state.interactionPos.x - particle.x;
+                            const dy = state.interactionPos.y - particle.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < config.PARTICLE_INTERACTION_RADIUS) {
+                                const force = (config.PARTICLE_INTERACTION_RADIUS - distance) / config.PARTICLE_INTERACTION_RADIUS;
+                                particle.directionX -= dx * force * 0.015;
+                                particle.directionY -= dy * force * 0.015;
+                            }
+                        }
+
+                        // Sinusoidal motion
+                        particle.phase += 0.02;
+                        particle.x += particle.directionX + Math.sin(particle.phase) * 0.3;
+                        particle.y += particle.directionY + Math.cos(particle.phase) * 0.3;
+
+                        // Bounce off edges
                         if (particle.x > elements.particleCanvas.width || particle.x < 0) particle.directionX = -particle.directionX;
                         if (particle.y > elements.particleCanvas.height || particle.y < 0) particle.directionY = -particle.directionY;
+
+                        // Draw heart-shaped particle
+                        ctx.save();
+                        ctx.translate(particle.x, particle.y);
+                        ctx.scale(particle.size / 4, particle.size / 4); // Scale heart size
                         ctx.beginPath();
-                        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2, false);
+                        ctx.moveTo(0, -3);
+                        ctx.bezierCurveTo(-3, -5, -6, -2, -6, 1);
+                        ctx.bezierCurveTo(-6, 4, -3, 6, 0, 3);
+                        ctx.bezierCurveTo(3, 6, 6, 4, 6, 1);
+                        ctx.bezierCurveTo(6, -2, 3, -5, 0, -3);
+                        ctx.closePath();
                         ctx.fillStyle = particle.color;
+                        ctx.shadowColor = config.PARTICLE_GLOW;
+                        ctx.shadowBlur = 8;
                         ctx.fill();
+                        ctx.restore();
                     });
+
+                    // Draw connections
+                    for (let i = 0; i < state.particlesArray.length; i++) {
+                        for (let j = i + 1; j < state.particlesArray.length; j++) {
+                            const p1 = state.particlesArray[i];
+                            const p2 = state.particlesArray[j];
+                            const dx = p1.x - p2.x;
+                            const dy = p1.y - p2.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < config.PARTICLE_CONNECTION_DISTANCE) {
+                                ctx.beginPath();
+                                ctx.moveTo(p1.x, p1.y);
+                                ctx.lineTo(p2.x, p2.y);
+                                ctx.strokeStyle = `rgba(255, 182, 193, ${1 - distance / config.PARTICLE_CONNECTION_DISTANCE})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
                     requestAnimationFrame(animate);
                 };
 
                 this.createParticles();
                 animate();
 
+                // Debounced resize handler
                 let resizeTimeout;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
                     resizeTimeout = setTimeout(() => {
                         this.resizeCanvas();
                         this.createParticles();
-                    }, 250);
+                    }, 100);
                 });
             },
             createParticles() {
                 state.particlesArray = [];
                 const density = window.innerWidth < 768 ? config.PARTICLE_DENSITY.mobile : config.PARTICLE_DENSITY.desktop;
-                const numberOfParticles = (elements.particleCanvas.height * elements.particleCanvas.width) / density;
+                const numberOfParticles = Math.min((elements.particleCanvas.height * elements.particleCanvas.width) / density, 80); // Cap for performance
                 
                 for (let i = 0; i < numberOfParticles; i++) {
                     state.particlesArray.push({
                         x: Math.random() * elements.particleCanvas.width,
                         y: Math.random() * elements.particleCanvas.height,
-                        directionX: Math.random() * 0.4 - 0.2,
-                        directionY: Math.random() * 0.4 - 0.2,
-                        size: Math.random() * 2 + 1,
-                        color: 'rgba(217, 70, 239, 0.5)',
+                        directionX: Math.random() * 0.3 - 0.15,
+                        directionY: Math.random() * 0.3 - 0.15,
+                        size: Math.random() * 3 + 2,
+                        color: config.PARTICLE_COLORS[Math.floor(Math.random() * config.PARTICLE_COLORS.length)],
+                        phase: Math.random() * Math.PI * 2 // For sinusoidal motion
                     });
                 }
             },
@@ -106,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.particleCanvas.width = window.innerWidth;
                     elements.particleCanvas.height = window.innerHeight;
                 }
-            },
+            }
         };
 
         // API Module
@@ -130,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             errorMessage = result.message;
                         } else if (result && Array.isArray(result.errors)) {
                             errorMessage = result.errors.map(e => e.msg).join(' ');
+                        } else if (response.status === 429) {
+                            errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
                         }
                         const error = new Error(errorMessage);
                         error.status = response.status;
@@ -145,9 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw error;
                 }
             },
-            login: (email, password) => api.request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
-            register: (name, email, password) => api.request('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) }),
-            getMyCards: () => api.request('/cards'),
+            login: (email, password) => api.request('/auth/login', { method: 'POST', body: JSON.stringify({ email: email.trim(), password }) }),
+            register: (name, email, password) => api.request('/auth/register', { method: 'POST', body: JSON.stringify({ name: name.trim(), email: email.trim(), password }) }),
+            getMyCards: () => api.request('/cards')
         };
 
         // UI Module
@@ -174,21 +257,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.disabled = isLoading;
                 btn.classList.toggle('opacity-75', isLoading);
                 btn.classList.toggle('cursor-not-allowed', isLoading);
+                btn.innerHTML = isLoading ? '<span class="btn-spinner inline-block mr-2"></span>Carregando...' : btn.dataset.originalText || btn.innerHTML;
+                if (!isLoading && !btn.dataset.originalText) {
+                    btn.dataset.originalText = btn.innerHTML;
+                }
             },
             showNotification(message, type = 'info', duration = 5000) {
                 if (!elements.appNotificationArea) return;
                 const notification = document.createElement('div');
-                const baseClasses = 'p-4 mb-4 text-sm md:text-base rounded-lg shadow-lg text-white transition-all duration-300 ease-in-out transform';
+                const baseClasses = 'p-4 mb-4 text-sm md:text-base rounded-lg shadow-lg text-white transition-all duration-300 ease-in-out transform relative';
                 const typeClasses = {
                     info: 'bg-blue-500',
                     success: 'bg-green-500',
                     error: 'bg-red-600',
+                    warning: 'bg-yellow-500'
                 };
 
                 notification.className = `${baseClasses} ${typeClasses[type] || typeClasses.info} opacity-0 translate-y-4`;
-                notification.textContent = message;
+                notification.innerHTML = `
+                    <span>${message}</span>
+                    <button class="notification__close" aria-label="Fechar notificação">×</button>
+                `;
                 elements.appNotificationArea.appendChild(notification);
-                
+
+                const closeBtn = notification.querySelector('.notification__close');
+                closeBtn.addEventListener('click', () => {
+                    notification.classList.add('opacity-0');
+                    notification.addEventListener('transitionend', () => notification.remove(), { once: true });
+                });
+
                 requestAnimationFrame(() => {
                     notification.classList.remove('opacity-0', 'translate-y-4');
                 });
@@ -205,24 +302,29 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             openModal(initialForm) {
                 elements.authModal?.classList.remove('hidden');
-                setTimeout(() => elements.authModal?.classList.remove('opacity-0'), 10);
-                elements.authModal?.querySelector('.modal-content')?.classList.remove('scale-95');
+                setTimeout(() => {
+                    elements.authModal?.classList.remove('opacity-0');
+                    elements.authModal?.querySelector('.modal-content')?.classList.remove('translate-y-10', 'scale-95');
+                }, 10);
                 this.showAuthForm(initialForm);
             },
             closeModal() {
                 elements.authModal?.classList.add('opacity-0');
-                elements.authModal?.querySelector('.modal-content')?.classList.add('scale-95');
+                elements.authModal?.querySelector('.modal-content')?.classList.add('translate-y-10', 'scale-95');
                 setTimeout(() => elements.authModal?.classList.add('hidden'), 300);
             },
             updateFooterYear() {
                 if (elements.currentYear) {
                     elements.currentYear.textContent = new Date().getFullYear();
                 }
-            },
+            }
         };
 
         // Authentication Module
         const auth = {
+            sanitizeInput(input) {
+                return input.replace(/[<>&"']/g, '');
+            },
             handleLoginSuccess(result, isRegistration = false) {
                 localStorage.setItem('token', result.token);
                 localStorage.setItem('user', JSON.stringify(result.user));
@@ -235,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     : `Login realizado com sucesso!`;
                 ui.showNotification(welcomeMessage, 'success');
                 ui.updateAuthUI();
+                history.replaceState(null, '', window.location.pathname);
             },
             logout() {
                 localStorage.removeItem('token');
@@ -246,26 +349,38 @@ document.addEventListener('DOMContentLoaded', () => {
             async login(event) {
                 event.preventDefault();
                 ui.setButtonLoading(elements.loginSubmitBtn, true);
+                const email = this.sanitizeInput(elements.loginForm.email.value);
+                const password = elements.loginForm.password.value;
                 try {
-                    const result = await api.login(elements.loginForm.email.value, elements.loginForm.password.value);
+                    if (!email || !password) {
+                        throw new Error('Por favor, preencha todos os campos.');
+                    }
+                    const result = await api.login(email, password);
                     this.handleLoginSuccess(result);
                 } catch (error) {
                     ui.showNotification(error.message || 'Falha na comunicação com o servidor.', 'error');
                 } finally {
                     ui.setButtonLoading(elements.loginSubmitBtn, false);
+                    elements.loginForm.password.value = '';
                 }
             },
             async register(event) {
                 event.preventDefault();
                 const { name, email, password } = elements.registerForm;
                 ui.setButtonLoading(elements.registerSubmitBtn, true);
+                const sanitizedName = this.sanitizeInput(name.value);
+                const sanitizedEmail = this.sanitizeInput(email.value);
                 try {
-                    const result = await api.register(name.value, email.value, password.value);
+                    if (!sanitizedName || !sanitizedEmail || !password.value) {
+                        throw new Error('Por favor, preencha todos os campos.');
+                    }
+                    const result = await api.register(sanitizedName, sanitizedEmail, password.value);
                     this.handleLoginSuccess(result, true);
                 } catch (error) {
                     ui.showNotification(error.message || 'Não foi possível cadastrar.', 'error');
                 } finally {
                     ui.setButtonLoading(elements.registerSubmitBtn, false);
+                    elements.registerForm.password.value = '';
                 }
             },
             init() {
@@ -278,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 ui.updateAuthUI();
-            },
+            }
         };
 
         // Event Binding
