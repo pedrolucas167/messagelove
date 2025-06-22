@@ -5,68 +5,118 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const winston = require('winston');
-const path = require('path'); // Adicionado para resolver problemas de caminho
-const fs = require('fs'); // Adicionado para verificação de arquivos
+const path = require('path');
+const fs = require('fs');
 
-// Verificação do arquivo auth.js antes das importações
-const authMiddlewarePath = path.join(__dirname, 'middlewares', 'auth.js');
-console.log('Verificando middleware de autenticação:', {
-  path: authMiddlewarePath,
-  exists: fs.existsSync(authMiddlewarePath)
-});
 
-// Importações corrigidas com path.join
-const cardRoutes = require(path.join(__dirname, 'routes', 'cardRoutes'));
-const authRoutes = require(path.join(__dirname, 'routes', 'authRoutes')); // Corrigido case sensitivity
-const db = require(path.join(__dirname, 'models'));
+const verifyFiles = () => {
+  const requiredPaths = {
+    middlewares: path.join(__dirname, 'middlewares', 'auth.js'),
+    cardRoutes: path.join(__dirname, 'routes', 'cardRoutes.js'),
+    authRoutes: path.join(__dirname, 'routes', 'authRoutes.js'),
+    models: path.join(__dirname, 'models', 'index.js')
+  };
+
+  console.log('Verificando estrutura de arquivos:');
+  Object.entries(requiredPaths).forEach(([name, filePath]) => {
+    console.log(`- ${name}: ${filePath}`, fs.existsSync(filePath) ? '✅' : '❌');
+  });
+};
+verifyFiles();
+
+// Importações com fallback para debug
+let cardRoutes, authRoutes, db;
+try {
+  cardRoutes = require(path.join(__dirname, 'routes', 'cardRoutes'));
+  authRoutes = require(path.join(__dirname, 'routes', 'authRoutes'));
+  db = require(path.join(__dirname, 'models'));
+} catch (importError) {
+  console.error('Erro nas importações:', {
+    message: importError.message,
+    stack: importError.stack,
+    code: importError.code
+  });
+  process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// [O restante do seu código permanece EXATAMENTE IGUAL...]
-// Configuração do Logger, CORS, Helmet, Rate Limiting, etc...
-// Todas as outras funções (configureMiddlewares, configureRoutes, etc) permanecem iguais
+// Configuração do Logger (com verificação de diretório de logs)
+const logDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
 
-// Inicialização do Servidor
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: path.join(logDir, 'error.log'), level: 'error' }),
+    new winston.transports.File({ filename: path.join(logDir, 'combined.log') })
+  ]
+});
+
+// [Restante das configurações permanecem iguais...]
+
+// Inicialização do Servidor com verificação adicional
 const startServer = async () => {
   try {
-    // Verificação adicional de arquivos
+    // Verificação final antes de iniciar
     const requiredFiles = [
       path.join(__dirname, 'middlewares', 'auth.js'),
       path.join(__dirname, 'routes', 'cardRoutes.js'),
       path.join(__dirname, 'routes', 'authRoutes.js'),
       path.join(__dirname, 'models', 'index.js')
     ];
-    
+
     requiredFiles.forEach(file => {
       if (!fs.existsSync(file)) {
-        throw new Error(`Arquivo necessário não encontrado: ${file}`);
+        const error = new Error(`Arquivo essencial não encontrado: ${file}`);
+        logger.error(error.message, { missingFile: file });
+        throw error;
       }
     });
 
     await db.sequelize.authenticate();
-    logger.info('Conexão com o banco de dados PostgreSQL estabelecida.');
+    logger.info('Conexão com o banco de dados estabelecida');
+
     await db.sequelize.sync({ alter: true });
-    logger.info('Modelos sincronizados com o banco de dados.');
+    logger.info('Modelos sincronizados');
 
     configureMiddlewares();
     configureRoutes();
     configureErrorHandling();
 
     app.listen(PORT, () => {
-      logger.info(`Servidor iniciado na porta ${PORT}`, {
+      logger.info(`Servidor operacional na porta ${PORT}`, {
         environment: process.env.NODE_ENV || 'development',
-        url: `http://localhost:${PORT}`
+        nodeVersion: process.version
       });
     });
+
   } catch (error) {
-    logger.error('Falha ao iniciar o servidor', { 
-      error: error.message, 
-      stack: error.stack,
-      verification: {
-        authMiddleware: fs.existsSync(authMiddlewarePath),
-        cardRoutes: fs.existsSync(path.join(__dirname, 'routes', 'cardRoutes.js')),
-        authRoutes: fs.existsSync(path.join(__dirname, 'routes', 'authRoutes.js'))
+    logger.error('Falha crítica na inicialização', {
+      error: {
+        message: error.message,
+        stack: error.stack,
+        code: error.code
+      },
+      system: {
+        paths: {
+          middlewares: path.join(__dirname, 'middlewares'),
+          routes: path.join(__dirname, 'routes'),
+          models: path.join(__dirname, 'models')
+        },
+        files: {
+          middlewares: fs.readdirSync(path.join(__dirname, 'middlewares')).join(', '),
+          routes: fs.readdirSync(path.join(__dirname, 'routes')).join(', ')
+        }
       }
     });
     process.exit(1);

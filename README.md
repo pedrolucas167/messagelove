@@ -33,12 +33,14 @@
 ## 🚀 Tecnologias Utilizadas
 
 ### Frontend
+
 - **HTML5**
 - **CSS3** com variáveis e animações
 - **JavaScript Puro (Vanilla JS)**
 - **YouTube IFrame Player API**
 
 ### Backend
+
 - **Node.js**
 - **Express.js**
 - **AWS SDK v3** (`@aws-sdk/client-s3`)
