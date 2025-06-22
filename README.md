@@ -4,63 +4,76 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/pedrolucas167/messagelove?style=for-the-badge&color=e74c3c)
 ![Repo size](https://img.shields.io/github/repo-size/pedrolucas167/messagelove?style=for-the-badge&color=8e44ad)
 
-> Uma plataforma completa para criar e compartilhar mensagens personalizadas e memoráveis para momentos especiais.
+> Uma plataforma completa para criar e compartilhar mensagens personalizadas e memoráveis para momentos especiais. 🥰
 
 ---
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades Atuais
 
--   **Autenticação Segura de Usuários** Sistema completo de registro e login com senhas criptografadas e tokens de sessão (JWT).
-
--   **Dashboard Pessoal** Após o login, cada usuário tem acesso a um painel para visualizar todos os cartões que já criou.
-
--   **Cartões 100% Personalizáveis** Permite adicionar nome, destinatário, data, mensagem pessoal e mídias.
-
--   **Upload Seguro de Fotos para a Nuvem** As imagens são enviadas diretamente para a **AWS S3**, garantindo segurança, performance e escalabilidade.
-
--   **Integração com Vídeos do YouTube** Incorpore vídeos do YouTube em seus cartões, com a opção de definir um tempo de início específico.
-
--   **Segurança Reforçada** O backend conta com middlewares de segurança como Helmet, CORS configurado e Rate Limiting para proteção contra ataques.
-
--   **Links Únicos e Compartilháveis** Cada cartão gerado possui um link único para fácil envio e acesso por qualquer pessoa.
+- **Autenticação Segura de Usuários:** Sistema de registro e login com senhas criptografadas (`bcrypt`) e tokens de sessão (`JWT`) para acesso seguro.
+- **Dashboard Pessoal:** Painel exclusivo para cada usuário visualizar e gerenciar seus cartões criados.
+- **Cartões 100% Personalizáveis:** Adicione destinatário, mensagem, imagem e vídeos do YouTube com suporte a tempo de início específico.
+- **Upload Seguro de Fotos para a Nuvem:** Imagens são armazenadas na **AWS S3** com integração via `multer` e `AWS SDK`, garantindo escalabilidade e segurança.
+- **Integração com Vídeos do YouTube:** Incorpore vídeos diretamente nos cartões usando a **YouTube IFrame Player API**.
+- **Segurança Reforçada:** Middlewares como `helmet`, `cors`, `express-rate-limit` e validação com `express-validator` protegem contra XSS, CSRF, ataques de força bruta e injeções.
+- **Links Únicos e Compartilháveis:** Cada cartão tem um URL único (ex.: `/card.html?id=<cardId>`) para fácil compartilhamento.
 
 ---
 
-## 🚀 Tecnologias Utilizadas
+## 🚀 Funcionalidades Futuras
 
-O projeto foi construído com uma arquitetura moderna separando Frontend e Backend.
+- **Esquecer Senha:** Implementar recuperação de senha via e-mail com links de redefinição seguros e tokens temporários (expiração em 1 hora).
+- **Autenticação pelo Google:** Adicionar login via OAuth 2.0 com Google, permitindo acesso rápido e seguro sem necessidade de senha.
+- **Pré-visualização de Cartões:** Exibir miniaturas dos cartões no dashboard com opção de edição ou exclusão.
+- **Notificações por E-mail:** Enviar confirmações de criação de cartões ou compartilhamento para o destinatário.
+- **Temas Personalizados:** Permitir escolha de temas visuais para os cartões (ex.: cores, fundos).
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+O projeto adota uma arquitetura moderna com separação clara entre **Frontend** e **Backend**, utilizando middlewares para segurança, validação e eficiência.
 
 ### Frontend
 
--   **HTML5 & CSS3:** Estrutura semântica com estilização moderna e responsiva.
--   **Tailwind CSS:** Framework utility-first para a criação da nova interface, garantindo um design elegante e adaptável.
--   **JavaScript Puro (Vanilla JS ES6+):** Lógica de frontend modularizada (IIFE), gerenciamento de estado e interatividade completa com a API, sem a necessidade de frameworks.
--   **YouTube IFrame Player API:** Para a incorporação e controle de vídeos.
+- **HTML5 & CSS3:** Estrutura semântica com design responsivo.
+- **Tailwind CSS:** Framework utility-first para estilização ágil e elegante.
+- **JavaScript Puro (Vanilla JS ES6+):** Lógica modular com IIFE, gerenciamento de estado e interação com API sem dependência de frameworks.
+- **YouTube IFrame Player API:** Controle de vídeos incorporados nos cartões.
 
 ### Backend
 
--   **Node.js & Express.js:** Base do servidor, gerenciando rotas, middlewares e a lógica da API RESTful.
--   **PostgreSQL & Sequelize (ORM):** Banco de dados relacional robusto gerenciado pelo Sequelize, que mapeia os modelos de dados e facilita as queries.
--   **Autenticação e Segurança:**
-    -   **`jsonwebtoken` (JWT):** Geração de tokens para gerenciamento de sessões seguras.
-    -   **`bcrypt`:** Criptografia de senhas para armazenamento seguro.
-    -   **`cors`:** Middleware para permitir requisições cross-origin de forma segura.
-    -   **`helmet`:** Adiciona uma camada de segurança ao definir diversos cabeçalhos HTTP.
-    -   **`express-rate-limit`:** Proteção contra ataques de força bruta.
--   **Upload de Arquivos:**
-    -   **`multer`:** Middleware para lidar com o upload de arquivos `multipart/form-data`.
-    -   **AWS SDK v3 (`@aws-sdk/client-s3`):** Integração para enviar os arquivos para o bucket S3 da Amazon.
--   **Validação e Logging:**
-    -   **`express-validator`:** Validação e sanitização robusta dos dados de entrada nas rotas.
-    -   **`winston`:** Sistema de logging avançado para monitoramento e debug em produção.
--   **Gerenciamento de Ambiente:**
-    -   **`dotenv`:** Para gerenciar variáveis de ambiente de forma segura.
+- **Node.js & Express.js:** Servidor robusto com rotas RESTful e middlewares para processamento de requisições.
+- **MongoDB & Mongoose (ODM):** Banco de dados NoSQL com Mongoose para modelagem de dados (usuários, cartões) e queries eficientes.
+
+#### Autenticação e Segurança
+
+- `jsonwebtoken` (JWT): Tokens para sessões seguras.
+- `bcrypt`: Criptografia de senhas.
+- `cors`: Controle de acesso cross-origin.
+- `helmet`: Cabeçalhos HTTP seguros.
+- `express-rate-limit`: Proteção contra ataques de força bruta.
+- **Middleware Personalizado:** Autenticação de rotas protegidas (`authenticateToken`).
+
+#### Upload de Arquivos
+
+- `multer`: Processamento de uploads `multipart/form-data`.
+- `@aws-sdk/client-s3`: Armazenamento de imagens na AWS S3.
+
+#### Validação e Logging
+
+- `express-validator`: Sanitização e validação de entradas.
+- `winston`: Logging para monitoramento e depuração.
+
+#### Gerenciamento de Ambiente
+
+- `dotenv`: Variáveis de ambiente seguras.
 
 ---
 
 ## 📝 Licença
 
-Distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais informações.
+Distribuído sob a licença **MIT**. Veja o arquivo `LICENSE` para mais informações.
 
 ---
 
