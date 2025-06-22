@@ -16,12 +16,30 @@ const authRoutes = require('./routes/authRoutes');
 const setupSecurity = (app) => {
     app.set('trust proxy', 1);
 
-    logger.info(`Origens CORS permitidas: [${process.env.ALLOWED_ORIGINS || 'NÃO DEFINIDO, USANDO *'}]`);
+    // Configurar origens permitidas
+    const allowedOrigins = process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(';').map(url => url.trim())
+        : [
+            'http://127.0.0.1:5500', // Desenvolvimento local (Live Server)
+            `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`, // Frontend local
+            process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app', // Frontend em produção
+        ];
+    logger.info(`Origens CORS permitidas: [${allowedOrigins.join(', ')}]`);
+
     const corsOptions = {
-      origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      optionsSuccessStatus: 204
+        origin: (origin, callback) => {
+            // Permitir requisições sem origem (ex.: Postman) ou origens na lista
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, origin || '*');
+            } else {
+                logger.warn(`Origem não permitida: ${origin}`);
+                callback(new Error(`Origem ${origin} não permitida pelo CORS`));
+            }
+        },
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        credentials: true, // Suporte a tokens/cookies
+        optionsSuccessStatus: 204
     };
     app.use(cors(corsOptions));
 
@@ -34,7 +52,7 @@ const setupSecurity = (app) => {
                 styleSrc: ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
                 fontSrc: ["'self'", "https://fonts.gstatic.com"],
                 imgSrc: ["'self'", "data:"],
-                connectSrc: ["'self'"],
+                connectSrc: ["'self'", process.env.FRONTEND_URL, `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`],
                 objectSrc: ["'none'"],
                 upgradeInsecureRequests: [],
             },
@@ -68,7 +86,15 @@ const connectDatabase = async () => {
 };
 
 const setupRoutes = (app) => {
-    app.get('/health', (req, res) => res.status(200).json({ status: 'online', timestamp: new Date() }));
+    app.get('/health', (req, res) => res.status(200).json({ 
+        status: 'online', 
+        timestamp: new Date(), 
+        allowedOrigins: process.env.ALLOWED_ORIGINS?.split(';') || [
+            'http://127.0.0.1:5500',
+            `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`,
+            process.env.FRONTEND_URL
+        ]
+    }));
     
     app.use('/api/cards', cardRoutes);
     app.use('/api/auth', authRoutes);
@@ -119,16 +145,13 @@ const startServer = async () => {
         });
     };
 
-    /* ADICIONADO: Captura de erros não tratados que podem derrubar o processo Node.js */
     process.on('unhandledRejection', (reason, promise) => {
         logger.error('Unhandled Rejection at:', { promise, reason: reason.stack || reason });
-        // Aplicações em estados desconhecidos por rejeições de promise devem ser reiniciadas.
         gracefulShutdown('unhandledRejection');
     });
     
     process.on('uncaughtException', (error) => {
         logger.error('Uncaught Exception thrown:', { error: error.stack });
-        // 'uncaughtException' indica um erro grave. O processo DEVE ser encerrado.
         gracefulShutdown('uncaughtException');
     });
 
