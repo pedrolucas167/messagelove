@@ -1,8 +1,8 @@
 /**
  * @file script.js
- * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube, autenticação e envio para o backend.
+ * @description Script para a página de CRIAÇÃO de cartões (index.html), lida com formulário, upload, YouTube, autenticação (login e registro) e envio para o backend.
  * @author Pedro Marques
- * @version 3.2.0
+ * @version 3.4.0
  */
 const CardCreatorApp = (() => {
     // 1. Configurações e Estado
@@ -12,8 +12,7 @@ const CardCreatorApp = (() => {
             return this.IS_LOCAL 
                 ? 'http://localhost:3001/api' 
                 : 'https://messagelove-backend.onrender.com/api';
-        },
-        LOGIN_URL: '/login.html'
+        }
     };
     const state = { youtubeVideoId: null, youtubeStartTime: null };
 
@@ -30,9 +29,9 @@ const CardCreatorApp = (() => {
         fotoUploadInput: document.getElementById('fotoUpload'),
         fotoPreviewContainer: document.querySelector('[data-js="preview-container"]'),
         fotoPreviewImg: document.querySelector('[data-js="foto-preview"]'),
-        removeFotoBtn: document.querySelector('[data-js="remove-foto"]'),
+        removeFotoBtn: document.getElementById('removeFoto'),
         youtubeUrlInput: document.getElementById('youtubeUrlInput'),
-        youtubeStartTimeInput: document.getElementById('youtubeStartTimeInput'), // Novo input
+        youtubeStartTimeInput: document.getElementById('youtubeStartTimeInput'),
         addYoutubeUrlBtn: document.getElementById('addYoutubeUrlBtn'),
         youtubeErrorEl: document.getElementById('youtubeError'),
         youtubePreviewContainer: document.getElementById('youtubePreviewContainer'),
@@ -45,39 +44,49 @@ const CardCreatorApp = (() => {
         generatedCardLinkInput: document.getElementById('generatedCardLink'),
         copyLinkBtn: document.getElementById('copyLinkBtn'),
         viewCardBtn: document.getElementById('viewCardBtn'),
-        logoutBtn: document.getElementById('logoutBtn') // Novo botão
+        logoutBtn: document.getElementById('logoutBtn'),
+        authModal: document.getElementById('authModal'),
+        closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
+        loginFormContainer: document.getElementById('loginFormContainer'),
+        registerFormContainer: document.getElementById('registerFormContainer'),
+        loginForm: document.getElementById('loginForm'),
+        loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+        loginEmail: document.getElementById('loginEmail'),
+        loginPassword: document.getElementById('loginPassword'),
+        loginSubmitBtnText: document.querySelector('#loginSubmitBtn .btn-text'),
+        loginSubmitBtnLoading: document.querySelector('#loginSubmitBtn .btn-loading'),
+        showRegisterBtn: document.getElementById('showRegisterBtn'),
+        registerForm: document.getElementById('registerForm'),
+        registerSubmitBtn: document.getElementById('registerSubmitBtn'),
+        registerEmail: document.getElementById('registerEmail'),
+        registerPassword: document.getElementById('registerPassword'),
+        registerConfirmPassword: document.getElementById('registerConfirmPassword'),
+        registerSubmitBtnText: document.querySelector('#registerSubmitBtn .btn-text'),
+        registerSubmitBtnLoading: document.querySelector('#registerSubmitBtn .btn-loading'),
+        showLoginBtn: document.getElementById('showLoginBtn')
     };
 
-    // 3. Módulo de Autenticação
-    const auth = {
-        isLoggedIn() {
-            return !!localStorage.getItem('token');
-        },
-        getToken() {
-            return localStorage.getItem('token');
-        },
-        logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = config.LOGIN_URL;
-        },
-        requireLogin() {
-            if (!this.isLoggedIn()) {
-                ui.showNotification('Faça login para criar um cartão.', 'error');
-                setTimeout(() => window.location.href = config.LOGIN_URL, 1000);
-                return false;
-            }
-            return true;
-        }
-    };
-
-    // 4. Módulo de UI
+    // 3. Módulo de UI
     const ui = {
-        setSubmitButtonState(isLoading) {
-            if (!elements.submitBtn) return;
-            elements.submitBtn.disabled = isLoading;
-            elements.submitBtnText.hidden = isLoading;
-            elements.submitBtnLoading.hidden = !isLoading;
+        setSubmitButtonState(isLoading, type = 'card') {
+            let btn, text, loading;
+            if (type === 'login') {
+                btn = elements.loginSubmitBtn;
+                text = elements.loginSubmitBtnText;
+                loading = elements.loginSubmitBtnLoading;
+            } else if (type === 'register') {
+                btn = elements.registerSubmitBtn;
+                text = elements.registerSubmitBtnText;
+                loading = elements.registerSubmitBtnLoading;
+            } else {
+                btn = elements.submitBtn;
+                text = elements.submitBtnText;
+                loading = elements.submitBtnLoading;
+            }
+            if (!btn) return;
+            btn.disabled = isLoading;
+            text.hidden = isLoading;
+            loading.hidden = !isLoading;
         },
         showNotification(message, type = 'info', duration = 3000) {
             if (!elements.appNotificationArea) return;
@@ -107,6 +116,27 @@ const CardCreatorApp = (() => {
             setTimeout(() => { elements.successModal.hidden = true; }, 300);
             elements.cardForm.hidden = false;
         },
+        openAuthModal(mode = 'login') {
+            if (!elements.authModal) return;
+            elements.authModal.hidden = false;
+            setTimeout(() => elements.authModal.classList.add('active'), 10);
+            if (mode === 'login') {
+                elements.loginFormContainer.hidden = false;
+                elements.registerFormContainer.hidden = true;
+                elements.loginEmail.focus();
+            } else {
+                elements.loginFormContainer.hidden = true;
+                elements.registerFormContainer.hidden = false;
+                elements.registerEmail.focus();
+            }
+        },
+        closeAuthModal() {
+            if (!elements.authModal) return;
+            elements.authModal.classList.remove('active');
+            setTimeout(() => { elements.authModal.hidden = true; }, 300);
+            elements.loginForm.reset();
+            elements.registerForm.reset();
+        },
         async copyLinkToClipboard() {
             if (!elements.generatedCardLinkInput) return;
             try {
@@ -131,10 +161,109 @@ const CardCreatorApp = (() => {
             state.youtubeStartTime = null;
         },
         addLogoutButton() {
-            if (auth.isLoggedIn() && elements.logoutBtn) {
+            if (!elements.logoutBtn) return;
+            if (auth.isLoggedIn()) {
                 elements.logoutBtn.hidden = false;
-                elements.logoutBtn.addEventListener('click', auth.logout);
+            } else {
+                elements.logoutBtn.hidden = true;
             }
+        }
+    };
+
+    // 4. Módulo de Autenticação
+    const auth = {
+        isLoggedIn() {
+            return !!localStorage.getItem('token');
+        },
+        getToken() {
+            return localStorage.getItem('token');
+        },
+        logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            ui.showNotification('Você saiu da sessão.', 'info');
+            ui.addLogoutButton();
+        },
+        async login(event) {
+            event.preventDefault();
+            const email = elements.loginEmail.value.trim();
+            const password = elements.loginPassword.value.trim();
+            if (!email || !password) {
+                ui.showNotification('Preencha e-mail e senha.', 'error');
+                return;
+            }
+            ui.setSubmitButtonState(true, 'login');
+            try {
+                const response = await fetch(`${config.API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        throw new Error('Muitas tentativas. Tente novamente mais tarde.');
+                    }
+                    throw new Error(result.message || 'Erro ao fazer login.');
+                }
+                localStorage.setItem('token', result.token);
+                localStorage.setItem('user', JSON.stringify({ email }));
+                ui.closeAuthModal();
+                ui.showNotification('Login realizado com sucesso!', 'success');
+                ui.addLogoutButton();
+            } catch (error) {
+                console.error('Erro no login:', error);
+                ui.showNotification(`Falha ao fazer login: ${error.message}`, 'error', 7000);
+            } finally {
+                ui.setSubmitButtonState(false, 'login');
+            }
+        },
+        async register(event) {
+            event.preventDefault();
+            const email = elements.registerEmail.value.trim();
+            const password = elements.registerPassword.value.trim();
+            const confirmPassword = elements.registerConfirmPassword.value.trim();
+            if (!email || !password || !confirmPassword) {
+                ui.showNotification('Preencha todos os campos.', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                ui.showNotification('As senhas não coincidem.', 'error');
+                return;
+            }
+            ui.setSubmitButtonState(true, 'register');
+            try {
+                const response = await fetch(`${config.API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        throw new Error('Muitas tentativas. Tente novamente mais tarde.');
+                    }
+                    throw new Error(result.message || 'Erro ao cadastrar.');
+                }
+                localStorage.setItem('token', result.token);
+                localStorage.setItem('user', JSON.stringify({ email }));
+                ui.closeAuthModal();
+                ui.showNotification('Cadastro realizado com sucesso!', 'success');
+                ui.addLogoutButton();
+            } catch (error) {
+                console.error('Erro no registro:', error);
+                ui.showNotification(`Falha ao cadastrar: ${error.message}`, 'error', 7000);
+            } finally {
+                ui.setSubmitButtonState(false, 'register');
+            }
+        },
+        requireAuth() {
+            if (!this.isLoggedIn()) {
+                ui.showNotification('Faça login ou cadastre-se para criar um cartão.', 'error');
+                ui.openAuthModal('login');
+                return false;
+            }
+            return true;
         }
     };
 
@@ -239,7 +368,7 @@ const CardCreatorApp = (() => {
     const form = {
         async handleSubmit(event) {
             event.preventDefault();
-            if (!auth.requireLogin()) return;
+            if (!auth.requireAuth()) return;
 
             const requiredFields = [elements.deInput, elements.nomeInput, elements.mensagemInput];
             if (requiredFields.some(input => !input.value.trim())) {
@@ -248,6 +377,7 @@ const CardCreatorApp = (() => {
             }
 
             ui.setSubmitButtonState(true);
+
             const formData = new FormData();
             formData.append('de', elements.deInput.value.trim());
             formData.append('para', elements.nomeInput.value.trim());
@@ -326,6 +456,17 @@ const CardCreatorApp = (() => {
                 if (e.target === elements.successModal) ui.closeSuccessModal();
             });
         }
+        if (elements.loginForm) elements.loginForm.addEventListener('submit', auth.login.bind(auth));
+        if (elements.registerForm) elements.registerForm.addEventListener('submit', auth.register.bind(auth));
+        if (elements.closeAuthModalBtn) elements.closeAuthModalBtn.addEventListener('click', ui.closeAuthModal.bind(ui));
+        if (elements.authModal) {
+            elements.authModal.addEventListener('click', (e) => {
+                if (e.target === elements.authModal) ui.closeAuthModal();
+            });
+        }
+        if (elements.showRegisterBtn) elements.showRegisterBtn.addEventListener('click', () => ui.openAuthModal('register'));
+        if (elements.showLoginBtn) elements.showLoginBtn.addEventListener('click', () => ui.openAuthModal('login'));
+        if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', auth.logout.bind(auth));
     };
 
     // 9. Inicialização

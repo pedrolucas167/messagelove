@@ -11,10 +11,10 @@
         default-src 'self'; 
         script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com;
         frame-src 'self' https://www.youtube.com;
-        img-src 'self' data: https:;
+        img-src 'self' data: https: https://messagelove-bucket.s3.us-east-1.amazonaws.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001;
+        connect-src 'self' https://messagelove-backend.onrender.com http://localhost:3001 https://www.youtube.com https://messagelove-bucket.s3.us-east-1.amazonaws.com;
     ">
 
     <link rel="preconnect" href="https://messagelove-backend.onrender.com" />
@@ -38,19 +38,21 @@
 
 <body>
     <script>
-        // Remove a classe 'no-js' para habilitar estilos dependentes de JS
         document.documentElement.classList.replace('no-js', 'js');
     </script>
 
     <header class="main-header" role="banner">
-        <div class="container">
-            <h1>Crie um Cartão Especial</h1>
-            <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos.</p>
-        </div>
+        <nav class="header-nav">
+            <a href="/" class="header-logo">MessageLove</a>
+            <button id="logoutBtn" class="btn btn--tertiary" hidden aria-label="Sair da sessão">Sair</button>
+        </nav>
     </header>
 
     <main class="main-content" role="main">
         <div class="container">
+            <h1>Crie um Cartão Especial</h1>
+            <p class="subtitle">Compartilhe seu amor com mensagens personalizadas, fotos e vídeos.</p>
+
             <form id="cardForm" class="card-form" novalidate>
                 <fieldset class="form-section">
                     <legend class="section-title">
@@ -81,9 +83,9 @@
                 <fieldset class="form-section">
                     <legend class="section-title"><h3>Adicionais (Opcional)</h3></legend>
                     
-                     <div class="form-group file-upload">
+                    <div class="form-group file-upload">
                         <label for="fotoUpload">Adicionar Foto</label>
-                        <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/gif" />
+                        <input type="file" id="fotoUpload" name="foto" accept="image/jpeg,image/png,image/webp" />
                         <div class="preview-container" hidden data-js="preview-container">
                             <img class="preview" alt="Pré-visualização da foto" data-js="foto-preview" />
                             <button type="button" class="btn btn-remove" id="removeFoto" aria-label="Remover foto">×</button>
@@ -92,9 +94,14 @@
 
                     <div class="form-group">
                         <label for="youtubeUrlInput">Link do YouTube</label>
-                        <div class="input-group-action">
+                        <div class="youtube-input-group">
                             <input type="url" id="youtubeUrlInput" class="form-input" placeholder="Cole o link do vídeo aqui" />
                             <button type="button" id="addYoutubeUrlBtn" class="btn btn--secondary">Adicionar</button>
+                        </div>
+                        <div class="youtube-time-group">
+                            <label for="youtubeStartTimeInput">Tempo inicial (segundos)</label>
+                            <input type="number" id="youtubeStartTimeInput" name="youtubeStartTime" min="0" class="form-input" placeholder="Ex.: 30" aria-describedby="youtubeStartTimeHint" />
+                            <span id="youtubeStartTimeHint" class="field-hint">Tempo em segundos onde o vídeo começará</span>
                         </div>
                         <div id="youtubeError" class="youtube-error"></div>
                     </div>
@@ -117,6 +124,64 @@
                     </button>
                 </div>
             </form>
+
+            <div id="authModal" class="modal-overlay" hidden>
+                <div class="modal-content auth-form">
+                    <button id="closeAuthModalBtn" class="modal-close-btn" aria-label="Fechar modal de autenticação">×</button>
+                    <div id="loginFormContainer">
+                        <h2>Faça Login</h2>
+                        <form id="loginForm" class="auth-form" novalidate>
+                            <div class="form-group">
+                                <label for="loginEmail" class="required-field">E-mail</label>
+                                <input type="email" id="loginEmail" name="email" class="form-input" required placeholder="Seu e-mail" aria-required="true" />
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword" class="required-field">Senha</label>
+                                <input type="password" id="loginPassword" name="password" class="form-input" required placeholder="Sua senha" aria-required="true" />
+                            </div>
+                            <div class="form-group form-actions">
+                                <button type="submit" class="btn btn--primary" id="loginSubmitBtn">
+                                    <span class="btn-text">Entrar</span>
+                                    <span class="btn-loading" aria-hidden="true" hidden>
+                                        <span class="btn-spinner"></span> Entrando...
+                                    </span>
+                                </button>
+                            </div>
+                            <p>
+                                Não tem conta? <button type="button" id="showRegisterBtn" class="auth-link">Cadastre-se</button>
+                            </p>
+                        </form>
+                    </div>
+                    <div id="registerFormContainer" hidden>
+                        <h2>Cadastre-se</h2>
+                        <form id="registerForm" class="auth-form" novalidate>
+                            <div class="form-group">
+                                <label for="registerEmail" class="required-field">E-mail</label>
+                                <input type="email" id="registerEmail" name="email" class="form-input" required placeholder="Seu e-mail" aria-required="true" />
+                            </div>
+                            <div class="form-group">
+                                <label for="registerPassword" class="required-field">Senha</label>
+                                <input type="password" id="registerPassword" name="password" class="form-input" required placeholder="Crie uma senha" aria-required="true" />
+                            </div>
+                            <div class="form-group">
+                                <label for="registerConfirmPassword" class="required-field">Confirmar Senha</label>
+                                <input type="password" id="registerConfirmPassword" name="confirmPassword" class="form-input" required placeholder="Confirme sua senha" aria-required="true" />
+                            </div>
+                            <div class="form-group form-actions">
+                                <button type="submit" class="btn btn--primary" id="registerSubmitBtn">
+                                    <span class="btn-text">Cadastrar</span>
+                                    <span class="btn-loading" aria-hidden="true" hidden>
+                                        <span class="btn-spinner"></span> Cadastrando...
+                                    </span>
+                                </button>
+                            </div>
+                            <p>
+                                Já tem conta? <button type="button" id="showLoginBtn" class="auth-link">Faça login</button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <div id="successModal" class="modal-overlay" hidden>
                 <div class="modal-content">
