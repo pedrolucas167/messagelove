@@ -2,7 +2,7 @@
  * @file script.js
  * @description Script para a página inicial (index.html) do Messagelove, gerencia autenticação, criação de cartões, upload de fotos e vídeos do YouTube.
  * @author Pedro Marques
- * @version 3.5.0
+ * @version 3.5.1
  */
 const CardCreatorApp = (() => {
     // Configurações
@@ -66,7 +66,8 @@ const CardCreatorApp = (() => {
         copyLinkBtn: document.getElementById('copyLinkBtn'),
         viewCardBtn: document.getElementById('viewCardBtn'),
         logoutBtn: document.getElementById('logoutBtn'),
-        appNotificationArea: document.getElementById('appNotificationArea')
+        appNotificationArea: document.getElementById('appNotificationArea'),
+        currentYear: document.getElementById('currentYear') // Adicionado
     };
 
     // Módulo de Validação
@@ -441,7 +442,11 @@ const CardCreatorApp = (() => {
         console.log(`Iniciando CardCreatorApp. API_URL: ${config.API_URL}`);
         bindEvents();
         auth.checkAuth();
-        elements.currentYear.textContent = new Date().getFullYear();
+        if (elements.currentYear) {
+            elements.currentYear.textContent = new Date().getFullYear();
+        } else {
+            console.warn('Elemento #currentYear não encontrado no DOM.');
+        }
     };
 
     return { init };

@@ -12,7 +12,7 @@ const logger = require('./config/logger');
 
 // --- IMPORTAÇÕES LOCAIS ---
 const cardRoutes = require('./routes/cardRoutes');
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require('./routes/authroutes');
 const db = require('./models');
 
 // ... (Suas funções de configuração: configureSecurity, configureMiddlewares, etc.)
