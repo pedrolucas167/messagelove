@@ -3,14 +3,14 @@
  * @description Main script for the MessageLove application. Features elegant heart-shaped particle animations
  * for a romantic "correio elegante" theme, secure authentication, and UI interactions.
  * @author Pedro Marques
- * @version 6.3.0
+ * @version 6.3.1
  */
 document.addEventListener('DOMContentLoaded', () => {
     const MessageLoveApp = (() => {
         // Configuration
         const config = {
             API_URL: window.location.hostname.includes('localhost') 
-                ? 'http://localhost:3001/api' 
+                ? 'http://localhost:3000/api' // Proxy for local dev
                 : 'https://messagelove-backend.onrender.com/api',
             PARTICLE_DENSITY: { mobile: 30000, desktop: 15000 },
             PARTICLE_CONNECTION_DISTANCE: 80,
@@ -213,6 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             errorMessage = result.errors.map(e => e.msg).join(' ');
                         } else if (response.status === 429) {
                             errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
+                        } else if (response.status === 0) {
+                            errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.';
                         }
                         const error = new Error(errorMessage);
                         error.status = response.status;
@@ -225,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (error.status === 401) {
                         auth.logout();
                     }
-                    throw error;
+                    throw new Error(error.message || 'Erro de conexão com o servidor.');
                 }
             },
             login: (email, password) => api.request('/auth/login', { method: 'POST', body: JSON.stringify({ email: email.trim(), password }) }),
