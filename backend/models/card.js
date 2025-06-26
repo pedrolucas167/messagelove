@@ -1,44 +1,39 @@
-// Arquivo: models/card.js
-
 'use strict';
 const { Model } = require('sequelize');
 
-// A função recebe 'sequelize' e 'DataTypes' como argumentos
 module.exports = (sequelize, DataTypes) => {
-  class Card extends Model {
-    static associate(models) {
-      // Defina associações aqui, se houver.
+    class User extends Model {
+        static associate(models) {
+            User.hasMany(models.Card, { foreignKey: 'userId', as: 'cards' });
+        }
     }
-  }
-  Card.init({
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
-      allowNull: false,
-    },
-    de: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    para: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    mensagem: {
-      type: DataTypes.TEXT,
-      allowNull: false
-    },
-    fotoUrl: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    youtubeVideoId: {
-      type: DataTypes.STRING,
-      allowNull: true
-    }
-  }, {
-    sequelize,
-    modelName: 'Card',
-  });
-  return Card;
+
+    User.init({
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true,
+            allowNull: false
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false
+        }
+    }, {
+        sequelize,
+        modelName: 'User',
+        tableName: 'Users',
+        timestamps: true
+    });
+
+    return User;
 };
