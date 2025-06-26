@@ -1,37 +1,27 @@
-/**
- * @file script.js
- * @description Main script for the MessageLove application. Features heart-shaped particle animations,
- * secure authentication, card creation, and UI interactions for a romantic "correio elegante" theme.
- * @author Pedro Marques
- * @version 6.5.0
- */
 document.addEventListener('DOMContentLoaded', () => {
     const MessageLoveApp = (() => {
-        // Configuration
         const config = {
             API_URL: window.location.hostname.includes('localhost')
-                ? 'http://localhost:3000/api' // Proxy for local dev
+                ? 'http://localhost:3000/api'
                 : 'https://messagelove-backend.onrender.com/api',
             PARTICLE_DENSITY: { mobile: 30000, desktop: 15000 },
             PARTICLE_CONNECTION_DISTANCE: 80,
             PARTICLE_INTERACTION_RADIUS: 120,
             PARTICLE_COLORS: [
-                'rgba(255, 182, 193, 0.7)', // Light pink
-                'rgba(219, 112, 147, 0.6)', // Pale violet red
-                'rgba(255, 245, 238, 0.5)', // Seashell white
-                'rgba(221, 160, 221, 0.6)'  // Plum purple
+                'rgba(255, 182, 193, 0.7)',
+                'rgba(219, 112, 147, 0.6)',
+                'rgba(255, 245, 238, 0.5)',
+                'rgba(221, 160, 221, 0.6)'
             ],
-            PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)' // Hot pink glow
+            PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)'
         };
 
-        // Application state
         const state = {
             currentUser: null,
             particlesArray: [],
             interactionPos: { x: null, y: null }
         };
 
-        // DOM elements
         const elements = {
             welcomeSection: document.getElementById('welcomeSection'),
             dashboardSection: document.getElementById('dashboardSection'),
@@ -63,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentYear: document.getElementById('currentYear')
         };
 
-        // Particle Animation Module
         const particles = {
             init() {
                 if (!elements.particleCanvas) return;
@@ -187,10 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // API Module
         const api = {
             async request(endpoint, options = {}) {
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
                 const headers = { ...options.headers };
                 if (!(options.body instanceof FormData)) {
                     headers['Content-Type'] = 'application/json';
@@ -235,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: JSON.stringify({ name: name.trim(), email: email.trim(), password })
             }),
+            verifyToken: () => api.request('/auth/verify-token'),
             getMyCards: () => api.request('/cards'),
             createCard: (formData) => api.request('/cards', {
                 method: 'POST',
@@ -242,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         };
 
-        // UI Module
         const ui = {
             showView(viewName) {
                 [elements.welcomeSection, elements.dashboardSection, elements.creationSection].forEach(section =>
@@ -330,28 +318,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // Authentication Module
         const auth = {
-            sanitizeInput(input) {
-                return input.replace(/[<>&"']/g, '');
+            sanitizeInput(input, isEmail = false) {
+                if (isEmail) {
+                    return input.trim().toLowerCase();
+                }
+                const div = document.createElement('div');
+                div.textContent = input.trim();
+                return div.innerHTML;
+            },
+            isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            },
+            isValidPassword(password) {
+                return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password);
             },
             handleLoginSuccess(result, isRegistration = false) {
-                localStorage.setItem('token', result.token);
-                localStorage.setItem('user', JSON.stringify(result.user));
+                sessionStorage.setItem('token', result.token);
+                sessionStorage.setItem('user', JSON.stringify(result.user));
                 state.currentUser = result.user;
                 ui.closeModal();
                 elements.loginForm?.reset();
                 elements.registerForm?.reset();
-                const welcomeMessage = isRegistration
-                    ? `Bem-vindo, ${result.user.name}!`
-                    : `Login realizado com sucesso!`;
-                ui.showNotification(welcomeMessage, 'success');
+                ui.showNotification(isRegistration ? `Bem-vindo, ${result.user.name}!` : `Login realizado com sucesso!`, 'success');
                 ui.updateAuthUI();
                 history.replaceState(null, '', window.location.pathname);
             },
             logout() {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('user');
                 state.currentUser = null;
                 ui.showNotification('Você saiu da sua conta.', 'info');
                 ui.updateAuthUI();
@@ -359,16 +354,26 @@ document.addEventListener('DOMContentLoaded', () => {
             async login(event) {
                 event.preventDefault();
                 ui.setButtonLoading(elements.loginSubmitBtn, true);
-                const email = this.sanitizeInput(elements.loginForm.email.value);
+                const email = this.sanitizeInput(elements.loginForm.email.value, true);
                 const password = elements.loginForm.password.value;
+
                 try {
                     if (!email || !password) {
                         throw new Error('Por favor, preencha todos os campos.');
                     }
+                    if (!this.isValidEmail(email)) {
+                        throw new Error('Por favor, insira um email válido.');
+                    }
                     const result = await api.login(email, password);
                     this.handleLoginSuccess(result);
                 } catch (error) {
-                    ui.showNotification(error.message || 'Falha na comunicação com o servidor.', 'error');
+                    let errorMessage = error.message || 'Falha na comunicação com o servidor.';
+                    if (error.status === 401) {
+                        errorMessage = 'Email ou senha incorretos.';
+                    } else if (error.status === 429) {
+                        errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
+                    }
+                    ui.showNotification(errorMessage, 'error');
                 } finally {
                     ui.setButtonLoading(elements.loginSubmitBtn, false);
                     elements.loginForm.password.value = '';
@@ -379,37 +384,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { name, email, password } = elements.registerForm;
                 ui.setButtonLoading(elements.registerSubmitBtn, true);
                 const sanitizedName = this.sanitizeInput(name.value);
-                const sanitizedEmail = this.sanitizeInput(email.value);
+                const sanitizedEmail = this.sanitizeInput(email.value, true);
+
                 try {
                     if (!sanitizedName || !sanitizedEmail || !password.value) {
                         throw new Error('Por favor, preencha todos os campos.');
                     }
+                    if (!this.isValidEmail(sanitizedEmail)) {
+                        throw new Error('Por favor, insira um email válido.');
+                    }
+                    if (!this.isValidPassword(password.value)) {
+                        throw new Error('A senha deve ter pelo menos 8 caracteres, incluindo letras e números.');
+                    }
                     const result = await api.register(sanitizedName, sanitizedEmail, password.value);
                     this.handleLoginSuccess(result, true);
                 } catch (error) {
-                    ui.showNotification(error.message || 'Não foi possível cadastrar.', 'error');
+                    let errorMessage = error.message || 'Não foi possível cadastrar.';
+                    if (error.status === 409) {
+                        errorMessage = 'Este email já está registrado.';
+                    }
+                    ui.showNotification(errorMessage, 'error');
                 } finally {
                     ui.setButtonLoading(elements.registerSubmitBtn, false);
                     elements.registerForm.password.value = '';
                 }
             },
             init() {
-                const user = localStorage.getItem('user');
+                const user = sessionStorage.getItem('user');
                 if (user) {
                     try {
                         state.currentUser = JSON.parse(user);
+                        api.verifyToken().catch(() => this.logout());
                     } catch {
-                        localStorage.clear();
+                        this.logout();
                     }
                 }
                 ui.updateAuthUI();
             }
         };
 
-        // Card Module
         const cards = {
             sanitizeInput(input) {
-                return input.replace(/[<>&"']/g, '');
+                const div = document.createElement('div');
+                div.textContent = input.trim();
+                return div.innerHTML;
             },
             async create(event) {
                 event.preventDefault();
@@ -426,24 +444,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     const para = this.sanitizeInput(formData.get('para') || '');
                     const mensagem = this.sanitizeInput(formData.get('mensagem') || '');
                     const youtubeVideoId = this.sanitizeInput(formData.get('youtubeVideoId') || '');
-                    formData.set('de', de);
-                    formData.set('para', para);
-                    formData.set('mensagem', mensagem);
-                    formData.set('youtubeVideoId', youtubeVideoId);
 
                     if (!de || !para || !mensagem) {
                         throw new Error('Por favor, preencha remetente, destinatário e mensagem.');
                     }
 
+                    formData.set('de', de);
+                    formData.set('para', para);
+                    formData.set('mensagem', mensagem);
+                    formData.set('youtubeVideoId', youtubeVideoId);
+
                     const result = await api.createCard(formData);
+                    if (!result.id) {
+                        throw new Error('ID do cartão não retornado pelo servidor.');
+                    }
+
                     ui.showNotification('Cartão criado com sucesso!', 'success');
+                    elements.createCardForm.reset();
                     ui.showView('dashboard');
                     window.location.href = `card.html?id=${result.id}`;
                 } catch (error) {
-                    ui.showNotification(error.message || 'Erro ao criar cartão.', 'error');
+                    ui.showNotification(error.message || 'Erro ao criar cartão. Tente novamente.', 'error');
                 } finally {
                     ui.setButtonLoading(elements.createCardSubmitBtn, false);
-                    elements.createCardForm.reset();
                 }
             },
             async loadUserCards() {
@@ -482,7 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // Event Binding
         const bindEvents = () => {
             elements.logoutBtn?.addEventListener('click', auth.logout.bind(auth));
             elements.loginForm?.addEventListener('submit', auth.login.bind(auth));
@@ -502,9 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.showLoginFromResetBtn?.addEventListener('click', () => ui.showAuthForm(elements.loginFormContainer));
         };
 
-        // Initialization
         const init = () => {
-            console.log('MessageLoveApp Initialized.');
             particles.init();
             ui.updateFooterYear();
             auth.init();
