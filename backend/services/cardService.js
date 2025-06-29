@@ -2,7 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const { body, validationResult } = require('express-validator');
 const authenticate = require('../middlewares/auth');
-const { createCard, getCardById, getAllCards } = require('../services/cardService');
+const { createCard, getCardById } = require('../services/cardService');
+const logger = require('../config/logger');
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.post('/', authenticate, upload.single('foto'), validateCard, async (req, 
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            logger.warn('Validação falhou no POST /cards', { errors: errors.array(), userId: req.user?.userId });
             return res.status(400).json({ errors: errors.array() });
         }
 
@@ -42,28 +44,44 @@ router.post('/', authenticate, upload.single('foto'), validateCard, async (req, 
             youtubeVideoId: req.body.youtubeVideoId,
             youtubeStartTime: req.body.youtubeStartTime
         };
+        logger.info('Criando novo cartão', { userId: req.user.userId });
         const novoCartao = await createCard(cardData, req.file, req.user.userId);
         res.status(201).json({ id: novoCartao.id, ...novoCartao.dataValues });
     } catch (error) {
+        logger.error('Erro ao criar cartão', { error: error.message, userId: req.user?.userId });
         next(error);
     }
 });
 
 router.get('/', authenticate, async (req, res, next) => {
     try {
-        const cards = await getAllCards();
+        if (!req.user?.userId) {
+            logger.warn('Autenticação ausente no GET /cards');
+            return res.status(401).json({ message: 'Autenticação necessária.' });
+        }
+        logger.info('Buscando cartões do usuário', { userId: req.user.userId });
+        const cards = await Card.findAll({
+            where: { userId: req.user.userId },
+            order: [['createdAt', 'DESC']]
+        });
         res.json(cards);
     } catch (error) {
+        logger.error('Erro ao buscar cartões', { error: error.message, userId: req.user?.userId });
         next(error);
     }
 });
 
 router.get('/:id', async (req, res, next) => {
     try {
+        logger.info('Buscando cartão por ID', { cardId: req.params.id });
         const card = await getCardById(req.params.id);
-        if (!card) return res.status(404).json({ message: 'Cartão não encontrado' });
+        if (!card) {
+            logger.warn('Cartão não encontrado', { cardId: req.params.id });
+            return res.status(404).json({ message: 'Cartão não encontrado' });
+        }
         res.json(card);
     } catch (error) {
+        logger.error('Erro ao buscar cartão por ID', { error: error.message, cardId: req.params.id });
         next(error);
     }
 });

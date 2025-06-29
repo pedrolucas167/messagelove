@@ -1,46 +1,39 @@
-// /backend/models/users.js - VERSÃO CORRIGIDA
-
 'use strict';
 const { Model } = require('sequelize');
 
-// A mágica está aqui: exportamos uma função que recebe os argumentos do index.js
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
-    // Se você tiver associações, elas vêm aqui.
-    static associate(models) {
-      // Exemplo: User.hasMany(models.Card, { foreignKey: 'userId' });
+    class User extends Model {
+        static associate(models) {
+            User.hasMany(models.Card, { foreignKey: 'userId', as: 'cards' });
+        }
     }
-  }
 
-  // Usamos User.init para definir o modelo
-  User.init({
-    // Suas colunas exatamente como estavam:
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: { isEmail: true },
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-  }, {
-    // Suas opções exatamente como estavam:
-    sequelize, 
-    modelName: 'User',
-    timestamps: true,
-    tableName: 'Users',
-  });
+    User.init({
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true,
+            allowNull: false
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false
+        }
+    }, {
+        sequelize,
+        modelName: 'User',
+        tableName: 'Users',
+        timestamps: true
+    });
 
-  return User;
+    return User;
 };
