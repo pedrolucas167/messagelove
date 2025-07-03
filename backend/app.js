@@ -10,6 +10,8 @@ const db = require('./models');
 const cardRoutes = require('./routes/cardRoutes');
 const authRoutes = require('./routes/authRoutes');
 
+const app = express();
+
 const setupSecurity = (app) => {
     app.set('trust proxy', 1);
 
@@ -66,9 +68,23 @@ const setupCoreMiddlewares = (app) => {
 };
 
 const connectDatabase = async () => {
-    await db.sequelize.authenticate();
-    if (process.env.SYNC_DB === 'true') {
-        await db.sequelize.sync({ alter: true });
+    try {
+        await db.sequelize.authenticate();
+        logger.info('Conexão com o banco de dados estabelecida');
+
+        // Sincronização apenas em desenvolvimento, desativada em produção
+        if (process.env.NODE_ENV === 'development' && process.env.SYNC_DB === 'true') {
+            await db.sequelize.sync({ alter: true });
+            logger.info('Modelos sincronizados com o banco de dados');
+        } else {
+            logger.info('Sincronização do banco desativada (use migrações em produção)');
+        }
+    } catch (error) {
+        logger.error('Falha na inicialização do servidor: erro na conexão ou sincronização', {
+            error: error.message,
+            stack: error.stack
+        });
+        throw error;
     }
 };
 
@@ -107,8 +123,6 @@ const setupErrorHandling = (app) => {
 
 const startServer = async () => {
     try {
-        const app = express();
-
         setupSecurity(app);
         setupCoreMiddlewares(app);
         await connectDatabase();
