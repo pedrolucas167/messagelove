@@ -13,13 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 'rgba(255, 245, 238, 0.5)',
                 'rgba(221, 160, 221, 0.6)'
             ],
-            PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)'
+            PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)',
+            MAX_RETRIES: 3, // Novo: Limite de retentativas
+            RETRY_DELAY: 2000 // Novo: Atraso entre retentativas (ms)
         };
 
         const state = {
             currentUser: null,
             particlesArray: [],
-            interactionPos: { x: null, y: null }
+            interactionPos: { x: null, y: null },
+            retryCount: 0 // Novo: Contador de retentativas
         };
 
         const elements = {
@@ -53,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentYear: document.getElementById('currentYear')
         };
 
-        // Validação inicial de elementos
         if (!Object.values(elements).every(el => el || el === null)) {
             console.warn('Alguns elementos HTML não foram encontrados:', elements);
         }
@@ -182,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const api = {
-            async request(endpoint, options = {}) {
+            async request(endpoint, options = {}, retries = config.MAX_RETRIES) {
                 const token = sessionStorage.getItem('token');
                 const headers = { ...options.headers };
                 if (!(options.body instanceof FormData)) {
@@ -209,11 +211,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         error.data = result;
                         throw error;
                     }
+                    state.retryCount = 0; // Reseta retentativas após sucesso
                     return result;
                 } catch (error) {
                     console.error(`API Error on ${endpoint}:`, { status: error.status, message: error.message, data: error.data });
                     if (error.status === 401) {
                         auth.logout();
+                    }
+                    if (retries > 0 && error.status !== 401 && error.status !== 429) {
+                        state.retryCount++;
+                        await new Promise(resolve => setTimeout(resolve, config.RETRY_DELAY));
+                        return api.request(endpoint, options, retries - 1); // Retentativa
                     }
                     throw new Error(error.message || 'Erro de conexão com o servidor.');
                 }
@@ -304,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             openModal(initialForm) {
                 if (!elements.authModal) return;
                 elements.authModal.classList.remove('hidden');
+                elements.authModal.setAttribute('aria-hidden', 'false');
                 setTimeout(() => {
                     elements.authModal.classList.remove('opacity-0');
                     elements.authModal.querySelector('.modal-content')?.classList.remove('scale-95');
@@ -314,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!elements.authModal) return;
                 elements.authModal.classList.add('opacity-0');
                 elements.authModal.querySelector('.modal-content')?.classList.add('scale-95');
+                elements.authModal.setAttribute('aria-hidden', 'true');
                 setTimeout(() => elements.authModal.classList.add('hidden'), 300);
             },
             updateFooterYear() {
@@ -427,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 ui.updateAuthUI();
+                setInterval(() => api.verifyToken().catch(() => this.logout()), 300000); // Novo: Verificação a cada 5 minutos
             }
         };
 
@@ -497,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         elements.userCardsList.appendChild(cardElement);
                     });
                 } catch (error) {
-                    ui.showNotification('Erro ao carregar seus cartões.', 'error');
+                    ui.showNotification(`Erro ao carregar seus cartões: ${error.message}`, 'error');
                 }
             },
             showCreationForm() {
