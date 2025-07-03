@@ -2,7 +2,7 @@
  * @file card.js
  * @description Script to render a specific card on card.html using data from the backend.
  * @author Pedro Marques
- * @version 1.2.0
+ * @version 1.2.1
  */
 document.addEventListener('DOMContentLoaded', () => {
     const CardViewer = (() => {
@@ -39,10 +39,18 @@ document.addEventListener('DOMContentLoaded', () => {
             particleCanvas: document.getElementById('particle-canvas')
         };
 
+        // Validação inicial de elementos
+        if (!Object.values(elements).every(el => el || el === null)) {
+            console.warn('Alguns elementos HTML não foram encontrados:', elements);
+        }
+
         const api = {
             async request(endpoint, options = {}) {
-                const token = localStorage.getItem('token');
-                const headers = { ...options.headers, 'Content-Type': 'application/json' };
+                const token = sessionStorage.getItem('token'); // Alinhado com script.js
+                const headers = { ...options.headers };
+                if (!(options.body instanceof FormData)) {
+                    headers['Content-Type'] = 'application/json';
+                }
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
@@ -51,13 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const result = await response.text().then(text => text ? JSON.parse(text) : {});
                     if (!response.ok) {
                         const errorMessage = result.message || `Erro ${response.status}: ${response.statusText}`;
+                        if (Array.isArray(result.errors)) {
+                            errorMessage = result.errors.map(e => e.msg).join(' ');
+                        }
                         const error = new Error(errorMessage);
                         error.status = response.status;
+                        error.data = result;
                         throw error;
                     }
                     return result;
                 } catch (error) {
-                    console.error(`API Error on ${endpoint}:`, error);
+                    console.error(`API Error on ${endpoint}:`, { status: error.status, message: error.message, data: error.data });
                     throw error;
                 }
             },
@@ -66,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const ui = {
             showNotification(message, type = 'error') {
+                if (!document.body) return;
                 const notification = document.createElement('div');
                 notification.className = `p-4 text-sm rounded-lg ${type === 'error' ? 'bg-red-600' : 'bg-green-500'} text-white fixed top-4 right-4 z-50`;
                 notification.textContent = message;
@@ -80,11 +93,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.unveilingContent?.classList.remove('hidden');
             },
             renderCard(card) {
-                if (!card) return;
+                if (!card || !elements.cardView) return;
                 elements.recipientName.textContent = card.para || 'Destinatário';
                 elements.specialDate.textContent = card.createdAt ? new Date(card.createdAt).toLocaleDateString('pt-BR') : '';
                 elements.cardMessage.textContent = card.mensagem || '';
                 elements.cardSender.textContent = card.de || 'Anônimo';
+                elements.cardFotoContainer?.innerHTML = ''; // Limpa conteúdo anterior
                 if (card.fotoUrl && elements.cardFotoContainer) {
                     const img = document.createElement('img');
                     img.src = card.fotoUrl;
@@ -92,8 +106,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     img.className = 'max-w-full rounded';
                     elements.cardFotoContainer.appendChild(img);
                 }
+                elements.cardVideoContainer?.innerHTML = ''; // Limpa conteúdo anterior
                 if (card.youtubeVideoId && elements.cardVideoContainer) {
-                    elements.cardVideoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${card.youtubeVideoId}?start=${card.youtubeStartTime || 0}" frameborder="0" allowfullscreen class="w-full h-64 rounded"></iframe>`;
+                    const startTime = card.youtubeStartTime || 0;
+                    elements.cardVideoContainer.innerHTML = `
+                        <iframe 
+                            src="https://www.youtube.com/embed/${card.youtubeVideoId}?start=${startTime}" 
+                            title="${card.para} - Mensagem de ${card.de}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen 
+                            class="w-full h-64 rounded">
+                        </iframe>
+                    `;
                 }
             },
             showCardView() {
@@ -104,9 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('card-page-footer')?.classList.remove('hidden');
             },
             showError(message = 'Erro ao carregar cartão.') {
+                if (!elements.errorState) return;
                 elements.loadingState?.classList.add('hidden');
                 elements.unveilingScreen?.classList.remove('visible');
-                elements.errorState?.classList.remove('hidden');
+                elements.errorState.classList.remove('hidden');
                 this.showNotification(message, 'error');
             }
         };
@@ -115,8 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             init() {
                 if (!elements.particleCanvas || !config.PARTICLE_COLORS) return;
                 const ctx = elements.particleCanvas.getContext('2d');
-                elements.particleCanvas.width = window.innerWidth;
-                elements.particleCanvas.height = window.innerHeight;
+                this.resizeCanvas();
 
                 const particlesArray = [];
                 const numberOfParticles = Math.min((window.innerWidth * window.innerHeight) / 15000, 80);
@@ -168,13 +193,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 animate();
 
                 window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                    // Recriar partículas em resize
+                    this.init(); // Reinicia para ajustar a densidade
+                });
+            },
+            resizeCanvas() {
+                if (elements.particleCanvas) {
                     elements.particleCanvas.width = window.innerWidth;
                     elements.particleCanvas.height = window.innerHeight;
-                });
+                }
             }
         };
 
         const init = async () => {
+            if (!elements.particleCanvas) {
+                console.warn('Elemento particleCanvas não encontrado. Efeitos de partículas desativados.');
+            }
             particles.init();
             const urlParams = new URLSearchParams(window.location.search);
             const cardId = urlParams.get('id');
@@ -186,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const response = await api.getCard(cardId);
-                // Normalizar resposta: garantir que seja um objeto, não um array
                 const card = Array.isArray(response) ? response[0] : response;
                 if (!card || typeof card !== 'object') {
                     throw new Error('Cartão inválido ou não encontrado.');

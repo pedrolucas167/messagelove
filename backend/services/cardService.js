@@ -2,6 +2,7 @@ const { Card } = require('../models');
 const { nanoid } = require('nanoid');
 const { uploadOptimizedPhoto } = require('./s3Service');
 const logger = require('../config/logger');
+const { sequelize } = require('../models'); // Para transações
 
 /**
  * Cria um novo cartão, otimizando a foto se ela existir.
@@ -19,19 +20,34 @@ async function createCard(cardData, file, userId) {
 
     try {
         logger.info('Iniciando criação de cartão', { userId, cardData });
+
+        // Validação de file
+        if (file && !file.buffer) {
+            throw new Error('Arquivo de foto inválido.');
+        }
+
         const fotoUrl = await uploadOptimizedPhoto(file);
-        const novoCartao = await Card.create({
-            id: nanoid(10),
-            de: cardData.de,
-            para: cardData.para,
-            mensagem: cardData.mensagem,
-            fotoUrl,
-            youtubeVideoId: cardData.youtubeVideoId || null,
-            youtubeStartTime: parseInt(cardData.youtubeStartTime, 10) || 0,
-            userId // Usa o userId fornecido, sem criar novo User
-        });
-        logger.info('Cartão criado com sucesso', { cardId: novoCartao.id, userId });
-        return novoCartao;
+        const transaction = await sequelize.transaction();
+        try {
+            const novoCartao = await Card.create({
+                id: nanoid(10),
+                de: cardData.de,
+                para: cardData.para,
+                mensagem: cardData.mensagem,
+                fotoUrl,
+                youtubeVideoId: cardData.youtubeVideoId || null,
+                youtubeStartTime: parseInt(cardData.youtubeStartTime, 10) || 0,
+                userId
+            }, { transaction });
+
+            await transaction.commit();
+            logger.info('Cartão criado com sucesso', { cardId: novoCartao.id, userId });
+            return novoCartao;
+        } catch (error) {
+            await transaction.rollback();
+            logger.error('Falha ao criar cartão (transação revertida)', { error: error.message, userId, stack: error.stack });
+            throw error;
+        }
     } catch (error) {
         logger.error('Falha ao criar cartão', { error: error.message, userId, stack: error.stack });
         throw error;
@@ -45,7 +61,10 @@ async function createCard(cardData, file, userId) {
  */
 async function getCardById(id) {
     try {
-        const card = await Card.findByPk(id);
+        logger.info('Buscando cartão por ID', { id });
+        const card = await Card.findByPk(id, {
+            attributes: { exclude: ['createdAt', 'updatedAt'] } // Opcional: otimiza resposta
+        });
         return card;
     } catch (error) {
         logger.error('Falha ao buscar cartão por ID', { id, error: error.message });

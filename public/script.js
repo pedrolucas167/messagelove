@@ -53,6 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
             currentYear: document.getElementById('currentYear')
         };
 
+        // Validação inicial de elementos
+        if (!Object.values(elements).every(el => el || el === null)) {
+            console.warn('Alguns elementos HTML não foram encontrados:', elements);
+        }
+
         const particles = {
             init() {
                 if (!elements.particleCanvas) return;
@@ -191,10 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const response = await fetch(`${config.API_URL}${endpoint}`, { ...options, headers });
                     const result = await response.text().then(text => text ? JSON.parse(text) : {});
                     if (!response.ok) {
-                        let errorMessage = `Erro ${response.status}: ${response.statusText}`;
-                        if (result && result.message) {
-                            errorMessage = result.message;
-                        } else if (result && Array.isArray(result.errors)) {
+                        let errorMessage = `Erro ${response.status}: ${result.message || response.statusText}`;
+                        if (Array.isArray(result.errors)) {
                             errorMessage = result.errors.map(e => e.msg).join(' ');
                         } else if (response.status === 429) {
                             errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
@@ -208,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     return result;
                 } catch (error) {
-                    console.error(`API Error on ${endpoint}:`, error);
+                    console.error(`API Error on ${endpoint}:`, { status: error.status, message: error.message, data: error.data });
                     if (error.status === 401) {
                         auth.logout();
                     }
@@ -299,17 +302,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 formToShow?.classList.remove('hidden');
             },
             openModal(initialForm) {
-                elements.authModal?.classList.remove('hidden');
+                if (!elements.authModal) return;
+                elements.authModal.classList.remove('hidden');
                 setTimeout(() => {
-                    elements.authModal?.classList.remove('opacity-0');
-                    elements.authModal?.querySelector('.modal-content')?.classList.remove('scale-95');
+                    elements.authModal.classList.remove('opacity-0');
+                    elements.authModal.querySelector('.modal-content')?.classList.remove('scale-95');
                 }, 10);
                 this.showAuthForm(initialForm);
             },
             closeModal() {
-                elements.authModal?.classList.add('opacity-0');
-                elements.authModal?.querySelector('.modal-content')?.classList.add('scale-95');
-                setTimeout(() => elements.authModal?.classList.add('hidden'), 300);
+                if (!elements.authModal) return;
+                elements.authModal.classList.add('opacity-0');
+                elements.authModal.querySelector('.modal-content')?.classList.add('scale-95');
+                setTimeout(() => elements.authModal.classList.add('hidden'), 300);
             },
             updateFooterYear() {
                 if (elements.currentYear) {
@@ -353,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             async login(event) {
                 event.preventDefault();
+                if (!elements.loginSubmitBtn || !elements.loginForm) return;
                 ui.setButtonLoading(elements.loginSubmitBtn, true);
                 const email = this.sanitizeInput(elements.loginForm.email.value, true);
                 const password = elements.loginForm.password.value;
@@ -381,6 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             async register(event) {
                 event.preventDefault();
+                if (!elements.registerSubmitBtn || !elements.registerForm) return;
                 const { name, email, password } = elements.registerForm;
                 ui.setButtonLoading(elements.registerSubmitBtn, true);
                 const sanitizedName = this.sanitizeInput(name.value);
@@ -431,16 +438,12 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             async create(event) {
                 event.preventDefault();
-                if (!state.currentUser) {
-                    ui.showNotification('Faça login para criar um cartão.', 'warning');
-                    ui.openModal(elements.loginFormContainer);
-                    return;
-                }
+                if (!state.currentUser || !elements.createCardSubmitBtn || !elements.createCardForm) return;
                 ui.setButtonLoading(elements.createCardSubmitBtn, true);
 
                 try {
                     const formData = new FormData(elements.createCardForm);
-                    const de = this.sanitizeInput(formData.get('de') || state.currentUser.name);
+                    const de = this.sanitizeInput(formData.get('de') || state.currentUser.name || '');
                     const para = this.sanitizeInput(formData.get('para') || '');
                     const mensagem = this.sanitizeInput(formData.get('mensagem') || '');
                     const youtubeVideoId = this.sanitizeInput(formData.get('youtubeVideoId') || '');
@@ -470,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             async loadUserCards() {
-                if (!state.currentUser) return;
+                if (!state.currentUser || !elements.userCardsList) return;
                 try {
                     const cards = await api.getMyCards();
                     elements.userCardsList.innerHTML = '';
@@ -525,6 +528,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const init = () => {
+            if (!elements.particleCanvas && !elements.appNotificationArea) {
+                console.warn('Alguns elementos críticos não foram encontrados. Verifique o HTML.');
+                return;
+            }
             particles.init();
             ui.updateFooterYear();
             auth.init();
