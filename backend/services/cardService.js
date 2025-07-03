@@ -1,89 +1,59 @@
-const express = require('express');
-const multer = require('multer');
-const { body, validationResult } = require('express-validator');
-const authenticate = require('../middlewares/auth');
-const { createCard, getCardById } = require('../services/cardService');
+const { Card } = require('../models');
+const { nanoid } = require('nanoid');
+const { uploadOptimizedPhoto } = require('./s3Service');
 const logger = require('../config/logger');
 
-const router = express.Router();
-
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!allowedTypes.includes(file.mimetype)) {
-            const error = new Error('Apenas imagens JPEG, PNG ou WebP são permitidas');
-            error.code = 'LIMIT_FILE_TYPE';
-            return cb(error, false);
-        }
-        cb(null, true);
+/**
+ * Cria um novo cartão, otimizando a foto se ela existir.
+ * @param {object} cardData - Dados do cartão (de, para, mensagem, youtubeVideoId, youtubeStartTime).
+ * @param {object} file - O arquivo de foto opcional (req.file).
+ * @param {string} userId - ID do usuário autenticado.
+ * @returns {Promise<object>} O objeto do cartão criado com ID.
+ * @throws {Error} Se os dados forem inválidos ou a criação falhar.
+ */
+async function createCard(cardData, file, userId) {
+    if (!userId) throw new Error('ID do usuário é obrigatório.');
+    if (!cardData.de || !cardData.para || !cardData.mensagem) {
+        throw new Error('Campos de, para e mensagem são obrigatórios.');
     }
-});
 
-const validateCard = [
-    body('de').trim().notEmpty().withMessage('O nome do remetente é obrigatório.'),
-    body('para').trim().notEmpty().withMessage('O nome do destinatário é obrigatório.'),
-    body('mensagem').trim().notEmpty().withMessage('A mensagem é obrigatória.'),
-    body('youtubeVideoId').optional().trim(),
-    body('youtubeStartTime').optional().isInt({ min: 0 }).withMessage('O tempo inicial do vídeo deve ser um número positivo.')
-];
-
-router.post('/', authenticate, upload.single('foto'), validateCard, async (req, res, next) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            logger.warn('Validação falhou no POST /cards', { errors: errors.array(), userId: req.user?.userId });
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const cardData = {
-            de: req.body.de,
-            para: req.body.para,
-            mensagem: req.body.mensagem,
-            youtubeVideoId: req.body.youtubeVideoId,
-            youtubeStartTime: req.body.youtubeStartTime
-        };
-        logger.info('Criando novo cartão', { userId: req.user.userId });
-        const novoCartao = await createCard(cardData, req.file, req.user.userId);
-        res.status(201).json({ id: novoCartao.id, ...novoCartao.dataValues });
-    } catch (error) {
-        logger.error('Erro ao criar cartão', { error: error.message, userId: req.user?.userId });
-        next(error);
-    }
-});
-
-router.get('/', authenticate, async (req, res, next) => {
-    try {
-        if (!req.user?.userId) {
-            logger.warn('Autenticação ausente no GET /cards');
-            return res.status(401).json({ message: 'Autenticação necessária.' });
-        }
-        logger.info('Buscando cartões do usuário', { userId: req.user.userId });
-        const cards = await Card.findAll({
-            where: { userId: req.user.userId },
-            order: [['createdAt', 'DESC']]
+        logger.info('Iniciando criação de cartão', { userId, cardData });
+        const fotoUrl = await uploadOptimizedPhoto(file);
+        const novoCartao = await Card.create({
+            id: nanoid(10),
+            de: cardData.de,
+            para: cardData.para,
+            mensagem: cardData.mensagem,
+            fotoUrl,
+            youtubeVideoId: cardData.youtubeVideoId || null,
+            youtubeStartTime: parseInt(cardData.youtubeStartTime, 10) || 0,
+            userId // Usa o userId fornecido, sem criar novo User
         });
-        res.json(cards);
+        logger.info('Cartão criado com sucesso', { cardId: novoCartao.id, userId });
+        return novoCartao;
     } catch (error) {
-        logger.error('Erro ao buscar cartões', { error: error.message, userId: req.user?.userId });
-        next(error);
+        logger.error('Falha ao criar cartão', { error: error.message, userId, stack: error.stack });
+        throw error;
     }
-});
+}
 
-router.get('/:id', async (req, res, next) => {
+/**
+ * Busca um cartão por ID.
+ * @param {string} id - ID do cartão.
+ * @returns {Promise<object|null>} O cartão encontrado ou null.
+ */
+async function getCardById(id) {
     try {
-        logger.info('Buscando cartão por ID', { cardId: req.params.id });
-        const card = await getCardById(req.params.id);
-        if (!card) {
-            logger.warn('Cartão não encontrado', { cardId: req.params.id });
-            return res.status(404).json({ message: 'Cartão não encontrado' });
-        }
-        res.json(card);
+        const card = await Card.findByPk(id);
+        return card;
     } catch (error) {
-        logger.error('Erro ao buscar cartão por ID', { error: error.message, cardId: req.params.id });
-        next(error);
+        logger.error('Falha ao buscar cartão por ID', { id, error: error.message });
+        throw error;
     }
-});
+}
 
-module.exports = router;
+module.exports = {
+    createCard,
+    getCardById
+};

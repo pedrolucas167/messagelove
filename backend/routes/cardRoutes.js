@@ -1,11 +1,9 @@
 const express = require('express');
 const multer = require('multer');
-const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const authenticate = require('../middlewares/auth');
+const { createCard, getCardById } = require('../services/cardService');
 const logger = require('../config/logger');
-const db = require('../models');
-const s3Service = require('../services/s3Service');
 
 const router = express.Router();
 
@@ -35,60 +33,55 @@ router.post('/', authenticate, upload.single('foto'), validateCard, async (req, 
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            logger.warn('Validação falhou no POST /cards', { errors: errors.array(), userId: req.user?.userId });
             return res.status(400).json({ errors: errors.array() });
         }
 
-        let fotoUrl = null;
-        if (req.file) {
-            fotoUrl = await s3Service.uploadFile(req.file);
-        }
-
         const cardData = {
-            id: nanoid(10),
             de: req.body.de,
             para: req.body.para,
             mensagem: req.body.mensagem,
-            fotoUrl,
-            youtubeVideoId: req.body.youtubeVideoId || null,
-            youtubeStartTime: parseInt(req.body.youtubeStartTime, 10) || 0,
-            userId: req.user.userId
+            youtubeVideoId: req.body.youtubeVideoId,
+            youtubeStartTime: req.body.youtubeStartTime
         };
-
-        const newCard = await db.Card.create(cardData);
-        res.status(201).json({ id: newCard.id, ...newCard.dataValues });
-
+        logger.info('Criando novo cartão', { userId: req.user.userId, cardData });
+        const novoCartao = await createCard(cardData, req.file, req.user.userId);
+        res.status(201).json({ id: novoCartao.id, ...novoCartao.dataValues });
     } catch (error) {
-        logger.error('Falha ao criar cartão', {
-            error: error.message,
-            userId: req.user?.userId,
-            stack: error.stack
-        });
+        logger.error('Erro ao criar cartão', { error: error.message, userId: req.user?.userId, stack: error.stack });
         next(error);
     }
 });
 
 router.get('/', authenticate, async (req, res, next) => {
     try {
-        const cards = await db.Card.findAll({
+        if (!req.user?.userId) {
+            logger.warn('Autenticação ausente no GET /cards');
+            return res.status(401).json({ message: 'Autenticação necessária.' });
+        }
+        logger.info('Buscando cartões do usuário', { userId: req.user.userId });
+        const cards = await Card.findAll({
             where: { userId: req.user.userId },
             order: [['createdAt', 'DESC']]
         });
         res.json(cards);
     } catch (error) {
-        logger.error('Falha ao buscar cartões', { userId: req.user?.userId, error: error.message });
+        logger.error('Erro ao buscar cartões', { error: error.message, userId: req.user?.userId });
         next(error);
     }
 });
 
 router.get('/:id', async (req, res, next) => {
     try {
-        const card = await db.Card.findByPk(req.params.id);
+        logger.info('Buscando cartão por ID', { cardId: req.params.id });
+        const card = await getCardById(req.params.id);
         if (!card) {
+            logger.warn('Cartão não encontrado', { cardId: req.params.id });
             return res.status(404).json({ message: 'Cartão não encontrado' });
         }
         res.json(card);
     } catch (error) {
-        logger.error('Falha ao buscar cartão por ID', { cardId: req.params.id, error: error.message });
+        logger.error('Erro ao buscar cartão por ID', { error: error.message, cardId: req.params.id });
         next(error);
     }
 });
