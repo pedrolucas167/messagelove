@@ -14,15 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 'rgba(221, 160, 221, 0.6)'
             ],
             PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)',
-            MAX_RETRIES: 3, // Novo: Limite de retentativas
-            RETRY_DELAY: 2000 // Novo: Atraso entre retentativas (ms)
+            MAX_RETRIES: 2, // Reduzido para 2 para minimizar sobrecarga
+            RETRY_DELAY: 2000
         };
 
         const state = {
             currentUser: null,
             particlesArray: [],
             interactionPos: { x: null, y: null },
-            retryCount: 0 // Novo: Contador de retentativas
+            retryCount: 0
         };
 
         const elements = {
@@ -205,25 +205,32 @@ document.addEventListener('DOMContentLoaded', () => {
                             errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
                         } else if (response.status === 0) {
                             errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+                        } else if (response.status === 500) {
+                            errorMessage += result.data?.error ? ` - ${result.data.error}` : ' - Erro interno do servidor detectado.';
                         }
                         const error = new Error(errorMessage);
                         error.status = response.status;
                         error.data = result;
                         throw error;
                     }
-                    state.retryCount = 0; // Reseta retentativas após sucesso
+                    state.retryCount = 0;
                     return result;
                 } catch (error) {
-                    console.error(`API Error on ${endpoint}:`, { status: error.status, message: error.message, data: error.data });
+                    console.error(`API Error on ${endpoint} (Tentativa ${config.MAX_RETRIES - retries + 1}/${config.MAX_RETRIES}):`, {
+                        status: error.status,
+                        message: error.message,
+                        data: error.data,
+                        retryCount: state.retryCount
+                    });
                     if (error.status === 401) {
                         auth.logout();
                     }
                     if (retries > 0 && error.status !== 401 && error.status !== 429) {
                         state.retryCount++;
                         await new Promise(resolve => setTimeout(resolve, config.RETRY_DELAY));
-                        return api.request(endpoint, options, retries - 1); // Retentativa
+                        return api.request(endpoint, options, retries - 1);
                     }
-                    throw new Error(error.message || 'Erro de conexão com o servidor.');
+                    throw new Error(error.message || 'Erro de conexão com o servidor após retentativas.');
                 }
             },
             login: (email, password) => api.request('/auth/login', {
@@ -255,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         elements.userWelcomeMessage.textContent = `Olá, ${state.currentUser.name}!`;
                     }
                     this.showView('dashboard');
-                    cards.loadUserCards();
+                    cards.loadUserCards().catch(() => {}); // Evita que erros não tratados interrompam a UI
                 } else {
                     elements.logoutBtn.classList.add('hidden');
                     this.showView('welcome');
@@ -437,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 ui.updateAuthUI();
-                setInterval(() => api.verifyToken().catch(() => this.logout()), 300000); // Novo: Verificação a cada 5 minutos
+                setInterval(() => api.verifyToken().catch(() => this.logout()), 300000);
             }
         };
 
@@ -508,7 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         elements.userCardsList.appendChild(cardElement);
                     });
                 } catch (error) {
-                    ui.showNotification(`Erro ao carregar seus cartões: ${error.message}`, 'error');
+                    ui.showNotification(`Erro ao carregar seus cartões: ${error.message}. Tentativas esgotadas.`, 'error');
                 }
             },
             showCreationForm() {
