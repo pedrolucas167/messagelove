@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         await new Promise(resolve => setTimeout(resolve, config.RETRY_DELAY));
                         return api.request(endpoint, options, retries - 1);
                     }
-                    throw error; 
+                    throw error; // Garantir que o erro chegue ao catch externo
                 }
             },
             login: (email, password) => api.request('/auth/login', {
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        const cards = { /* ... (código de cards omitido por brevidade) */ };
+        const cards = { // ... (código de cards omitido por brevidade) };
 
         const bindEvents = () => {
             // ... (eventos omitidos por brevidade)
