@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 const authenticate = require('../middlewares/auth');
 const { createCard, getCardById } = require('../services/cardService');
 const logger = require('../config/logger');
-const { Card } = require('../models'); // Adicionado para evitar dependência implícita
+const { Card } = require('../models');
 
 const router = express.Router();
 
@@ -30,17 +30,17 @@ const validateCard = [
     body('youtubeStartTime').optional().isInt({ min: 0 }).withMessage('O tempo inicial do vídeo deve ser um número positivo.')
 ];
 
+// POST /cards
 router.post('/', authenticate, upload.single('foto'), validateCard, async (req, res, next) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            logger.warn('Validação falhou no POST /cards', { errors: errors.array(), userId: req.user?.userId });
+            logger.warn('Validação falhou no POST /cards', { errors: errors.array(), userId: req.user?.id });
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Verifica se houve erro no upload
         if (req.fileValidationError) {
-            logger.warn('Erro de validação no upload da foto', { userId: req.user?.userId });
+            logger.warn('Erro de validação no upload da foto', { userId: req.user?.id });
             return res.status(400).json({ errors: [{ msg: req.fileValidationError }] });
         }
 
@@ -51,45 +51,46 @@ router.post('/', authenticate, upload.single('foto'), validateCard, async (req, 
             youtubeVideoId: req.body.youtubeVideoId,
             youtubeStartTime: req.body.youtubeStartTime
         };
-        logger.info('Criando novo cartão', { userId: req.user.userId, cardData });
-        const novoCartao = await createCard(cardData, req.file, req.user.userId);
+        logger.info('Criando novo cartão', { userId: req.user.id, cardData });
+        const novoCartao = await createCard(cardData, req.file, req.user.id);
         res.status(201).json({ id: novoCartao.id, ...novoCartao.dataValues });
     } catch (error) {
-        logger.error('Erro ao criar cartão', { error: error.message, userId: req.user?.userId, stack: error.stack });
+        logger.error('Erro ao criar cartão', { error: error.message, userId: req.user?.id, stack: error.stack });
         next(error);
     }
 });
 
+// GET /cards
 router.get('/', authenticate, async (req, res, next) => {
     try {
-        if (!req.user?.userId) {
+        if (!req.user?.id) {
             logger.warn('Autenticação ausente no GET /cards');
             return res.status(401).json({ message: 'Autenticação necessária.' });
         }
-        logger.info('Buscando cartões do usuário', { userId: req.user.userId });
+        logger.info('Buscando cartões do usuário', { userId: req.user.id });
         const cards = await Card.findAll({
-            where: { userId: req.user.userId },
+            where: { userId: req.user.id },
             order: [['createdAt', 'DESC']],
-            limit: 50 // Adicionado limite para desempenho
+            limit: 50
         });
         res.json(cards);
     } catch (error) {
-        logger.error('Erro ao buscar cartões', { error: error.message, userId: req.user?.userId, stack: error.stack });
+        logger.error('Erro ao buscar cartões', { error: error.message, userId: req.user?.id, stack: error.stack });
         next(error);
     }
 });
 
-router.get('/:id', authenticate, async (req, res, next) => { // Adicionado authenticate
+// GET /cards/:id
+router.get('/:id', authenticate, async (req, res, next) => {
     try {
-        logger.info('Buscando cartão por ID', { cardId: req.params.id, userId: req.user?.userId });
+        logger.info('Buscando cartão por ID', { cardId: req.params.id, userId: req.user?.id });
         const card = await getCardById(req.params.id);
         if (!card) {
             logger.warn('Cartão não encontrado', { cardId: req.params.id });
             return res.status(404).json({ message: 'Cartão não encontrado' });
         }
-        // Verifica se o cartão pertence ao usuário
-        if (card.userId !== req.user.userId) {
-            logger.warn('Acesso não autorizado ao cartão', { cardId: req.params.id, userId: req.user.userId });
+        if (card.userId !== req.user.id) {
+            logger.warn('Acesso não autorizado ao cartão', { cardId: req.params.id, userId: req.user.id });
             return res.status(403).json({ message: 'Acesso não autorizado' });
         }
         res.json(card);
