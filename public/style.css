@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&family=Caveat:wght@400;500;700&display=swap');
 
 /* ============================================
-   🎨 VARIÁVEIS GLOBAIS (DESIGN TOKENS)
+    VARIÁVEIS GLOBAIS (DESIGN TOKENS)
    ============================================ */
 :root {
   /* Cores */
@@ -98,7 +98,7 @@ a:hover {
 }
 
 /* ============================================
-   🏛️ ESTRUTURA E LAYOUT GERAL
+   ESTRUTURA E LAYOUT GERAL
    ============================================ */
 .container {
   width: 100%;
@@ -118,7 +118,7 @@ a:hover {
 }
 
 /* ============================================
-   🧱 COMPONENTES (index.html)
+   COMPONENTES (index.html)
    ============================================ */
 .main-header {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
@@ -580,7 +580,7 @@ body.card-is-open .card-page-footer a:hover {
 }
 
 /* ============================================
-   ⚙️ ANIMAÇÕES E UTILITÁRIOS
+   ANIMAÇÕES E UTILITÁRIOS
    ============================================ */
 .hidden {
   display: none !important;
@@ -622,7 +622,7 @@ body.card-is-open .card-page-footer a:hover {
 }
 
 /* ============================================
-   📱 RESPONSIVIDADE
+   RESPONSIVIDADE
    ============================================ */
 @media (max-width: 768px) {
   .container {
