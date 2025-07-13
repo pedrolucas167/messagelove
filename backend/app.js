@@ -23,7 +23,7 @@ const setupSecurity = (app) => {
             process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app'
         ];
 
-    app.use(cors({
+    const corsOptions = {
         origin: (origin, callback) => {
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
@@ -36,8 +36,15 @@ const setupSecurity = (app) => {
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,
         optionsSuccessStatus: 204
-    }));
+    };
 
+    // ✅ Middleware CORS principal
+    app.use(cors(corsOptions));
+
+    // ✅ Suporte explícito para requisições OPTIONS (preflight)
+    app.options('*', cors(corsOptions));
+
+    // ✅ Helmet com CSP
     app.use(helmet({
         contentSecurityPolicy: {
             directives: {
@@ -72,7 +79,6 @@ const connectDatabase = async () => {
         await db.sequelize.authenticate();
         logger.info('Conexão com o banco de dados estabelecida');
 
-        // Sincronização apenas em desenvolvimento, desativada em produção
         if (process.env.NODE_ENV === 'development' && process.env.SYNC_DB === 'true') {
             await db.sequelize.sync({ alter: true });
             logger.info('Modelos sincronizados com o banco de dados');
@@ -80,7 +86,7 @@ const connectDatabase = async () => {
             logger.info('Sincronização do banco desativada (use migrações em produção)');
         }
     } catch (error) {
-        logger.error('Falha na inicialização do servidor: erro na conexão ou sincronização', {
+        logger.error('Erro ao conectar com o banco de dados:', {
             error: error.message,
             stack: error.stack
         });
