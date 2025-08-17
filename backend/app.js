@@ -12,7 +12,6 @@ const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
-// Configurações constantes
 const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'ALLOWED_ORIGINS'];
 const DEFAULT_PORT = 3000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
@@ -26,6 +25,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
           process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app',
       ];
 
+// Validação de variáveis de ambiente
 const validateEnv = () => {
     const missing = REQUIRED_ENV.filter((env) => !process.env[env]);
     if (missing.length) {
