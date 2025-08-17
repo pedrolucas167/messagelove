@@ -114,7 +114,7 @@ const setupRoutes = (app) => {
         res.status(200).json({
             status: 'online',
             timestamp: new Date().toISOString(),
-            allowedOrigins, // Agora allowedOrigins está definido
+            allowedOrigins,
         })
     );
 

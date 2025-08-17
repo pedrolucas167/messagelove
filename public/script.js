@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const MessageLoveApp = (() => {
         const config = {
             API_URL: window.location.hostname.includes('localhost')
-                ? 'http://localhost:3000/api'
+                ? 'http://localhost:3001/api'
                 : 'https://messagelove-backend.onrender.com',
-            PARTICLE_DENSITY: { mobile: 30000, desktop: 15000 },
+            PARTICLE_DENSITY: { mobile: 40000, desktop: 15000 },
             PARTICLE_CONNECTION_DISTANCE: 80,
             PARTICLE_INTERACTION_RADIUS: 120,
             PARTICLE_COLORS: [
@@ -14,13 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 'rgba(221, 160, 221, 0.6)'
             ],
             PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)',
-            MAX_RETRIES: 2, // Reduzido para 2 para minimizar sobrecarga
+            MAX_RETRIES: 2,
             RETRY_DELAY: 2000
         };
 
         const state = {
             currentUser: null,
             particlesArray: [],
+            interactionPos: { x: null, y: null },
             interactionPos: { x: null, y: null },
             retryCount: 0
         };
@@ -433,18 +434,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.registerForm.password.value = '';
                 }
             },
+            async resetPassword(event) {
+                event.preventDefault();
+                if (!elements.resetPasswordFormContainer || !elements.resetPasswordFormContainer.querySelector('form')) return;
+                const resetForm = elements.resetPasswordFormContainer.querySelector('form');
+                const resetSubmitBtn = resetForm.querySelector('button[type="submit"]');
+                const email = resetForm.email.value;
+                ui.setButtonLoading(resetSubmitBtn, true);
+                try {
+                    if (!email || !this.isValidEmail(email)) {
+                        throw new Error('Por favor, insira um email válido.');
+                    }
+                    await api.request('/auth/reset-password', {
+                        method: 'POST',
+                        body: JSON.stringify({ email: this.sanitizeInput(email, true) })
+                    });
+                    ui.showNotification('Instruções de redefinição de senha enviadas para seu email.', 'success');
+                    ui.showAuthForm(elements.loginFormContainer);
+                } catch (error) {
+                    ui.showNotification(error.message || 'Erro ao solicitar redefinição de senha.', 'error');
+                } finally {
+                    ui.setButtonLoading(resetSubmitBtn, false);
+                }
+            },
             init() {
                 const user = sessionStorage.getItem('user');
                 if (user) {
                     try {
-                        state.currentUser = JSON.parse(user);
+                        state.currentUser = JSON.stringify(user);
                         api.verifyToken().catch(() => this.logout());
                     } catch {
                         this.logout();
                     }
                 }
                 ui.updateAuthUI();
-                setInterval(() => api.verifyToken().catch(() => this.logout()), 300000);
+                setInterval(() => api.verifyToken().catch(() => this.logout()), 900000); // Aumentado para 15 minutos
             }
         };
 
@@ -461,19 +485,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 try {
                     const formData = new FormData(elements.createCardForm);
-                    const de = this.sanitizeInput(formData.get('de') || state.currentUser.name || '');
-                    const para = this.sanitizeInput(formData.get('para') || '');
-                    const mensagem = this.sanitizeInput(formData.get('mensagem') || '');
-                    const youtubeVideoId = this.sanitizeInput(formData.get('youtubeVideoId') || '');
-
-                    if (!de || !para || !mensagem) {
+                    if (!formData.get('de') || !formData.get('para') || !formData.get('mensagem')) {
                         throw new Error('Por favor, preencha remetente, destinatário e mensagem.');
                     }
-
-                    formData.set('de', de);
-                    formData.set('para', para);
-                    formData.set('mensagem', mensagem);
-                    formData.set('youtubeVideoId', youtubeVideoId);
 
                     const result = await api.createCard(formData);
                     if (!result.id) {
@@ -521,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showCreationForm() {
                 ui.showView('creation');
             },
-            showDashboard() {
+           showDashboard() {
                 ui.showView('dashboard');
             }
         };
@@ -543,11 +557,13 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.showLoginBtn?.addEventListener('click', () => ui.showAuthForm(elements.loginFormContainer));
             elements.showForgotPasswordBtn?.addEventListener('click', () => ui.showAuthForm(elements.resetPasswordFormContainer));
             elements.showLoginFromResetBtn?.addEventListener('click', () => ui.showAuthForm(elements.loginFormContainer));
+            // Adicionado para reset de senha
+            elements.resetPasswordFormContainer?.querySelector('form')?.addEventListener('submit', auth.resetPassword.bind(auth));
         };
 
         const init = () => {
-            if (!elements.particleCanvas && !elements.appNotificationArea) {
-                console.warn('Alguns elementos críticos não foram encontrados. Verifique o HTML.');
+            if (!elements.particleCanvas || !elements.appNotificationArea) {
+                console.error('Elementos críticos não encontrados. Verifique o HTML:', { particleCanvas: elements.particleCanvas, appNotificationArea: elements.appNotificationArea });
                 return;
             }
             particles.init();
