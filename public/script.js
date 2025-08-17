@@ -1,54 +1,71 @@
 document.addEventListener('DOMContentLoaded', () => {
     const MessageLoveApp = (() => {
+        // Configurações globais
         const config = {
             API_URL: window.location.hostname.includes('localhost')
                 ? 'http://localhost:3000/api'
                 : 'https://messagelove-backend.onrender.com',
-            PARTICLE_DENSITY: { mobile: 40000, desktop: 15000 },
-            PARTICLE_CONNECTION_DISTANCE: 80,
-            PARTICLE_INTERACTION_RADIUS: 120,
-            PARTICLE_COLORS: [
-                'rgba(255, 182, 193, 0.7)',
-                'rgba(219, 112, 147, 0.6)',
-                'rgba(255, 245, 238, 0.5)',
-                'rgba(221, 160, 221, 0.6)'
-            ],
-            PARTICLE_GLOW: 'rgba(255, 105, 180, 0.8)',
+            PARTICLE_CONFIG: {
+                density: { mobile: 40000, desktop: 15000 },
+                connectionDistance: 80,
+                interactionRadius: 120,
+                colors: [
+                    'rgba(255, 182, 193, 0.7)',
+                    'rgba(219, 112, 147, 0.6)',
+                    'rgba(255, 245, 238, 0.5)',
+                    'rgba(221, 160, 221, 0.6)'
+                ],
+                glow: 'rgba(255, 105, 180, 0.8)'
+            },
             MAX_RETRIES: 2,
-            RETRY_DELAY: 2000
+            RETRY_DELAY: 2000,
+            TOKEN_CHECK_INTERVAL: 15 * 60 * 1000 // 15 minutos
         };
 
+        // Estado da aplicação
         const state = {
             currentUser: null,
-            particlesArray: [],
+            particles: [],
             interactionPos: { x: null, y: null },
-            retryCount: 0
+            retryCount: 0,
+            authToken: null
         };
 
+        // Cache de elementos DOM
         const elements = {
+            // Seções principais
             welcomeSection: document.getElementById('welcomeSection'),
             dashboardSection: document.getElementById('dashboardSection'),
             creationSection: document.getElementById('creationSection'),
+
+            // Modal de autenticação
             authModal: document.getElementById('authModal'),
-            loginFormContainer: document.getElementById('loginFormContainer'),
-            registerFormContainer: document.getElementById('registerFormContainer'),
-            resetPasswordFormContainer: document.getElementById('resetPasswordFormContainer'),
+            modalContent: document.querySelector('.modal-content'),
+            closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
+
+            // Formulários
             loginForm: document.getElementById('loginForm'),
-            loginSubmitBtn: document.getElementById('loginSubmitBtn'),
             registerForm: document.getElementById('registerForm'),
-            registerSubmitBtn: document.getElementById('registerSubmitBtn'),
+            resetPasswordForm: document.querySelector('#resetPasswordFormContainer form'),
             createCardForm: document.getElementById('createCardForm'),
+
+            // Botões
+            loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+            registerSubmitBtn: document.getElementById('registerSubmitBtn'),
             createCardSubmitBtn: document.getElementById('createCardSubmitBtn'),
+            logoutBtn: document.getElementById('logoutBtn'),
             showCreateFormBtn: document.getElementById('showCreateFormBtn'),
             showDashboardBtn: document.getElementById('showDashboardBtn'),
             openLoginBtn: document.getElementById('openLoginBtn'),
             openRegisterBtn: document.getElementById('openRegisterBtn'),
-            closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
+
+            // Links de navegação
             showRegisterBtn: document.getElementById('showRegisterBtn'),
             showLoginBtn: document.getElementById('showLoginBtn'),
             showForgotPasswordBtn: document.getElementById('showForgotPasswordBtn'),
             showLoginFromResetBtn: document.getElementById('showLoginFromResetBtn'),
-            logoutBtn: document.getElementById('logoutBtn'),
+
+            // Outros elementos
             appNotificationArea: document.getElementById('appNotificationArea'),
             userWelcomeMessage: document.getElementById('userWelcomeMessage'),
             userCardsList: document.getElementById('userCardsList'),
@@ -56,291 +73,419 @@ document.addEventListener('DOMContentLoaded', () => {
             currentYear: document.getElementById('currentYear')
         };
 
-        if (!Object.values(elements).every(el => el || el === null)) {
-            console.warn('Alguns elementos HTML não foram encontrados:', elements);
-        }
+        // Verificação de elementos críticos
+        const validateElements = () => {
+            const criticalElements = [
+                'particleCanvas', 'appNotificationArea',
+                'welcomeSection', 'dashboardSection', 'creationSection'
+            ];
 
+            const missingElements = criticalElements.filter(key => !elements[key]);
+
+            if (missingElements.length > 0) {
+                console.error('Elementos críticos não encontrados:', missingElements);
+                return false;
+            }
+            return true;
+        };
+
+        // ==================== PARTÍCULAS ====================
         const particles = {
+            ctx: null,
+            animationFrameId: null,
+            resizeTimeout: null,
+
             init() {
                 if (!elements.particleCanvas) return;
-                const ctx = elements.particleCanvas.getContext('2d');
+
+                this.ctx = elements.particleCanvas.getContext('2d');
+                this.setupEventListeners();
                 this.resizeCanvas();
-
-                const updateInteractionPos = (e, isTouch = false) => {
-                    const rect = elements.particleCanvas.getBoundingClientRect();
-                    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-                    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-                    state.interactionPos.x = clientX - rect.left;
-                    state.interactionPos.y = clientY - rect.top;
-                };
-
-                window.addEventListener('mousemove', updateInteractionPos);
-                window.addEventListener('touchmove', (e) => updateInteractionPos(e, true));
-                window.addEventListener('mouseleave', () => {
-                    state.interactionPos.x = null;
-                    state.interactionPos.y = null;
-                });
-                window.addEventListener('touchend', () => {
-                    state.interactionPos.x = null;
-                    state.interactionPos.y = null;
-                });
-
-                const animate = () => {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
-                    ctx.fillRect(0, 0, elements.particleCanvas.width, elements.particleCanvas.height);
-
-                    state.particlesArray.forEach(particle => {
-                        if (state.interactionPos.x !== null && state.interactionPos.y !== null) {
-                            const dx = state.interactionPos.x - particle.x;
-                            const dy = state.interactionPos.y - particle.y;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            if (distance < config.PARTICLE_INTERACTION_RADIUS) {
-                                const force = (config.PARTICLE_INTERACTION_RADIUS - distance) / config.PARTICLE_INTERACTION_RADIUS;
-                                particle.directionX -= dx * force * 0.015;
-                                particle.directionY -= dy * force * 0.015;
-                            }
-                        }
-
-                        particle.phase += 0.02;
-                        particle.x += particle.directionX + Math.sin(particle.phase) * 0.3;
-                        particle.y += particle.directionY + Math.cos(particle.phase) * 0.3;
-
-                        if (particle.x > elements.particleCanvas.width || particle.x < 0) particle.directionX = -particle.directionX;
-                        if (particle.y > elements.particleCanvas.height || particle.y < 0) particle.directionY = -particle.directionY;
-
-                        ctx.save();
-                        ctx.translate(particle.x, particle.y);
-                        ctx.scale(particle.size / 4, particle.size / 4);
-                        ctx.beginPath();
-                        ctx.moveTo(0, -3);
-                        ctx.bezierCurveTo(-3, -5, -6, -2, -6, 1);
-                        ctx.bezierCurveTo(-6, 4, -3, 6, 0, 3);
-                        ctx.bezierCurveTo(3, 6, 6, 4, 6, 1);
-                        ctx.bezierCurveTo(6, -2, -3, -5, 0, -3);
-                        ctx.closePath();
-                        ctx.fillStyle = particle.color;
-                        ctx.shadowColor = config.PARTICLE_GLOW;
-                        ctx.shadowBlur = 8;
-                        ctx.fill();
-                        ctx.restore();
-                    });
-
-                    for (let i = 0; i < state.particlesArray.length; i++) {
-                        for (let j = i + 1; j < state.particlesArray.length; j++) {
-                            const p1 = state.particlesArray[i];
-                            const p2 = state.particlesArray[j];
-                            const dx = p1.x - p2.x;
-                            const dy = p1.y - p2.y;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            if (distance < config.PARTICLE_CONNECTION_DISTANCE) {
-                                ctx.beginPath();
-                                ctx.moveTo(p1.x, p1.y);
-                                ctx.lineTo(p2.x, p2.y);
-                                ctx.strokeStyle = `rgba(255, 182, 193, ${1 - distance / config.PARTICLE_CONNECTION_DISTANCE})`;
-                                ctx.lineWidth = 0.5;
-                                ctx.stroke();
-                            }
-                        }
-                    }
-
-                    requestAnimationFrame(animate);
-                };
-
                 this.createParticles();
-                animate();
+                this.animate();
+            },
 
-                let resizeTimeout;
+            setupEventListeners() {
+                const updatePos = (x, y) => {
+                    const rect = elements.particleCanvas.getBoundingClientRect();
+                    state.interactionPos = {
+                        x: x - rect.left,
+                        y: y - rect.top
+                    };
+                };
+
+                window.addEventListener('mousemove', (e) => updatePos(e.clientX, e.clientY));
+                window.addEventListener('touchmove', (e) => updatePos(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+
+                const clearPos = () => state.interactionPos = { x: null, y: null };
+                window.addEventListener('mouseleave', clearPos);
+                window.addEventListener('touchend', clearPos);
+
                 window.addEventListener('resize', () => {
-                    clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(() => {
+                    clearTimeout(this.resizeTimeout);
+                    this.resizeTimeout = setTimeout(() => {
                         this.resizeCanvas();
                         this.createParticles();
                     }, 100);
                 });
             },
-            createParticles() {
-                state.particlesArray = [];
-                const density = window.innerWidth < 768 ? config.PARTICLE_DENSITY.mobile : config.PARTICLE_DENSITY.desktop;
-                const numberOfParticles = Math.min((elements.particleCanvas.height * elements.particleCanvas.width) / density, 80);
 
-                for (let i = 0; i < numberOfParticles; i++) {
-                    state.particlesArray.push({
+            resizeCanvas() {
+                elements.particleCanvas.width = window.innerWidth;
+                elements.particleCanvas.height = window.innerHeight;
+            },
+
+            createParticles() {
+                state.particles = [];
+                const density = window.innerWidth < 768
+                    ? config.PARTICLE_CONFIG.density.mobile
+                    : config.PARTICLE_CONFIG.density.desktop;
+
+                const particleCount = Math.min(
+                    (elements.particleCanvas.height * elements.particleCanvas.width) / density,
+                    80
+                );
+
+                for (let i = 0; i < particleCount; i++) {
+                    state.particles.push({
                         x: Math.random() * elements.particleCanvas.width,
                         y: Math.random() * elements.particleCanvas.height,
                         directionX: Math.random() * 0.3 - 0.15,
                         directionY: Math.random() * 0.3 - 0.15,
                         size: Math.random() * 3 + 2,
-                        color: config.PARTICLE_COLORS[Math.floor(Math.random() * config.PARTICLE_COLORS.length)],
+                        color: config.PARTICLE_CONFIG.colors[
+                            Math.floor(Math.random() * config.PARTICLE_CONFIG.colors.length)
+                        ],
                         phase: Math.random() * Math.PI * 2
                     });
                 }
             },
-            resizeCanvas() {
-                if (elements.particleCanvas) {
-                    elements.particleCanvas.width = window.innerWidth;
-                    elements.particleCanvas.height = window.innerHeight;
+
+            animate() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+                this.ctx.fillRect(0, 0, elements.particleCanvas.width, elements.particleCanvas.height);
+
+                // Atualiza e desenha partículas
+                state.particles.forEach(particle => {
+                    this.updateParticle(particle);
+                    this.drawParticle(particle);
+                });
+
+                this.drawConnections();
+
+                this.animationFrameId = requestAnimationFrame(() => this.animate());
+            },
+
+            updateParticle(particle) {
+                // Interação com o cursor/toque
+                if (state.interactionPos.x !== null && state.interactionPos.y !== null) {
+                    const dx = state.interactionPos.x - particle.x;
+                    const dy = state.interactionPos.y - particle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < config.PARTICLE_CONFIG.interactionRadius) {
+                        const force = (config.PARTICLE_CONFIG.interactionRadius - distance) /
+                            config.PARTICLE_CONFIG.interactionRadius;
+                        particle.directionX -= dx * force * 0.015;
+                        particle.directionY -= dy * force * 0.015;
+                    }
                 }
+
+                // Movimento natural
+                particle.phase += 0.02;
+                particle.x += particle.directionX + Math.sin(particle.phase) * 0.3;
+                particle.y += particle.directionY + Math.cos(particle.phase) * 0.3;
+
+                // Limites da tela
+                if (particle.x > elements.particleCanvas.width || particle.x < 0) {
+                    particle.directionX = -particle.directionX;
+                }
+                if (particle.y > elements.particleCanvas.height || particle.y < 0) {
+                    particle.directionY = -particle.directionY;
+                }
+            },
+
+            drawParticle(particle) {
+                this.ctx.save();
+                this.ctx.translate(particle.x, particle.y);
+                this.ctx.scale(particle.size / 4, particle.size / 4);
+
+                // Forma de coração
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -3);
+                this.ctx.bezierCurveTo(-3, -5, -6, -2, -6, 1);
+                this.ctx.bezierCurveTo(-6, 4, -3, 6, 0, 3);
+                this.ctx.bezierCurveTo(3, 6, 6, 4, 6, 1);
+                this.ctx.bezierCurveTo(6, -2, -3, -5, 0, -3);
+                this.ctx.closePath();
+
+                this.ctx.fillStyle = particle.color;
+                this.ctx.shadowColor = config.PARTICLE_CONFIG.glow;
+                this.ctx.shadowBlur = 8;
+                this.ctx.fill();
+                this.ctx.restore();
+            },
+
+            drawConnections() {
+                for (let i = 0; i < state.particles.length; i++) {
+                    for (let j = i + 1; j < state.particles.length; j++) {
+                        const p1 = state.particles[i];
+                        const p2 = state.particles[j];
+                        const dx = p1.x - p2.x;
+                        const dy = p1.y - p2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < config.PARTICLE_CONFIG.connectionDistance) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p1.x, p1.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.strokeStyle = `rgba(255, 182, 193, ${1 - distance / config.PARTICLE_CONFIG.connectionDistance
+                                })`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+            },
+
+            cleanup() {
+                if (this.animationFrameId) {
+                    cancelAnimationFrame(this.animationFrameId);
+                }
+                clearTimeout(this.resizeTimeout);
             }
         };
 
-        const api = {
+        const apiService = {
             async request(endpoint, options = {}, retries = config.MAX_RETRIES) {
-                const token = sessionStorage.getItem('token');
-                const headers = { ...options.headers };
+                const attempt = config.MAX_RETRIES - retries + 1;
+                const headers = new Headers(options.headers || {});
+
                 if (!(options.body instanceof FormData)) {
-                    headers['Content-Type'] = 'application/json';
-                }
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
+                    headers.set('Content-Type', 'application/json');
                 }
 
-                const attempt = config.MAX_RETRIES - retries + 1;
+                if (state.authToken) {
+                    headers.set('Authorization', `Bearer ${state.authToken}`);
+                }
 
                 try {
-                    const response = await fetch(`${config.API_URL}${endpoint}`, { ...options, headers });
-                    const result = await response.text().then(text => text ? JSON.parse(text) : {});
-                    if (!response.ok) {
-                        let errorMessage = `Erro ${response.status}: ${result.message || response.statusText}`;
-                        if (Array.isArray(result.errors)) {
-                            errorMessage = result.errors.map(e => e.msg).join(' ');
-                        } else if (response.status === 429) {
-                            errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
-                        } else if (response.status === 500) {
-                            errorMessage += result.data?.error ? ` - ${result.data.error}` : ' - Erro interno do servidor detectado.';
-                        }
-                        const error = new Error(errorMessage);
-                        error.status = response.status;
-                        error.data = result;
-                        throw error;
-                    }
-                    return result;
-                } catch (error) {
-                    // Detectar erro de CORS
-                    const isCorsError = !error.status && error.message.includes('Failed to fetch');
-                    const errorMessage = isCorsError
-                        ? 'Erro de conexão com o servidor (CORS bloqueado). Verifique sua conexão ou contate o suporte.'
-                        : error.message || 'Erro de conexão com o servidor.';
-                    
-                    console.error(`API Error on ${endpoint} (Tentativa ${attempt}/${config.MAX_RETRIES}):`, {
-                        status: error.status || 'N/A',
-                        message: errorMessage,
-                        data: error.data,
-                        attempt
+                    const response = await fetch(`${config.API_URL}${endpoint}`, {
+                        ...options,
+                        headers
                     });
 
-                    if (error.status === 401) {
-                        auth.logout();
-                        throw new Error('Sessão expirada. Faça login novamente.');
+                    const data = await this.parseResponse(response);
+
+                    if (!response.ok) {
+                        throw this.createError(response, data);
                     }
 
-                    if (retries > 0 && !isCorsError && error.status !== 401 && error.status !== 429) {
-                        await new Promise(resolve => setTimeout(resolve, config.RETRY_DELAY));
-                        return api.request(endpoint, options, retries - 1);
-                    }
-
-                    throw new Error(errorMessage);
+                    return data;
+                } catch (error) {
+                    return this.handleRetry(error, endpoint, options, retries, attempt);
                 }
             },
-            login: (email, password) => api.request('/api/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({ email: email.trim(), password })
-            }),
-            register: (name, email, password) => api.request('/api/auth/register', {
-                method: 'POST',
-                body: JSON.stringify({ name: name.trim(), email: email.trim(), password })
-            }),
-            verifyToken: () => api.request('/auth/verify-token'),
-            getMyCards: () => api.request('/cards'),
-            createCard: (formData) => api.request('/cards', {
-                method: 'POST',
-                body: formData
-            })
+
+            parseResponse(response) {
+                return response.text().then(text => text ? JSON.parse(text) : {});
+            },
+
+            createError(response, data) {
+                let message = `Erro ${response.status}: ${data.message || response.statusText}`;
+
+                if (Array.isArray(data.errors)) {
+                    message = data.errors.map(e => e.msg).join(' ');
+                } else if (response.status === 429) {
+                    message = 'Muitas tentativas. Tente novamente em alguns minutos.';
+                } else if (response.status === 500) {
+                    message += data.data?.error ? ` - ${data.data.error}` : ' - Erro interno do servidor.';
+                }
+
+                const error = new Error(message);
+                error.status = response.status;
+                error.data = data;
+                return error;
+            },
+
+            async handleRetry(error, endpoint, options, retries, attempt) {
+                const isCorsError = !error.status && error.message.includes('Failed to fetch');
+                const isAuthError = error.status === 401;
+                const isRateLimitError = error.status === 429;
+
+                console.error(`API Error on ${endpoint} (Tentativa ${attempt}/${config.MAX_RETRIES}):`, {
+                    status: error.status || 'N/A',
+                    message: error.message,
+                    data: error.data,
+                    attempt
+                });
+
+                if (isAuthError) {
+                    auth.logout();
+                    throw new Error('Sessão expirada. Faça login novamente.');
+                }
+
+                if (retries > 0 && !isCorsError && !isAuthError && !isRateLimitError) {
+                    await new Promise(resolve => setTimeout(resolve, config.RETRY_DELAY));
+                    return this.request(endpoint, options, retries - 1);
+                }
+
+                throw isCorsError
+                    ? new Error('Erro de conexão com o servidor. Verifique sua conexão.')
+                    : error;
+            },
+
+            // Métodos específicos da API
+            login: (email, password) =>
+                this.request('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                }),
+
+            register: (name, email, password) =>
+                this.request('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, password })
+                }),
+
+            verifyToken: () => this.request('/auth/verify'),
+
+            getCards: () => this.request('/cards'),
+
+            createCard: (formData) =>
+                this.request('/cards', {
+                    method: 'POST',
+                    body: formData
+                })
         };
 
-        const ui = {
+        const uiService = {
+            // Controle de views
             showView(viewName) {
-                [elements.welcomeSection, elements.dashboardSection, elements.creationSection].forEach(section =>
-                    section?.classList.add('hidden'));
-                elements[`${viewName}Section`]?.classList.remove('hidden');
+                const views = ['welcome', 'dashboard', 'creation'];
+                views.forEach(view => {
+                    elements[`${view}Section`]?.classList.toggle('hidden', view !== viewName);
+                });
             },
+
             updateAuthUI() {
                 if (state.currentUser) {
-                    elements.logoutBtn.classList.remove('hidden');
+                    elements.logoutBtn?.classList.remove('hidden');
                     if (elements.userWelcomeMessage) {
                         elements.userWelcomeMessage.textContent = `Olá, ${state.currentUser.name}!`;
                     }
                     this.showView('dashboard');
-                    cards.loadUserCards().catch(() => {}); // Evita que erros não tratados interrompam a UI
+                    cardService.loadCards().catch(console.error);
                 } else {
-                    elements.logoutBtn.classList.add('hidden');
+                    elements.logoutBtn?.classList.add('hidden');
                     this.showView('welcome');
                 }
             },
-            setButtonLoading(btn, isLoading) {
-                if (!btn) return;
-                btn.disabled = isLoading;
-                btn.classList.toggle('opacity-75', isLoading);
-                btn.classList.toggle('cursor-not-allowed', isLoading);
-                btn.innerHTML = isLoading ? '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>Carregando...' : btn.dataset.originalText || btn.innerHTML;
-                if (!isLoading && !btn.dataset.originalText) {
-                    btn.dataset.originalText = btn.innerHTML;
+
+            // Controle de modal
+            openAuthModal(initialForm = 'login') {
+                if (!elements.authModal) return;
+
+                this.showAuthForm(initialForm);
+                elements.authModal.classList.remove('hidden');
+                elements.authModal.setAttribute('aria-hidden', 'false');
+
+                setTimeout(() => {
+                    elements.authModal.classList.remove('opacity-0');
+                    elements.modalContent?.classList.remove('scale-95');
+                }, 10);
+            },
+
+            closeAuthModal() {
+                if (!elements.authModal) return;
+
+                elements.authModal.classList.add('opacity-0');
+                elements.modalContent?.classList.add('scale-95');
+                elements.authModal.setAttribute('aria-hidden', 'true');
+
+                setTimeout(() => {
+                    elements.authModal.classList.add('hidden');
+                    elements.loginForm?.reset();
+                    elements.registerForm?.reset();
+                }, 300);
+            },
+
+            showAuthForm(formName) {
+                const forms = {
+                    login: elements.loginForm?.parentElement,
+                    register: elements.registerForm?.parentElement,
+                    reset: elements.resetPasswordForm?.parentElement
+                };
+
+                Object.values(forms).forEach(form => {
+                    if (form) form.classList.add('hidden');
+                });
+
+                if (forms[formName]) {
+                    forms[formName].classList.remove('hidden');
                 }
             },
+
+            // Notificações
             showNotification(message, type = 'info', duration = 5000) {
                 if (!elements.appNotificationArea) return;
-                const notification = document.createElement('div');
-                const baseClasses = 'p-4 mb-4 text-sm md:text-base rounded-lg shadow-lg text-white transition-all duration-300 ease-in-out transform relative';
-                const typeClasses = {
+
+                const types = {
                     info: 'bg-blue-500',
                     success: 'bg-green-500',
                     error: 'bg-red-600',
                     warning: 'bg-yellow-500'
                 };
 
-                notification.className = `${baseClasses} ${typeClasses[type] || typeClasses.info} opacity-0 translate-y-4`;
-                notification.innerHTML = `
-                    <span>${message}</span>
-                    <button class="notification__close absolute top-2 right-2 text-white hover:text-gray-200" aria-label="Fechar notificação">×</button>
-                `;
-                elements.appNotificationArea.appendChild(notification);
+                const notification = document.createElement('div');
+                notification.className = `
+          p-4 mb-4 text-sm md:text-base rounded-lg shadow-lg text-white 
+          transition-all duration-300 ease-in-out transform relative
+          opacity-0 translate-y-4 ${types[type] || types.info}
+        `;
 
-                const closeBtn = notification.querySelector('.notification__close');
-                closeBtn.addEventListener('click', () => {
-                    notification.classList.add('opacity-0');
-                    notification.addEventListener('transitionend', () => notification.remove(), { once: true });
-                });
+                notification.innerHTML = `
+          <span>${message}</span>
+          <button class="notification-close absolute top-2 right-2 text-white hover:text-gray-200">
+            ×
+          </button>
+        `;
+
+                elements.appNotificationArea.appendChild(notification);
 
                 requestAnimationFrame(() => {
                     notification.classList.remove('opacity-0', 'translate-y-4');
                 });
 
-                setTimeout(() => {
+                const closeBtn = notification.querySelector('.notification-close');
+                const closeNotification = () => {
                     notification.classList.add('opacity-0');
                     notification.addEventListener('transitionend', () => notification.remove(), { once: true });
-                }, duration);
+                };
+
+                closeBtn.addEventListener('click', closeNotification);
+                setTimeout(closeNotification, duration);
             },
-            showAuthForm(formToShow) {
-                [elements.loginFormContainer, elements.registerFormContainer, elements.resetPasswordFormContainer].forEach(form =>
-                    form?.classList.add('hidden'));
-                formToShow?.classList.remove('hidden');
+
+            // Controle de botões
+            setButtonLoading(button, isLoading) {
+                if (!button) return;
+
+                button.disabled = isLoading;
+                button.classList.toggle('opacity-75', isLoading);
+                button.classList.toggle('cursor-not-allowed', isLoading);
+
+                if (isLoading) {
+                    button.dataset.originalText = button.innerHTML;
+                    button.innerHTML = `
+            <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+            Carregando...
+          `;
+                } else if (button.dataset.originalText) {
+                    button.innerHTML = button.dataset.originalText;
+                }
             },
-            openModal(initialForm) {
-                if (!elements.authModal) return;
-                elements.authModal.classList.remove('hidden');
-                elements.authModal.setAttribute('aria-hidden', 'false');
-                setTimeout(() => {
-                    elements.authModal.classList.remove('opacity-0');
-                    elements.authModal.querySelector('.modal-content')?.classList.remove('scale-95');
-                }, 10);
-                this.showAuthForm(initialForm);
-            },
-            closeModal() {
-                if (!elements.authModal) return;
-                elements.authModal.classList.add('opacity-0');
-                elements.authModal.querySelector('.modal-content')?.classList.add('scale-95');
-                elements.authModal.setAttribute('aria-hidden', 'true');
-                setTimeout(() => elements.authModal.classList.add('hidden'), 300);
-            },
+
             updateFooterYear() {
                 if (elements.currentYear) {
                     elements.currentYear.textContent = new Date().getFullYear();
@@ -348,239 +493,324 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+
         const auth = {
-            sanitizeInput(input, isEmail = false) {
-                if (isEmail) {
-                    return input.trim().toLowerCase();
-                }
-                const div = document.createElement('div');
-                div.textContent = input.trim();
-                return div.innerHTML;
-            },
+
             isValidEmail(email) {
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
             },
+
             isValidPassword(password) {
-                return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password);
+                return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/.test(password);
             },
-            handleLoginSuccess(result, isRegistration = false) {
-                sessionStorage.setItem('token', result.token);
-                sessionStorage.setItem('user', JSON.stringify(result.user));
-                state.currentUser = result.user;
-                ui.closeModal();
-                elements.loginForm?.reset();
-                elements.registerForm?.reset();
-                ui.showNotification(isRegistration ? `Bem-vindo, ${result.user.name}!` : `Login realizado com sucesso!`, 'success');
-                ui.updateAuthUI();
-                history.replaceState(null, '', window.location.pathname);
+
+            // Sanitização
+            sanitizeInput(input, isEmail = false) {
+                const sanitized = input.trim();
+                return isEmail ? sanitized.toLowerCase() : sanitized;
             },
-            logout() {
+
+            // Armazenamento
+            storeUserData(token, user) {
+                state.authToken = token;
+                state.currentUser = user;
+                sessionStorage.setItem('token', token);
+                sessionStorage.setItem('user', JSON.stringify(user));
+            },
+
+            clearUserData() {
+                state.authToken = null;
+                state.currentUser = null;
                 sessionStorage.removeItem('token');
                 sessionStorage.removeItem('user');
-                state.currentUser = null;
-                ui.showNotification('Você saiu da sua conta.', 'info');
-                ui.updateAuthUI();
             },
+
+            // Handlers
+            handleAuthSuccess(response, isRegistration = false) {
+                this.storeUserData(response.token, response.user);
+                uiService.closeAuthModal();
+                uiService.showNotification(
+                    isRegistration
+                        ? `Bem-vindo, ${response.user.name}!`
+                        : 'Login realizado com sucesso!',
+                    'success'
+                );
+                uiService.updateAuthUI();
+                history.replaceState(null, '', window.location.pathname);
+            },
+
+            // Métodos principais
             async login(event) {
                 event.preventDefault();
                 if (!elements.loginSubmitBtn || !elements.loginForm) return;
-                ui.setButtonLoading(elements.loginSubmitBtn, true);
+
                 const email = this.sanitizeInput(elements.loginForm.email.value, true);
                 const password = elements.loginForm.password.value;
+
+                uiService.setButtonLoading(elements.loginSubmitBtn, true);
 
                 try {
                     if (!email || !password) {
                         throw new Error('Por favor, preencha todos os campos.');
                     }
+
                     if (!this.isValidEmail(email)) {
                         throw new Error('Por favor, insira um email válido.');
                     }
-                    const result = await api.login(email, password);
-                    this.handleLoginSuccess(result);
+
+                    const response = await apiService.login(email, password);
+                    this.handleAuthSuccess(response);
                 } catch (error) {
-                    let errorMessage = error.message || 'Falha na comunicação com o servidor.';
-                    if (error.status === 401) {
-                        errorMessage = 'Email ou senha incorretos.';
-                    } else if (error.status === 429) {
-                        errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
-                    }
-                    ui.showNotification(errorMessage, 'error');
+                    this.handleAuthError(error);
                 } finally {
-                    ui.setButtonLoading(elements.loginSubmitBtn, false);
+                    uiService.setButtonLoading(elements.loginSubmitBtn, false);
                     elements.loginForm.password.value = '';
                 }
             },
+
             async register(event) {
                 event.preventDefault();
                 if (!elements.registerSubmitBtn || !elements.registerForm) return;
-                const { name, email, password } = elements.registerForm;
-                ui.setButtonLoading(elements.registerSubmitBtn, true);
-                const sanitizedName = this.sanitizeInput(name.value);
-                const sanitizedEmail = this.sanitizeInput(email.value, true);
+
+                const name = this.sanitizeInput(elements.registerForm.name.value);
+                const email = this.sanitizeInput(elements.registerForm.email.value, true);
+                const password = elements.registerForm.password.value;
+
+                uiService.setButtonLoading(elements.registerSubmitBtn, true);
 
                 try {
-                    if (!sanitizedName || !sanitizedEmail || !password.value) {
+                    if (!name || !email || !password) {
                         throw new Error('Por favor, preencha todos os campos.');
                     }
-                    if (!this.isValidEmail(sanitizedEmail)) {
+
+                    if (!this.isValidEmail(email)) {
                         throw new Error('Por favor, insira um email válido.');
                     }
-                    if (!this.isValidPassword(password.value)) {
+
+                    if (!this.isValidPassword(password)) {
                         throw new Error('A senha deve ter pelo menos 8 caracteres, incluindo letras e números.');
                     }
-                    const result = await api.register(sanitizedName, sanitizedEmail, password.value);
-                    this.handleLoginSuccess(result, true);
+
+                    const response = await apiService.register(name, email, password);
+                    this.handleAuthSuccess(response, true);
                 } catch (error) {
-                    let errorMessage = error.message || 'Não foi possível cadastrar.';
-                    if (error.status === 409) {
-                        errorMessage = 'Este email já está registrado.';
-                    }
-                    ui.showNotification(errorMessage, 'error');
+                    this.handleAuthError(error);
                 } finally {
-                    ui.setButtonLoading(elements.registerSubmitBtn, false);
+                    uiService.setButtonLoading(elements.registerSubmitBtn, false);
                     elements.registerForm.password.value = '';
                 }
             },
+
             async resetPassword(event) {
                 event.preventDefault();
-                if (!elements.resetPasswordFormContainer || !elements.resetPasswordFormContainer.querySelector('form')) return;
-                const resetForm = elements.resetPasswordFormContainer.querySelector('form');
-                const resetSubmitBtn = resetForm.querySelector('button[type="submit"]');
-                const email = resetForm.email.value;
-                ui.setButtonLoading(resetSubmitBtn, true);
+                if (!elements.resetPasswordForm) return;
+
+                const submitBtn = elements.resetPasswordForm.querySelector('button[type="submit"]');
+                const email = this.sanitizeInput(elements.resetPasswordForm.email.value, true);
+
+                uiService.setButtonLoading(submitBtn, true);
+
                 try {
                     if (!email || !this.isValidEmail(email)) {
                         throw new Error('Por favor, insira um email válido.');
                     }
-                    await api.request('/auth/reset-password', {
+
+                    await apiService.request('/auth/reset-password', {
                         method: 'POST',
-                        body: JSON.stringify({ email: this.sanitizeInput(email, true) })
+                        body: JSON.stringify({ email })
                     });
-                    ui.showNotification('Instruções de redefinição de senha enviadas para seu email.', 'success');
-                    ui.showAuthForm(elements.loginFormContainer);
+
+                    uiService.showNotification(
+                        'Instruções de redefinição de senha enviadas para seu email.',
+                        'success'
+                    );
+                    uiService.showAuthForm('login');
                 } catch (error) {
-                    ui.showNotification(error.message || 'Erro ao solicitar redefinição de senha.', 'error');
+                    uiService.showNotification(
+                        error.message || 'Erro ao solicitar redefinição de senha.',
+                        'error'
+                    );
                 } finally {
-                    ui.setButtonLoading(resetSubmitBtn, false);
+                    uiService.setButtonLoading(submitBtn, false);
                 }
             },
+
+            logout() {
+                this.clearUserData();
+                uiService.showNotification('Você saiu da sua conta.', 'info');
+                uiService.updateAuthUI();
+            },
+
+            // Tratamento de erros
+            handleAuthError(error) {
+                let message = error.message || 'Falha na comunicação com o servidor.';
+
+                if (error.status === 401) {
+                    message = 'Email ou senha incorretos.';
+                } else if (error.status === 409) {
+                    message = 'Este email já está registrado.';
+                } else if (error.status === 429) {
+                    message = 'Muitas tentativas. Tente novamente em alguns minutos.';
+                }
+
+                uiService.showNotification(message, 'error');
+            },
+
             init() {
+                const token = sessionStorage.getItem('token');
                 const user = sessionStorage.getItem('user');
-                if (user) {
+
+                if (token && user) {
                     try {
+                        state.authToken = token;
                         state.currentUser = JSON.parse(user);
-                        api.verifyToken().catch(() => this.logout());
+                        this.verifyTokenPeriodically();
                     } catch {
-                        this.logout();
+                        this.clearUserData();
                     }
                 }
-                ui.updateAuthUI();
-                setInterval(() => api.verifyToken().catch(() => this.logout()), 900000); // Aumentado para 15 minutos
+
+                uiService.updateAuthUI();
+            },
+
+            verifyTokenPeriodically() {
+                apiService.verifyToken().catch(() => this.logout());
+                setInterval(
+                    () => apiService.verifyToken().catch(() => this.logout()),
+                    config.TOKEN_CHECK_INTERVAL
+                );
             }
         };
 
-        const cards = {
-            sanitizeInput(input) {
-                const div = document.createElement('div');
-                div.textContent = input.trim();
-                return div.innerHTML;
-            },
+        const cardService = {
             async create(event) {
                 event.preventDefault();
                 if (!state.currentUser || !elements.createCardSubmitBtn || !elements.createCardForm) return;
-                ui.setButtonLoading(elements.createCardSubmitBtn, true);
+
+                uiService.setButtonLoading(elements.createCardSubmitBtn, true);
 
                 try {
                     const formData = new FormData(elements.createCardForm);
-                    if (!formData.get('de') || !formData.get('para') || !formData.get('mensagem')) {
-                        throw new Error('Por favor, preencha remetente, destinatário e mensagem.');
+                    const requiredFields = ['de', 'para', 'mensagem'];
+
+                    for (const field of requiredFields) {
+                        if (!formData.get(field)) {
+                            throw new Error(`Por favor, preencha o campo ${field}.`);
+                        }
                     }
 
-                    const result = await api.createCard(formData);
-                    if (!result.id) {
-                        throw new Error('ID do cartão não retornado pelo servidor.');
+                    const response = await apiService.createCard(formData);
+
+                    if (!response.id) {
+                        throw new Error('Erro ao criar cartão. Tente novamente.');
                     }
 
-                    ui.showNotification('Cartão criado com sucesso!', 'success');
+                    uiService.showNotification('Cartão criado com sucesso!', 'success');
                     elements.createCardForm.reset();
-                    ui.showView('dashboard');
-                    window.location.href = `card.html?id=${result.id}`;
+                    uiService.showView('dashboard');
+                    window.location.href = `card.html?id=${response.id}`;
                 } catch (error) {
-                    ui.showNotification(error.message || 'Erro ao criar cartão. Tente novamente.', 'error');
+                    uiService.showNotification(error.message, 'error');
                 } finally {
-                    ui.setButtonLoading(elements.createCardSubmitBtn, false);
+                    uiService.setButtonLoading(elements.createCardSubmitBtn, false);
                 }
             },
-            async loadUserCards() {
+
+            // Carregamento de cartões
+            async loadCards() {
                 if (!state.currentUser || !elements.userCardsList) return;
+
                 try {
-                    const cards = await api.getMyCards();
-                    elements.userCardsList.innerHTML = '';
-                    if (cards.length === 0) {
-                        elements.userCardsList.innerHTML = `
-                            <div class="bg-gray-700 p-4 rounded-lg text-gray-400">
-                                Você ainda não criou nenhum cartão. Crie um agora!
-                            </div>
-                        `;
-                        return;
-                    }
-                    cards.forEach(card => {
-                        const cardElement = document.createElement('div');
-                        cardElement.className = 'bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors';
-                        cardElement.innerHTML = `
-                            <h3 class="text-lg font-semibold text-white">Para: ${card.para}</h3>
-                            <p class="text-gray-400 truncate">${card.mensagem}</p>
-                            <p class="text-sm text-gray-500">Criado em: ${new Date(card.createdAt).toLocaleDateString('pt-BR')}</p>
-                            <a href="card.html?id=${card.id}" class="text-fuchsia-400 hover:text-fuchsia-300 mt-2 inline-block">Ver cartão</a>
-                        `;
-                        elements.userCardsList.appendChild(cardElement);
-                    });
+                    const cards = await apiService.getCards();
+                    this.renderCards(cards);
                 } catch (error) {
-                    ui.showNotification(`Erro ao carregar seus cartões: ${error.message}. Tentativas esgotadas.`, 'error');
+                    uiService.showNotification(
+                        `Erro ao carregar cartões: ${error.message}`,
+                        'error'
+                    );
                 }
             },
-            showCreationForm() {
-                ui.showView('creation');
+
+            renderCards(cards) {
+                if (!elements.userCardsList) return;
+
+                if (cards.length === 0) {
+                    elements.userCardsList.innerHTML = `
+            <div class="bg-gray-700 p-4 rounded-lg text-gray-400">
+              Você ainda não criou nenhum cartão. Crie um agora!
+            </div>
+          `;
+                    return;
+                }
+
+                elements.userCardsList.innerHTML = cards.map(card => `
+          <div class="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
+            <h3 class="text-lg font-semibold text-white">Para: ${card.para}</h3>
+            <p class="text-gray-400 truncate">${card.mensagem}</p>
+            <p class="text-sm text-gray-500">
+              Criado em: ${new Date(card.createdAt).toLocaleDateString('pt-BR')}
+            </p>
+            <a href="card.html?id=${card.id}" class="text-fuchsia-400 hover:text-fuchsia-300 mt-2 inline-block">
+              Ver cartão
+            </a>
+          </div>
+        `).join('');
             },
+
+            showCreationForm() {
+                uiService.showView('creation');
+            },
+
             showDashboard() {
-                ui.showView('dashboard');
+                uiService.showView('dashboard');
             }
         };
 
         const bindEvents = () => {
-            elements.logoutBtn?.addEventListener('click', auth.logout.bind(auth));
-            elements.loginForm?.addEventListener('submit', auth.login.bind(auth));
-            elements.registerForm?.addEventListener('submit', auth.register.bind(auth));
-            elements.createCardForm?.addEventListener('submit', cards.create.bind(cards));
-            elements.showCreateFormBtn?.addEventListener('click', cards.showCreationForm.bind(cards));
-            elements.showDashboardBtn?.addEventListener('click', cards.showDashboard.bind(cards));
-            elements.openLoginBtn?.addEventListener('click', () => ui.openModal(elements.loginFormContainer));
-            elements.openRegisterBtn?.addEventListener('click', () => ui.openModal(elements.registerFormContainer));
-            elements.closeAuthModalBtn?.addEventListener('click', ui.closeModal.bind(ui));
+
+            elements.logoutBtn?.addEventListener('click', () => auth.logout());
+            elements.loginForm?.addEventListener('submit', (e) => auth.login(e));
+            elements.registerForm?.addEventListener('submit', (e) => auth.register(e));
+            elements.resetPasswordForm?.addEventListener('submit', (e) => auth.resetPassword(e));
+
+            elements.createCardForm?.addEventListener('submit', (e) => cardService.create(e));
+            elements.showCreateFormBtn?.addEventListener('click', () => cardService.showCreationForm());
+            elements.showDashboardBtn?.addEventListener('click', () => cardService.showDashboard());
+
+            elements.openLoginBtn?.addEventListener('click', () => uiService.openAuthModal('login'));
+            elements.openRegisterBtn?.addEventListener('click', () => uiService.openAuthModal('register'));
+            elements.closeAuthModalBtn?.addEventListener('click', () => uiService.closeAuthModal());
             elements.authModal?.addEventListener('click', (e) => {
-                if (e.target === elements.authModal) ui.closeModal();
+                if (e.target === elements.authModal) uiService.closeAuthModal();
             });
-            elements.showRegisterBtn?.addEventListener('click', () => ui.showAuthForm(elements.registerFormContainer));
-            elements.showLoginBtn?.addEventListener('click', () => ui.showAuthForm(elements.loginFormContainer));
-            elements.showForgotPasswordBtn?.addEventListener('click', () => ui.showAuthForm(elements.resetPasswordFormContainer));
-            elements.showLoginFromResetBtn?.addEventListener('click', () => ui.showAuthForm(elements.loginFormContainer));
-            // Adicionado para reset de senha
-            elements.resetPasswordFormContainer?.querySelector('form')?.addEventListener('submit', auth.resetPassword.bind(auth));
+
+            elements.showRegisterBtn?.addEventListener('click', () => uiService.showAuthForm('register'));
+            elements.showLoginBtn?.addEventListener('click', () => uiService.showAuthForm('login'));
+            elements.showForgotPasswordBtn?.addEventListener('click', () => uiService.showAuthForm('reset'));
+            elements.showLoginFromResetBtn?.addEventListener('click', () => uiService.showAuthForm('login'));
         };
 
         const init = () => {
-            if (!elements.particleCanvas || !elements.appNotificationArea) {
-                console.error('Elementos críticos não encontrados. Verifique o HTML:', { particleCanvas: elements.particleCanvas, appNotificationArea: elements.appNotificationArea });
-                return;
-            }
+            if (!validateElements()) return;
+
             particles.init();
-            ui.updateFooterYear();
+            uiService.updateFooterYear();
             auth.init();
             bindEvents();
         };
 
-        return { init };
+        const cleanup = () => {
+            particles.cleanup();
+        };
+
+        return { init, cleanup };
     })();
 
     MessageLoveApp.init();
+
+    // Limpeza antes de recarregar a página
+    window.addEventListener('beforeunload', () => {
+        MessageLoveApp.cleanup();
+
+    });
 });
