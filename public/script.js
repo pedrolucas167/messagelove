@@ -234,11 +234,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(error.message || 'Erro de conexão com o servidor após retentativas.');
                 }
             },
-            login: (email, password) => api.request('/auth/login', {
+            login: (email, password) => api.request('/api/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ email: email.trim(), password })
             }),
-            register: (name, email, password) => api.request('/auth/register', {
+            register: (name, email, password) => api.request('/api/auth/register', {
                 method: 'POST',
                 body: JSON.stringify({ name: name.trim(), email: email.trim(), password })
             }),
