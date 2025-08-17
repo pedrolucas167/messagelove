@@ -18,7 +18,6 @@ const DEFAULT_PORT = 3000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
 const RATE_LIMIT_MAX = 150;
 
-// Definir allowedOrigins no escopo global
 const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(';').map((url) => url.trim())
     : [
@@ -27,7 +26,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
           process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app',
       ];
 
-// Validação de variáveis de ambiente
 const validateEnv = () => {
     const missing = REQUIRED_ENV.filter((env) => !process.env[env]);
     if (missing.length) {
