@@ -28,7 +28,7 @@ class App {
           'http://127.0.0.1:5500',
           `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`,
           'https://messagelove-frontend.vercel.app',
-          'https://messagelove-backend.onrender.com' // Adicionei o backend também para comunicação interna
+          'https://messagelove-backend.onrender.com'
         ];
   }
 
@@ -46,24 +46,42 @@ class App {
         // Permite requisições sem origin (como mobile apps ou curl)
         if (!origin) return callback(null, true);
         
-        if (this.allowedOrigins.includes(origin) || 
-            this.allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+        // Verifica se a origem está na lista de permitidas
+        const originAllowed = this.allowedOrigins.some(allowed => 
+          origin === allowed || origin.startsWith(allowed)
+        );
+
+        if (originAllowed) {
           return callback(null, true);
         }
         
-        logger.warn('Origem não permitida', { origin, allowedOrigins: this.allowedOrigins });
+        logger.warn('Origem não permitida', { 
+          origin, 
+          allowedOrigins: this.allowedOrigins 
+        });
         callback(new Error(`Origem ${origin} não permitida pelo CORS`));
       },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
       credentials: true,
       optionsSuccessStatus: 204,
-      preflightContinue: false,
       maxAge: 86400 // Cache de 24h para preflight
     };
 
+    // Aplica CORS para todas as rotas
     this.app.use(cors(corsOptions));
-    this.app.options('*', cors(corsOptions)); // Habilitar preflight para todas as rotas
+    
+    // Middleware adicional para headers CORS explícitos
+    this.app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-access-token');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      next();
+    });
+
+    // Habilita preflight para todas as rotas
+    this.app.options('*', cors(corsOptions));
   }
 
   setupSecurity() {
@@ -83,7 +101,7 @@ class App {
             upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
           },
         },
-        crossOriginResourcePolicy: { policy: "cross-origin" } // Adicionado para recursos estáticos
+        crossOriginResourcePolicy: { policy: "cross-origin" }
       })
     );
 
@@ -93,7 +111,7 @@ class App {
         max: this.RATE_LIMIT_MAX,
         standardHeaders: true,
         legacyHeaders: false,
-        skip: (req) => req.ip === '::ffff:127.0.0.1' // Pular rate limit para localhost
+        skip: (req) => req.ip === '::ffff:127.0.0.1'
       })
     );
   }
@@ -144,13 +162,6 @@ class App {
       })
     );
 
-    // Adicionei headers CORS específicos para as rotas de API
-    this.app.use('/api', (req, res, next) => {
-      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.header('Access-Control-Allow-Credentials', 'true');
-      next();
-    });
-
     this.app.use('/api/cards', cardRoutes);
     this.app.use('/api/auth', authRoutes);
   }
@@ -172,12 +183,14 @@ class App {
         method: req.method
       });
       
-      // Tratamento especial para erros CORS
       if (err.message.includes('CORS')) {
         return res.status(403).json({
-          error: 'Acesso não autorizado - Problema de CORS',
-          details: process.env.NODE_ENV === 'development' ? err.message : undefined,
-          allowedOrigins: process.env.NODE_ENV === 'development' ? this.allowedOrigins : undefined
+          error: 'Acesso não autorizado',
+          details: process.env.NODE_ENV === 'development' ? {
+            message: err.message,
+            allowedOrigins: this.allowedOrigins,
+            receivedOrigin: req.headers.origin
+          } : undefined
         });
       }
 
@@ -224,7 +237,7 @@ class App {
   async startServer() {
     try {
       this.validateEnv();
-      this.setupCors(); // Configuração de CORS antes de outros middlewares
+      this.setupCors();
       this.setupSecurity();
       this.setupCoreMiddlewares();
       await this.connectDatabase();
@@ -250,5 +263,4 @@ class App {
   }
 }
 
-// Inicializa a aplicação
 new App();
