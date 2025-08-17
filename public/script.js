@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const MessageLoveApp = (() => {
         const config = {
             API_URL: window.location.hostname.includes('localhost')
-                ? 'http://localhost:3001/api'
+                ? 'http://localhost:3000/api'
                 : 'https://messagelove-backend.onrender.com',
             PARTICLE_DENSITY: { mobile: 40000, desktop: 15000 },
             PARTICLE_CONNECTION_DISTANCE: 80,
@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const state = {
             currentUser: null,
             particlesArray: [],
-            interactionPos: { x: null, y: null },
             interactionPos: { x: null, y: null },
             retryCount: 0
         };
@@ -195,6 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
 
+                const attempt = config.MAX_RETRIES - retries + 1;
+
                 try {
                     const response = await fetch(`${config.API_URL}${endpoint}`, { ...options, headers });
                     const result = await response.text().then(text => text ? JSON.parse(text) : {});
@@ -204,8 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             errorMessage = result.errors.map(e => e.msg).join(' ');
                         } else if (response.status === 429) {
                             errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
-                        } else if (response.status === 0) {
-                            errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
                         } else if (response.status === 500) {
                             errorMessage += result.data?.error ? ` - ${result.data.error}` : ' - Erro interno do servidor detectado.';
                         }
@@ -214,24 +213,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         error.data = result;
                         throw error;
                     }
-                    state.retryCount = 0;
                     return result;
                 } catch (error) {
-                    console.error(`API Error on ${endpoint} (Tentativa ${config.MAX_RETRIES - retries + 1}/${config.MAX_RETRIES}):`, {
-                        status: error.status,
-                        message: error.message,
+                    // Detectar erro de CORS
+                    const isCorsError = !error.status && error.message.includes('Failed to fetch');
+                    const errorMessage = isCorsError
+                        ? 'Erro de conexão com o servidor (CORS bloqueado). Verifique sua conexão ou contate o suporte.'
+                        : error.message || 'Erro de conexão com o servidor.';
+                    
+                    console.error(`API Error on ${endpoint} (Tentativa ${attempt}/${config.MAX_RETRIES}):`, {
+                        status: error.status || 'N/A',
+                        message: errorMessage,
                         data: error.data,
-                        retryCount: state.retryCount
+                        attempt
                     });
+
                     if (error.status === 401) {
                         auth.logout();
+                        throw new Error('Sessão expirada. Faça login novamente.');
                     }
-                    if (retries > 0 && error.status !== 401 && error.status !== 429) {
-                        state.retryCount++;
+
+                    if (retries > 0 && !isCorsError && error.status !== 401 && error.status !== 429) {
                         await new Promise(resolve => setTimeout(resolve, config.RETRY_DELAY));
                         return api.request(endpoint, options, retries - 1);
                     }
-                    throw new Error(error.message || 'Erro de conexão com o servidor após retentativas.');
+
+                    throw new Error(errorMessage);
                 }
             },
             login: (email, password) => api.request('/api/auth/login', {
@@ -461,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const user = sessionStorage.getItem('user');
                 if (user) {
                     try {
-                        state.currentUser = JSON.stringify(user);
+                        state.currentUser = JSON.parse(user);
                         api.verifyToken().catch(() => this.logout());
                     } catch {
                         this.logout();
@@ -535,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showCreationForm() {
                 ui.showView('creation');
             },
-           showDashboard() {
+            showDashboard() {
                 ui.showView('dashboard');
             }
         };

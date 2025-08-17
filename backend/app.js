@@ -12,21 +12,32 @@ const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
+// Configuração de CORS com validação dinâmica
+const allowedOrigins = [
+  'https://messagelove-frontend.vercel.app',
+  'http://localhost:3000', // Para desenvolvimento
+];
+
 const corsOptions = {
-  origin: [
-    'https://messagelove-frontend.vercel.app',
-    'http://localhost:3000' // Para desenvolvimento
-  ],
+  origin: (origin, callback) => {
+    // Permitir requisições sem origem (ex.: Postman) ou origens permitidas
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn(`CORS bloqueado para origem: ${origin}`);
+      callback(new Error('Não permitido pelo CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 204,
-  maxAge: 86400 // Cache de 24h para preflight
+  maxAge: 86400, // Cache de 24h para preflight
 };
 
-// Middlewares críticos primeiro
+// Middlewares críticos
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Habilita preflight para todas as rotas
+app.options('*', cors(corsOptions)); // Responde a preflight para todas as rotas
 
 app.use(helmet());
 app.use(compression());
@@ -36,7 +47,8 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiting
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 150
+  max: 150,
+  message: 'Muitas requisições, tente novamente mais tarde',
 }));
 
 // Rotas
@@ -44,7 +56,7 @@ app.get('/', (req, res) => {
   res.status(200).json({
     message: 'API MessageLove - Online',
     environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -52,7 +64,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
     cors: 'enabled',
-    allowedOrigins: corsOptions.origin
+    allowedOrigins: allowedOrigins,
   });
 });
 
@@ -65,7 +77,11 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  logger.error('Erro no servidor:', err);
+  logger.error(`Erro no servidor: ${err.message}`, { 
+    stack: err.stack, 
+    path: req.path, 
+    method: req.method 
+  });
   res.status(500).json({ 
     error: process.env.NODE_ENV === 'production' 
       ? 'Erro interno' 
@@ -93,7 +109,14 @@ db.sequelize.authenticate()
   });
 
 process.on('SIGTERM', () => {
+  logger.info('Recebido SIGTERM. Encerrando conexão com o banco...');
   db.sequelize.close()
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));
+    .then(() => {
+      logger.info('Conexão com o banco encerrada');
+      process.exit(0);
+    })
+    .catch(err => {
+      logger.error('Erro ao encerrar conexão com o banco:', err);
+      process.exit(1);
+    });
 });
