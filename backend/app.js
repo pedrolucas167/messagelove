@@ -15,21 +15,24 @@ class App {
     this.app = express();
     this.REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'ALLOWED_ORIGINS'];
     this.DEFAULT_PORT = 3000;
-    this.RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+    this.RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
     this.RATE_LIMIT_MAX = 150;
     
     this.startServer();
   }
 
   get allowedOrigins() {
-    return process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(';').map(url => url.trim())
-      : [
-          'http://127.0.0.1:5500',
-          `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`,
-          'https://messagelove-frontend.vercel.app',
-          'https://messagelove-backend.onrender.com'
-        ];
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        'http://127.0.0.1:5500',
+        `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`,
+        'http://localhost:3001'
+      ];
+    }
+    return [
+      'https://messagelove-frontend.vercel.app',
+      'https://messagelove-backend.onrender.com'
+    ];
   }
 
   validateEnv() {
@@ -43,45 +46,46 @@ class App {
   setupCors() {
     const corsOptions = {
       origin: (origin, callback) => {
-        // Permite requisições sem origin (como mobile apps ou curl)
-        if (!origin) return callback(null, true);
-        
-        // Verifica se a origem está na lista de permitidas
-        const originAllowed = this.allowedOrigins.some(allowed => 
-          origin === allowed || origin.startsWith(allowed)
-        );
-
-        if (originAllowed) {
+        if (!origin && process.env.NODE_ENV === 'development') {
           return callback(null, true);
         }
-        
-        logger.warn('Origem não permitida', { 
-          origin, 
-          allowedOrigins: this.allowedOrigins 
+
+        const originIsAllowed = this.allowedOrigins.some(allowedOrigin => {
+          return origin === allowedOrigin || 
+                 origin.startsWith(allowedOrigin) ||
+                 new RegExp(`${allowedOrigin.replace('https://', 'https?://')}`).test(origin);
         });
-        callback(new Error(`Origem ${origin} não permitida pelo CORS`));
+
+        if (originIsAllowed) {
+          return callback(null, true);
+        }
+
+        logger.warn('Acesso CORS negado', { 
+          origin,
+          allowedOrigins: this.allowedOrigins
+        });
+        callback(new Error(`Acesso não permitido pela política CORS`));
       },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
       credentials: true,
-      optionsSuccessStatus: 204,
-      maxAge: 86400 // Cache de 24h para preflight
+      maxAge: 86400,
+      optionsSuccessStatus: 204
     };
 
-    // Aplica CORS para todas as rotas
     this.app.use(cors(corsOptions));
-    
-    // Middleware adicional para headers CORS explícitos
+    this.app.options('*', cors(corsOptions));
+
     this.app.use((req, res, next) => {
-      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+      const origin = req.headers.origin;
+      if (this.allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+      }
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-access-token');
       res.header('Access-Control-Allow-Credentials', 'true');
       next();
     });
-
-    // Habilita preflight para todas as rotas
-    this.app.options('*', cors(corsOptions));
   }
 
   setupSecurity() {
@@ -121,7 +125,6 @@ class App {
     this.app.use(express.json({ limit: '50kb' }));
     this.app.use(express.urlencoded({ extended: true }));
     
-    // Middleware para log de requisições
     this.app.use((req, res, next) => {
       logger.info(`${req.method} ${req.path}`, {
         ip: req.ip,
@@ -153,14 +156,27 @@ class App {
   }
 
   setupRoutes() {
-    this.app.get('/health', (req, res) =>
+    // Rota raiz adicionada aqui
+    this.app.get('/', (req, res) => {
+      res.status(200).json({
+        message: 'Bem-vindo à API MessageLove',
+        documentation: 'https://github.com/seu-repositorio/documentation',
+        endpoints: {
+          auth: '/api/auth',
+          cards: '/api/cards',
+          health: '/health'
+        }
+      });
+    });
+
+    this.app.get('/health', (req, res) => {
       res.status(200).json({
         status: 'online',
         timestamp: new Date().toISOString(),
         allowedOrigins: this.allowedOrigins,
         environment: process.env.NODE_ENV
-      })
-    );
+      });
+    });
 
     this.app.use('/api/cards', cardRoutes);
     this.app.use('/api/auth', authRoutes);
@@ -171,7 +187,8 @@ class App {
       res.status(404).json({ 
         error: 'Rota não encontrada',
         path: req.path,
-        method: req.method
+        method: req.method,
+        availableEndpoints: ['/', '/health', '/api/auth', '/api/cards']
       });
     });
 
@@ -188,8 +205,7 @@ class App {
           error: 'Acesso não autorizado',
           details: process.env.NODE_ENV === 'development' ? {
             message: err.message,
-            allowedOrigins: this.allowedOrigins,
-            receivedOrigin: req.headers.origin
+            allowedOrigins: this.allowedOrigins
           } : undefined
         });
       }
