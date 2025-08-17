@@ -18,6 +18,15 @@ const DEFAULT_PORT = 3000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
 const RATE_LIMIT_MAX = 150;
 
+// Definir allowedOrigins no escopo global
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(';').map((url) => url.trim())
+    : [
+          'http://127.0.0.1:5500',
+          `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`,
+          process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app',
+      ];
+
 // Validação de variáveis de ambiente
 const validateEnv = () => {
     const missing = REQUIRED_ENV.filter((env) => !process.env[env]);
@@ -29,14 +38,6 @@ const validateEnv = () => {
 
 const setupSecurity = (app) => {
     app.set('trust proxy', 1);
-
-    const allowedOrigins = process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(';').map((url) => url.trim())
-        : [
-              'http://127.0.0.1:5500',
-              `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`,
-              process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app',
-          ];
 
     const corsOptions = {
         origin: (origin, callback) => {
@@ -85,7 +86,7 @@ const setupSecurity = (app) => {
 
 const setupCoreMiddlewares = (app) => {
     app.use(compression());
-    app.use(express.json({ limit: '50kb' })); // Aumentado para 50KB
+    app.use(express.json({ limit: '50kb' }));
     app.use(express.urlencoded({ extended: true }));
 };
 
@@ -115,7 +116,7 @@ const setupRoutes = (app) => {
         res.status(200).json({
             status: 'online',
             timestamp: new Date().toISOString(),
-            allowedOrigins,
+            allowedOrigins, // Agora allowedOrigins está definido
         })
     );
 

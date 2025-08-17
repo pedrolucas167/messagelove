@@ -13,15 +13,14 @@ if (!databaseUrl) {
   throw new Error("A variável de ambiente DATABASE_URL não foi definida.");
 }
 
-// Cria a instância do Sequelize diretamente da DATABASE_URL,
-// que é a prática recomendada para ambientes como a Render.
+
 const sequelize = new Sequelize(databaseUrl, {
     dialect: 'postgres',
     protocol: 'postgres',
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false // Necessário para a Render
+            rejectUnauthorized: false 
         }
     },
     logging: false,
@@ -29,7 +28,7 @@ const sequelize = new Sequelize(databaseUrl, {
 
 const db = {};
 
-// Passa 'sequelize' e 'DataTypes' ao inicializar o modelo
+
 db.Card = require('./card.js')(sequelize, DataTypes);
 db.User = require('./users')(sequelize, DataTypes);
 
