@@ -10,191 +10,245 @@ const db = require('./models');
 const cardRoutes = require('./routes/cardRoutes');
 const authRoutes = require('./routes/authRoutes');
 
-const app = express();
+class App {
+  constructor() {
+    this.app = express();
+    this.REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'ALLOWED_ORIGINS'];
+    this.DEFAULT_PORT = 3000;
+    this.RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+    this.RATE_LIMIT_MAX = 150;
+    
+    this.startServer();
+  }
 
-const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'ALLOWED_ORIGINS'];
-const DEFAULT_PORT = 3000;
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
-const RATE_LIMIT_MAX = 150;
-
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(';').map((url) => url.trim())
-    : [
+  get allowedOrigins() {
+    return process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(';').map(url => url.trim())
+      : [
           'http://127.0.0.1:5500',
           `http://localhost:${process.env.DEV_FRONTEND_LOCAL_PORT || '3000'}`,
-          process.env.FRONTEND_URL || 'https://messagelove-frontend.vercel.app',
-      ];
+          'https://messagelove-frontend.vercel.app',
+          'https://messagelove-backend.onrender.com' // Adicionei o backend também para comunicação interna
+        ];
+  }
 
-// Validação de variáveis de ambiente
-const validateEnv = () => {
-    const missing = REQUIRED_ENV.filter((env) => !process.env[env]);
+  validateEnv() {
+    const missing = this.REQUIRED_ENV.filter(env => !process.env[env]);
     if (missing.length) {
-        logger.error('Variáveis de ambiente ausentes', { missing });
-        throw new Error(`Variáveis necessárias não definidas: ${missing.join(', ')}`);
+      logger.error('Variáveis de ambiente ausentes', { missing });
+      throw new Error(`Variáveis necessárias não definidas: ${missing.join(', ')}`);
     }
-};
+  }
 
-const setupSecurity = (app) => {
-    app.set('trust proxy', 1);
-
+  setupCors() {
     const corsOptions = {
-        origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                logger.warn('Origem não permitida', { origin, allowedOrigins });
-                callback(new Error(`Origem ${origin} não permitida pelo CORS`));
-            }
-        },
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-        credentials: true,
-        optionsSuccessStatus: 204,
+      origin: (origin, callback) => {
+        // Permite requisições sem origin (como mobile apps ou curl)
+        if (!origin) return callback(null, true);
+        
+        if (this.allowedOrigins.includes(origin) || 
+            this.allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+          return callback(null, true);
+        }
+        
+        logger.warn('Origem não permitida', { origin, allowedOrigins: this.allowedOrigins });
+        callback(new Error(`Origem ${origin} não permitida pelo CORS`));
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
+      credentials: true,
+      optionsSuccessStatus: 204,
+      preflightContinue: false,
+      maxAge: 86400 // Cache de 24h para preflight
     };
 
-    app.use(cors(corsOptions));
-    app.options('*', cors(corsOptions));
+    this.app.use(cors(corsOptions));
+    this.app.options('*', cors(corsOptions)); // Habilitar preflight para todas as rotas
+  }
 
-    app.use(
-        helmet({
-            contentSecurityPolicy: {
-                directives: {
-                    defaultSrc: ["'self'"],
-                    scriptSrc: ["'self'", "'unsafe-inline'"],
-                    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-                    fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-                    imgSrc: ["'self'", 'data:', 'https://messagelove-frontend.vercel.app'],
-                    connectSrc: ["'self'", ...allowedOrigins],
-                    objectSrc: ["'none'"],
-                    upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
-                },
-            },
-        })
+  setupSecurity() {
+    this.app.set('trust proxy', 1);
+    
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+            fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+            imgSrc: ["'self'", 'data:', 'https://messagelove-frontend.vercel.app'],
+            connectSrc: ["'self'", ...this.allowedOrigins],
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+          },
+        },
+        crossOriginResourcePolicy: { policy: "cross-origin" } // Adicionado para recursos estáticos
+      })
     );
 
-    app.use(
-        rateLimit({
-            windowMs: RATE_LIMIT_WINDOW_MS,
-            max: RATE_LIMIT_MAX,
-            standardHeaders: true,
-            legacyHeaders: false,
-        })
+    this.app.use(
+      rateLimit({
+        windowMs: this.RATE_LIMIT_WINDOW_MS,
+        max: this.RATE_LIMIT_MAX,
+        standardHeaders: true,
+        legacyHeaders: false,
+        skip: (req) => req.ip === '::ffff:127.0.0.1' // Pular rate limit para localhost
+      })
     );
-};
+  }
 
-const setupCoreMiddlewares = (app) => {
-    app.use(compression());
-    app.use(express.json({ limit: '50kb' }));
-    app.use(express.urlencoded({ extended: true }));
-};
+  setupCoreMiddlewares() {
+    this.app.use(compression());
+    this.app.use(express.json({ limit: '50kb' }));
+    this.app.use(express.urlencoded({ extended: true }));
+    
+    // Middleware para log de requisições
+    this.app.use((req, res, next) => {
+      logger.info(`${req.method} ${req.path}`, {
+        ip: req.ip,
+        origin: req.headers.origin,
+        userAgent: req.headers['user-agent']
+      });
+      next();
+    });
+  }
 
-const connectDatabase = async () => {
+  async connectDatabase() {
     try {
-        await db.sequelize.authenticate();
-        logger.info('Conexão com o banco de dados estabelecida', { level: 'info' });
+      await db.sequelize.authenticate();
+      logger.info('Conexão com o banco de dados estabelecida');
 
-        if (process.env.NODE_ENV === 'development' && process.env.SYNC_DB === 'true') {
-            await db.sequelize.sync({ alter: true });
-            logger.info('Modelos sincronizados com o banco de dados', { level: 'info' });
-        } else {
-            logger.info('Sincronização do banco desativada (use migrações em produção)', { level: 'info' });
-        }
+      if (process.env.NODE_ENV === 'development' && process.env.SYNC_DB === 'true') {
+        await db.sequelize.sync({ alter: true });
+        logger.info('Modelos sincronizados com o banco de dados');
+      } else {
+        logger.info('Sincronização do banco desativada (use migrações em produção)');
+      }
     } catch (error) {
-        logger.error('Erro ao conectar com o banco de dados', {
-            error: error.message,
-            stack: error.stack,
-            level: 'error',
-        });
-        throw error;
+      logger.error('Erro ao conectar com o banco de dados', {
+        error: error.message,
+        stack: error.stack
+      });
+      throw error;
     }
-};
+  }
 
-const setupRoutes = (app) => {
-    app.get('/health', (req, res) =>
-        res.status(200).json({
-            status: 'online',
-            timestamp: new Date().toISOString(),
-            allowedOrigins,
-        })
+  setupRoutes() {
+    this.app.get('/health', (req, res) =>
+      res.status(200).json({
+        status: 'online',
+        timestamp: new Date().toISOString(),
+        allowedOrigins: this.allowedOrigins,
+        environment: process.env.NODE_ENV
+      })
     );
 
-    app.use('/api/cards', cardRoutes);
-    app.use('/api/auth', authRoutes);
-};
-
-const setupErrorHandling = (app) => {
-    app.use((req, res) => {
-        res.status(404).json({ error: 'Rota não encontrada', path: req.path });
+    // Adicionei headers CORS específicos para as rotas de API
+    this.app.use('/api', (req, res, next) => {
+      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      next();
     });
 
-    app.use((err, req, res, next) => {
-        logger.error('Erro na aplicação', {
-            error: err.message,
-            stack: err.stack,
-            path: req.path,
-            method: req.method,
-            level: 'error',
-        });
-        res.status(err.status || 500).json({
-            error: process.env.NODE_ENV === 'production' ? 'Erro interno do servidor' : err.message,
-        });
+    this.app.use('/api/cards', cardRoutes);
+    this.app.use('/api/auth', authRoutes);
+  }
+
+  setupErrorHandling() {
+    this.app.use((req, res) => {
+      res.status(404).json({ 
+        error: 'Rota não encontrada',
+        path: req.path,
+        method: req.method
+      });
     });
-};
 
-const startServer = async () => {
-    try {
-        validateEnv();
-        setupSecurity(app);
-        setupCoreMiddlewares(app);
-        await connectDatabase();
-        setupRoutes(app);
-        setupErrorHandling(app);
-
-        const port = process.env.PORT || DEFAULT_PORT;
-        const server = app.listen(port, () => {
-            logger.info(`Servidor iniciado na porta ${port}`, { level: 'info' });
+    this.app.use((err, req, res, next) => {
+      logger.error('Erro na aplicação', {
+        error: err.message,
+        stack: err.stack,
+        path: req.path,
+        method: req.method
+      });
+      
+      // Tratamento especial para erros CORS
+      if (err.message.includes('CORS')) {
+        return res.status(403).json({
+          error: 'Acesso não autorizado - Problema de CORS',
+          details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+          allowedOrigins: process.env.NODE_ENV === 'development' ? this.allowedOrigins : undefined
         });
+      }
 
-        const gracefulShutdown = (signal) => {
-            logger.info(`Recebido sinal ${signal} para encerramento`, { level: 'info' });
-            server.close(() => {
-                db.sequelize
-                    .close()
-                    .then(() => {
-                        logger.info('Servidor e conexão com o banco encerrados', { level: 'info' });
-                        process.exit(0);
-                    })
-                    .catch((err) => {
-                        logger.error('Erro ao encerrar conexão com o banco', {
-                            error: err.message,
-                            level: 'error',
-                        });
-                        process.exit(1);
-                    });
+      res.status(err.status || 500).json({
+        error: process.env.NODE_ENV === 'production' 
+          ? 'Erro interno do servidor' 
+          : err.message
+      });
+    });
+  }
+
+  setupGracefulShutdown(server) {
+    const gracefulShutdown = (signal) => {
+      logger.info(`Recebido sinal ${signal} para encerramento`);
+      server.close(() => {
+        db.sequelize.close()
+          .then(() => {
+            logger.info('Servidor e conexão com o banco encerrados');
+            process.exit(0);
+          })
+          .catch(err => {
+            logger.error('Erro ao encerrar conexão com o banco', {
+              error: err.message
             });
-        };
+            process.exit(1);
+          });
+      });
+    };
 
-        process.on('unhandledRejection', (reason) => {
-            logger.error('Unhandled Rejection', { reason: reason.stack || reason, level: 'error' });
-            gracefulShutdown('unhandledRejection');
+    process.on('unhandledRejection', (reason) => {
+      logger.error('Unhandled Rejection', { reason: reason.stack || reason });
+      gracefulShutdown('unhandledRejection');
+    });
+
+    process.on('uncaughtException', (error) => {
+      logger.error('Uncaught Exception', { error: error.stack });
+      gracefulShutdown('uncaughtException');
+    });
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  }
+
+  async startServer() {
+    try {
+      this.validateEnv();
+      this.setupCors(); // Configuração de CORS antes de outros middlewares
+      this.setupSecurity();
+      this.setupCoreMiddlewares();
+      await this.connectDatabase();
+      this.setupRoutes();
+      this.setupErrorHandling();
+
+      const port = process.env.PORT || this.DEFAULT_PORT;
+      const server = this.app.listen(port, () => {
+        logger.info(`Servidor iniciado na porta ${port}`, {
+          environment: process.env.NODE_ENV,
+          allowedOrigins: this.allowedOrigins
         });
+      });
 
-        process.on('uncaughtException', (error) => {
-            logger.error('Uncaught Exception', { error: error.stack, level: 'error' });
-            gracefulShutdown('uncaughtException');
-        });
-
-        process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-        process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
+      this.setupGracefulShutdown(server);
     } catch (error) {
-        logger.error('Falha na inicialização do servidor', {
-            message: error.message,
-            stack: error.stack,
-            level: 'error',
-        });
-        process.exit(1);
+      logger.error('Falha na inicialização do servidor', {
+        message: error.message,
+        stack: error.stack
+      });
+      process.exit(1);
     }
-};
+  }
+}
 
-startServer();
+// Inicializa a aplicação
+new App();
