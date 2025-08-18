@@ -8,9 +8,10 @@ const rateLimit = require('express-rate-limit');
 const logger = require('./config/logger');
 const db = require('./models');
 
+// Corrigindo imports (note o nome dos arquivos)
 const authRoutes = require('./routes/authRoutes');
-const cardsRoutes = require('./routes/cardsRoutes');
-const healthRoutes = require('./routes/health');
+const cardRoutes = require('./routes/cardRoutes'); // Alterado para singular
+const healthRoutes = require('./routes/healthRoutes'); // Adicionado import
 
 const app = express();
 
@@ -39,6 +40,7 @@ const corsOptions = {
   optionsSuccessStatus: 204
 };
 
+// Middlewares
 app.use(cors(corsOptions));
 app.use(helmet());
 app.use(compression());
@@ -46,17 +48,19 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   skip: (req) => req.method === 'OPTIONS',
   message: 'Too many requests from this IP, please try again later'
 });
 app.use(limiter);
 
+// Rotas (corrigido para usar cardRoutes em vez de cardsRoutes)
 app.use('/api/auth', authRoutes);
-app.use('/api/cards', cardsRoutes);
+app.use('/api/cards', cardRoutes); // Corrigido aqui
 app.use('/health', healthRoutes);
 
+// Rota raiz
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'online',
@@ -67,7 +71,7 @@ app.get('/', (req, res) => {
   });
 });
 
-
+// Tratamento de erros
 app.use((req, res, next) => {
   res.status(404).json({
     error: 'Endpoint not found',
@@ -97,6 +101,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Inicialização do servidor
 const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
@@ -121,6 +126,7 @@ const startServer = async () => {
 
 startServer();
 
+// Shutdown graceful
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received. Shutting down gracefully...');
   try {
