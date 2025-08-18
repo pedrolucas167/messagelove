@@ -10,8 +10,8 @@ const db = require('./models');
 
 // Corrigindo imports (note o nome dos arquivos)
 const authRoutes = require('./routes/authRoutes');
-const cardRoutes = require('./routes/cardRoutes'); // Alterado para singular
-const healthRoutes = require('./routes/healthRoutes'); // Adicionado import
+const cardRoutes = require('./routes/cardsRoutes'); 
+const healthRoutes = require('./routes/healthRoutes'); 
 
 const app = express();
 
