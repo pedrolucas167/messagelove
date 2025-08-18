@@ -1,23 +1,22 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
+const { checkSchema, validationResult } = require('express-validator');
 const { User } = require('../models');
 const logger = require('../config/logger');
 const rateLimit = require('express-rate-limit');
-const { checkSchema } = require('express-validator');
 
 const router = express.Router();
 
-// Rate limiting para endpoints sensíveis
+// Configuração de Rate Limiting
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10, // Limite de tentativas
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   message: 'Muitas tentativas. Por favor, tente novamente mais tarde.',
   skipSuccessfulRequests: true
 });
 
-// Esquemas de validação reutilizáveis
+// Esquemas de Validação
 const validationSchemas = {
   register: {
     email: {
@@ -31,17 +30,22 @@ const validationSchemas = {
       }
     },
     password: {
-      isLength: { options: { min: 8 } },
-      errorMessage: 'Senha deve ter pelo menos 8 caracteres',
-      matches: { 
-        options: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/,
-        errorMessage: 'Senha deve conter letras maiúsculas, minúsculas, números e caracteres especiais'
+      isLength: { 
+        options: { min: 8 },
+        errorMessage: 'Senha deve ter pelo menos 8 caracteres'
+      },
+      matches: {
+        options: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
+        errorMessage: 'Senha deve conter letras maiúsculas, minúsculas e números'
       }
     },
     name: {
       notEmpty: true,
       errorMessage: 'Nome é obrigatório',
-      isLength: { options: { max: 100 } }
+      isLength: {
+        options: { max: 100 },
+        errorMessage: 'Nome deve ter no máximo 100 caracteres'
+      }
     }
   },
   login: {
@@ -57,10 +61,11 @@ const validationSchemas = {
 };
 
 // Utilitários
-const generateToken = (userId) => {
+const generateAuthToken = (userId) => {
   if (!process.env.JWT_SECRET) {
-    throw new Error('Configuração de segurança faltando: JWT_SECRET');
+    throw new Error('Variável de ambiente JWT_SECRET não configurada');
   }
+  
   return jwt.sign(
     { userId },
     process.env.JWT_SECRET,
@@ -68,132 +73,138 @@ const generateToken = (userId) => {
   );
 };
 
-const sanitizeUser = (user) => ({
+const sanitizeUserData = (user) => ({
   id: user.id,
-  email: user.email,
   name: user.name,
+  email: user.email,
   createdAt: user.createdAt
 });
 
-// Middleware de tratamento de erros de validação
-const handleValidationErrors = (req, res, next) => {
+// Middlewares
+const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    logger.warn('Erros de validação', {
-      path: req.path,
+    logger.warn('Falha na validação', {
+      endpoint: req.path,
       errors: errors.array(),
-      ip: req.ip,
-      userAgent: req.get('User-Agent')
+      ip: req.ip
     });
-    return res.status(400).json({ 
+    
+    return res.status(400).json({
       success: false,
-      errors: errors.array().map(err => err.msg) 
+      errors: errors.array().map(err => ({
+        field: err.param,
+        message: err.msg
+      }))
     });
   }
   next();
 };
 
-/**
- * @route POST /auth/register
- * @desc Registra um novo usuário
- * @access Public
- */
+// Rotas
 router.post(
   '/register',
   authLimiter,
   checkSchema(validationSchemas.register),
-  handleValidationErrors,
+  validateRequest,
   async (req, res, next) => {
     try {
-      const { email, password, name } = req.body;
+      const { name, email, password } = req.body;
       
+      // Criptografa a senha
       const hashedPassword = await bcrypt.hash(password, 12);
-      const user = await User.create({ 
-        email, 
-        password: hashedPassword, 
-        name 
+      
+      // Cria o usuário no banco de dados
+      const user = await User.create({
+        name,
+        email,
+        password: hashedPassword
       });
 
-      const token = generateToken(user.id);
+      // Gera token JWT
+      const token = generateAuthToken(user.id);
 
-      logger.info('Novo usuário registrado com sucesso', { 
+      logger.info('Usuário registrado com sucesso', {
         userId: user.id,
-        ip: req.ip 
+        email: user.email
       });
 
       res.status(201).json({
         success: true,
         token,
-        user: sanitizeUser(user)
+        user: sanitizeUserData(user)
       });
 
     } catch (error) {
-      logger.error('Erro no processo de registro', {
+      logger.error('Erro no registro de usuário', {
         error: error.message,
-        stack: error.stack,
-        input: req.body
+        stack: error.stack
       });
+      
+      if (error.message.includes('email')) {
+        return res.status(409).json({
+          success: false,
+          error: 'Email já está em uso'
+        });
+      }
+      
       next(error);
     }
   }
 );
 
-/**
- * @route POST /auth/login
- * @desc Autentica um usuário existente
- * @access Public
- */
 router.post(
   '/login',
   authLimiter,
   checkSchema(validationSchemas.login),
-  handleValidationErrors,
+  validateRequest,
   async (req, res, next) => {
     try {
       const { email, password } = req.body;
       
+      // Busca usuário pelo email
       const user = await User.findOne({ where: { email } });
+      
       if (!user) {
-        logger.warn('Tentativa de login com email não registrado', { 
-          email,
-          ip: req.ip 
-        });
-        return res.status(401).json({ 
+        logger.warn('Tentativa de login com email não cadastrado', { email });
+        return res.status(401).json({
           success: false,
-          message: 'Credenciais inválidas' 
+          error: 'Credenciais inválidas'
         });
       }
 
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
+      // Verifica a senha
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      
+      if (!isPasswordValid) {
         logger.warn('Tentativa de login com senha incorreta', { 
           userId: user.id,
-          ip: req.ip 
+          email: user.email
         });
-        return res.status(401).json({ 
+        return res.status(401).json({
           success: false,
-          message: 'Credenciais inválidas' 
+          error: 'Credenciais inválidas'
         });
       }
 
-      const token = generateToken(user.id);
+      // Gera token JWT
+      const token = generateAuthToken(user.id);
 
-      logger.info('Login bem-sucedido', { 
+      logger.info('Login realizado com sucesso', {
         userId: user.id,
-        ip: req.ip 
+        email: user.email
       });
 
       res.status(200).json({
         success: true,
         token,
-        user: sanitizeUser(user)
+        user: sanitizeUserData(user)
       });
 
     } catch (error) {
       logger.error('Erro no processo de login', {
         error: error.message,
-        stack: error.stack,
-        input: req.body
+        stack: error.stack
       });
       next(error);
     }
