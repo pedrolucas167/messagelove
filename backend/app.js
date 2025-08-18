@@ -20,11 +20,13 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin && process.env.NODE_ENV === 'development') {
-      return callback(null, true);
-    }
+    // Permite requisições sem origem (como mobile apps ou serviços backend)
+    if (!origin) return callback(null, true);
     
-    if (origin && allowedOrigins.some(allowed => origin.match(new RegExp(allowed.replace('https://', 'https?://'))))) {
+    // Verifica se a origem está na lista de permitidas
+    if (allowedOrigins.some(allowed => {
+      return origin.match(new RegExp(allowed.replace('https://', 'https?://')));
+    })) {
       return callback(null, true);
     }
     
