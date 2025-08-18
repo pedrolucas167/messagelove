@@ -7,11 +7,8 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const logger = require('./config/logger');
 const db = require('./models');
-
-// Corrigindo imports (note o nome dos arquivos)
 const authRoutes = require('./routes/authRoutes');
 const cardRoutes = require('./routes/cardsRoutes'); 
-const healthRoutes = require('./routes/healthRoutes'); 
 
 const app = express();
 
@@ -58,7 +55,6 @@ app.use(limiter);
 // Rotas (corrigido para usar cardRoutes em vez de cardsRoutes)
 app.use('/api/auth', authRoutes);
 app.use('/api/cards', cardRoutes); // Corrigido aqui
-app.use('/health', healthRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {
@@ -78,7 +74,6 @@ app.use((req, res, next) => {
     availableEndpoints: {
       auth: '/api/auth',
       cards: '/api/cards',
-      health: '/health'
     }
   });
 });
