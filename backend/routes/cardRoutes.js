@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { checkSchema, matchedData } = require('express-validator');
+const { checkSchema, matchedData, validationResult } = require('express-validator');
 const authenticate = require('../middlewares/auth');
 const { createCard, getCardById } = require('../services/cardService');
 const logger = require('../config/logger');
@@ -9,19 +9,17 @@ const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
 
-// Configuração do rate limiting
 const cardLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Limite de requisições por IP
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Muitas requisições. Por favor, tente novamente mais tarde.'
 });
 
-// Configuração do Multer para upload de imagens
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { 
-    fileSize: 5 * 1024 * 1024, // 5MB
-    files: 1 // Apenas um arquivo
+    fileSize: 5 * 1024 * 1024,
+    files: 1
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -34,7 +32,6 @@ const upload = multer({
   }
 });
 
-// Esquemas de validação
 const validationSchemas = {
   createCard: {
     de: {
@@ -83,7 +80,6 @@ const validationSchemas = {
   }
 };
 
-// Middleware para tratamento de erros de validação
 const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -104,7 +100,6 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
-// Middleware para tratamento de erros de upload
 const handleUploadError = (err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_TYPE') {
     logger.warn('Erro no upload de arquivo', {
@@ -125,11 +120,6 @@ const handleUploadError = (err, req, res, next) => {
   next(err);
 };
 
-/**
- * @route POST /cards
- * @desc Cria um novo cartão
- * @access Private
- */
 router.post(
   '/',
   authenticate,
@@ -173,11 +163,6 @@ router.post(
   }
 );
 
-/**
- * @route GET /cards
- * @desc Obtém todos os cartões do usuário
- * @access Private
- */
 router.get(
   '/',
   authenticate,
@@ -212,11 +197,6 @@ router.get(
   }
 );
 
-/**
- * @route GET /cards/:id
- * @desc Obtém um cartão específico
- * @access Private
- */
 router.get(
   '/:id',
   authenticate,
