@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 const logger = require('./config/logger');
 const db = require('./models');
 
-const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/authRoutes');
 const cardsRoutes = require('./routes/cards');
 const healthRoutes = require('./routes/health');
 
