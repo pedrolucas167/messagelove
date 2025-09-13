@@ -23,12 +23,12 @@ const sequelize = new Sequelize(databaseUrl, {
 // Inicializa os modelos
 const db = {};
 
-db.User = require('./User')(sequelize, DataTypes);
+db.User = require('./user')(sequelize, DataTypes);
 db.Card = require('./card')(sequelize, DataTypes);
 
 // Define associações
-if (db.User.associate) db.User.associate(db);
-if (db.Card.associate) db.Card.associate(db);
+if (db.User.associate) db.user.associate(db);
+if (db.Card.associate) db.card.associate(db);
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
