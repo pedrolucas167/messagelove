@@ -2,72 +2,67 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+  class Card extends Model {
     static associate(models) {
-      User.hasMany(models.Card, {
-        as: 'cards',
+      Card.belongsTo(models.User, {
+        as: 'user',
         foreignKey: 'userId',
-        sourceKey: 'id',
-        onDelete: 'CASCADE',
-        hooks: true
+        targetKey: 'id',
+        onDelete: 'CASCADE'
       });
-    }
-
-    // Evita vazar password em JSON
-    toJSON() {
-      const values = { ...this.get() };
-      delete values.password;
-      return values;
     }
   }
 
-  User.init({
+  Card.init({
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.STRING(10),
       primaryKey: true,
       allowNull: false
     },
-    email: {
-      type: DataTypes.STRING(254),
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: { msg: 'Email inválido.' },
-        notEmpty: { msg: 'Email é obrigatório.' }
-      },
-      set(v) {
-        this.setDataValue('email', (v || '').toLowerCase().trim());
-      }
-    },
-    password: {
-      type: DataTypes.STRING, // hash bcrypt
-      allowNull: false,
-      validate: {
-        notEmpty: { msg: 'Senha é obrigatória.' },
-        len: { args: [8, 255], msg: 'Senha deve ter pelo menos 8 caracteres.' }
-      }
-    },
-    name: {
+    de: {
       type: DataTypes.STRING(120),
+      allowNull: false
+    },
+    para: {
+      type: DataTypes.STRING(120),
+      allowNull: false
+    },
+    mensagem: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    fotoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'foto_url'
+    },
+    youtubeVideoId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'youtube_video_id'
+    },
+    youtubeStartTime: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        notEmpty: { msg: 'Nome é obrigatório.' }
-      }
+      defaultValue: 0,
+      field: 'youtube_start_time'
+    },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      field: 'user_id'
     }
   }, {
     sequelize,
-    modelName: 'User',
-    tableName: 'users',         // <- minúsculo e estável
+    modelName: 'Card',
+    tableName: 'cards',
     timestamps: true,
-    underscored: true,          // created_at / updated_at (opcional, mas consistente com Card abaixo)
-    defaultScope: {
-      attributes: { exclude: ['password'] }
-    },
+    underscored: true,
     indexes: [
-      { unique: true, fields: ['email'] }
+      { fields: ['user_id'] },
+      { fields: ['created_at'] }
     ]
   });
 
-  return User;
+  return Card;
 };
