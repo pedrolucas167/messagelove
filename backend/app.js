@@ -15,7 +15,8 @@ const app = express();
 const allowedOrigins = [
   'https://messagelove-frontend.vercel.app',
   'http://localhost:3000',
-  'https://messagelove.vercel.app'
+  'https://messagelove.vercel.app',
+  'https://messagelove.onrender.com/API'
 ];
 
 const corsOptions = {
