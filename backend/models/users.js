@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'User',
     tableName: 'users',         // <- minúsculo e estável
     timestamps: true,
-    underscored: true,          // created_at / updated_at (opcional, mas consistente com Card abaixo)
+    underscored: true,         
     defaultScope: {
       attributes: { exclude: ['password'] }
     },
