@@ -26,7 +26,7 @@ const allowedOrigins = [
   'http://127.0.0.1:5500',
   'https://messagelove-frontend.vercel.app',
   'https://messagelove.vercel.app',
-  'https://messagelove.onrender.com' 
+  'https://messagelove.onrender.com/api' 
 ];
 
 const corsOptions = {

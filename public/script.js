@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const config = {
       API_URL: (['localhost', '127.0.0.1'].includes(window.location.hostname)
         ? 'http://localhost:3001/api'
-        : 'https://messagelove-backend.onrender.com/api'),
+        : 'https://messagelove.onrender.com/api'),
       PARTICLE_CONFIG: {
         density: { mobile: 40000, desktop: 15000 },
         connectionDistance: 80,
