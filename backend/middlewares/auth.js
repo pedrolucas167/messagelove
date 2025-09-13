@@ -1,58 +1,65 @@
+// middlewares/auth.js
 const jwt = require('jsonwebtoken');
 const winston = require('winston');
 
 const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-    transports: [new winston.transports.Console()]
+  level: 'info',
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+  transports: [new winston.transports.Console()]
 });
 
-const authenticate = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+module.exports = function authenticate(req, res, next) {
+  const header = req.headers.authorization || '';
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        logger.warn('Token de autenticação ausente', {
-            url: req.url,
-            method: req.method,
-            ip: req.ip
-        });
-        return res.status(401).json({ message: 'Token de autenticação ausente.' });
+  if (!header.startsWith('Bearer ')) {
+    logger.warn('Token ausente', { url: req.url, method: req.method, ip: req.ip });
+    return res.status(401).json({ success: false, error: 'Token de autenticação ausente.' });
+  }
+
+  const token = header.split(' ')[1];
+  if (!token) {
+    logger.warn('Bearer sem token', { url: req.url, method: req.method, ip: req.ip });
+    return res.status(401).json({ success: false, error: 'Token inválido.' });
+  }
+
+  if (!process.env.JWT_SECRET) {
+    logger.error('JWT_SECRET não configurado');
+    return res.status(500).json({ success: false, error: 'Erro interno do servidor.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Normaliza o id do usuário independente do campo usado no payload
+    const userId = decoded.userId || decoded.sub || decoded.id;
+    if (!userId) {
+      logger.warn('Payload do token sem userId/sub/id', { url: req.url, method: req.method });
+      return res.status(401).json({ success: false, error: 'Token inválido.' });
     }
 
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-        logger.warn('Token vazio ou malformado', {
-            url: req.url,
-            method: req.method,
-            ip: req.ip
-        });
-        return res.status(401).json({ message: 'Token inválido.' });
-    }
+    // Disponibiliza de forma consistente para as rotas/serviços
+    req.userId = userId;
+    req.user = {
+      id: userId,
+      email: decoded.email || null,
+      name: decoded.name || null,
+      role: decoded.role || null
+    };
 
-    if (!process.env.JWT_SECRET) {
-        logger.error('JWT_SECRET não configurado');
-        return res.status(500).json({ message: 'Erro interno do servidor.' });
-    }
+    return next();
+  } catch (err) {
+    const msg =
+      err.name === 'TokenExpiredError' ? 'Token expirado.' :
+      err.name === 'JsonWebTokenError' ? 'Token inválido.' :
+      'Token inválido ou expirado.';
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = { userId: decoded.userId };
-        next();
-    } catch (error) {
-        let message = 'Token inválido ou expirado.';
-        if (error.name === 'TokenExpiredError') {
-            message = 'Token expirado.';
-        } else if (error.name === 'JsonWebTokenError') {
-            message = 'Token inválido.';
-        }
-        logger.error('Falha na autenticação', {
-            error: error.message,
-            url: req.url,
-            method: req.method,
-            ip: req.ip
-        });
-        res.status(401).json({ message });
-    }
+    logger.warn('Falha na autenticação', {
+      error: err.message,
+      url: req.url,
+      method: req.method,
+      ip: req.ip
+    });
+
+    return res.status(401).json({ success: false, error: msg });
+  }
 };
-
-module.exports = authenticate;
