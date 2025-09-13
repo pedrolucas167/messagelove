@@ -24,9 +24,8 @@ const sequelize = new Sequelize(databaseUrl, {
 const db = {};
 
 db.User = require('./Users')(sequelize, DataTypes);
-db.Card = require('./Card')(sequelize, DataTypes);
+db.Card = require('./card')(sequelize, DataTypes);
 
-// Associações (se existirem)
 if (db.User.associate) db.User.associate(db);
 if (db.Card.associate) db.Card.associate(db);
 
