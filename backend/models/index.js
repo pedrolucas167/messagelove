@@ -1,6 +1,3 @@
-
-'use strict';
-
 'use strict';
 
 const { Sequelize, DataTypes } = require('sequelize');
@@ -28,7 +25,7 @@ const sequelize = new Sequelize(databaseUrl, {
 const db = {};
 
 
-db.Card = require('./card')(sequelize, DataTypes);
+db.Card = require('./cards')(sequelize, DataTypes);
 db.User = require('./users')(sequelize, DataTypes);
 
 db.sequelize = sequelize;
