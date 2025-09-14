@@ -28,7 +28,7 @@ const sequelize = new Sequelize(databaseUrl, {
 const db = {};
 
 
-db.Card = require('./card.js')(sequelize, DataTypes);
+db.Card = require('./card')(sequelize, DataTypes);
 db.User = require('./users')(sequelize, DataTypes);
 
 db.sequelize = sequelize;
