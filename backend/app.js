@@ -9,7 +9,7 @@ const logger = require('./config/logger');
 const db = require('./models');
 
 const authRoutes = require('./routes/authRoutes');
-const cardRoutes = require('./routes/cardsRoutes');
+const cardRoutes = require('./routes/cardRoutes');
 
 const app = express();
 
