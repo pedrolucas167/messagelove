@@ -29,7 +29,7 @@ const db = {};
 
 
 db.Card = require('./card')(sequelize, DataTypes);
-db.User = require('./user')(sequelize, DataTypes);
+db.User = require('./users')(sequelize, DataTypes);
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
