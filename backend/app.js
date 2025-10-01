@@ -24,9 +24,11 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  'https://messagelove-frontend.vercel.app',
-  'https://messagelove.vercel.app',
-  'https://messagelove.onrender.com/api' 
+  "https://messagelove.com.br",
+  "https://www.messagelove.com.br",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  'https://messagelove.onrender.com/api'
 ];
 
 const corsOptions = {
