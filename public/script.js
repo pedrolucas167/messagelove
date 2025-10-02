@@ -1,19 +1,13 @@
-
 document.addEventListener('DOMContentLoaded', () => {
-  const App = (() => {
-    const cfg = {
-      API_URL: (['localhost', '127.0.0.1'].includes(location.hostname))
+  const MessageLoveApp = (() => {
+    const config = {
+      API_URL: (['localhost', '127.0.0.1'].includes(window.location.hostname)
         ? 'http://localhost:3001/api'
-        : 'https://messagelove.onrender.com/api',
-      TOKEN_CHECK_INTERVAL: 15 * 60 * 1000,
-      REQ_TIMEOUT_MS: 10000,
-      RETRIES: 2,
-      RETRY_BASE_MS: 500,
-      GRID: { 
-        sm: 1, md: 2, lg: 3, xl: 4
-      },
-      PARTICLE: {
+        : 'https://messagelove.onrender.com/api'),
+      PARTICLE_CONFIG: {
         density: { mobile: 40000, desktop: 15000 },
+        connectionDistance: 80,
+        interactionRadius: 120,
         colors: [
           'rgba(255, 182, 193, 0.7)',
           'rgba(219, 112, 147, 0.6)',
@@ -21,407 +15,511 @@ document.addEventListener('DOMContentLoaded', () => {
           'rgba(221, 160, 221, 0.6)'
         ],
         glow: 'rgba(255, 105, 180, 0.8)'
-      }
-    };
-
-    const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
-
-    const els = {
-      welcome: $('#welcomeSection'),
-      dash: $('#dashboardSection'),
-      create: $('#creationSection'),
-      toastArea: $('#appNotificationArea'),
-      list: $('#userCardsList'),
-      search: $('#cardsSearch'),
-      sort: $('#cardsSort'),
-      filter: $('#cardsFilter'),
-      particle: $('#particle-canvas'),
-      authModal: $('#authModal'),
-      modalContent: document.querySelector('.modal-content'),
-      loginForm: $('#loginForm'),
-      registerForm: $('#registerForm'),
-      resetForm: document.querySelector('#resetPasswordFormContainer form'),
-      createForm: $('#createCardForm'),
-      loginBtn: $('#loginSubmitBtn'),
-      registerBtn: $('#registerSubmitBtn'),
-      createBtn: $('#createCardSubmitBtn'),
-      logoutBtn: $('#logoutBtn'),
-      openLogin: $('#openLoginBtn'),
-      openRegister: $('#openRegisterBtn'),
-      showCreate: $('#showCreateFormBtn'),
-      showDash: $('#showDashboardBtn'),
-      showRegister: $('#showRegisterBtn'),
-      showLogin: $('#showLoginBtn'),
-      showForgot: $('#showForgotPasswordBtn'),
-      showLoginFromReset: $('#showLoginFromResetBtn'),
-      userWelcome: $('#userWelcomeMessage'),
-      year: $('#currentYear'),
+      },
+      MAX_RETRIES: 2,
+      RETRY_DELAY: 2000,
+      TOKEN_CHECK_INTERVAL: 15 * 60 * 1000
     };
 
     const state = {
-      token: sessionStorage.getItem('token') || null,
-      user: (() => { try { return JSON.parse(sessionStorage.getItem('user')) } catch { return null } })(),
-      cards: [],
-      filtered: [],
-      loading: false,
-      search: '',
-      sort: 'date_desc',
-      filter: 'all'
+      currentUser: null,
+      particles: [],
+      interactionPos: { x: null, y: null },
+      retryCount: 0,
+      authToken: null
     };
 
-    const htmlesc = (s = '') => (s + '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const copy = async (t) => { try { await navigator.clipboard.writeText(t); ui.toast('Link copiado!', 'success'); } catch { ui.toast('Não foi possível copiar', 'error'); } };
-    const share = async (title, text, url) => {
-      if (navigator.share) { try { await navigator.share({ title, text, url }); } catch { } }
-      else copy(url);
-    };
-    const fmtDate = (iso) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(new Date(iso));
-    const viewTransition = (fn) => (document.startViewTransition ? document.startViewTransition(fn) : fn());
-
-    const api = {
-      async request(path, { method = 'GET', headers = {}, body, auth = true, timeout = cfg.REQ_TIMEOUT_MS } = {}) {
-        const url = `${cfg.API_URL}${path}`;
-        const h = new Headers(headers);
-        if (!(body instanceof FormData)) h.set('Content-Type', 'application/json');
-        if (auth && state.token) h.set('Authorization', `Bearer ${state.token}`);
-
-        let lastErr;
-        for (let a = 0; a <= cfg.RETRIES; a++) {
-          const ctrl = new AbortController();
-          const tid = setTimeout(() => ctrl.abort(), timeout);
-          try {
-            const r = await fetch(url, { method, headers: h, body, signal: ctrl.signal });
-            clearTimeout(tid);
-            const t = await r.text();
-            const data = t ? JSON.parse(t) : {};
-            if (!r.ok) {
-              const msg = (Array.isArray(data.errors) ? data.errors.map(e => e.msg || e.message).join(' ') : (data.message || r.statusText));
-              const err = new Error(msg); err.status = r.status; err.data = data; throw err;
-            }
-            return data;
-          } catch (e) {
-            clearTimeout(tid);
-            lastErr = e;
-            const retriable = !e.status || (e.status >= 500 && e.status < 600);
-            if (a < cfg.RETRIES && retriable) {
-              const wait = cfg.RETRY_BASE_MS * 2 ** a + Math.random() * 200;
-              await new Promise(r => setTimeout(r, wait));
-              continue;
-            }
-            throw e;
-          }
-        }
-        throw lastErr;
-      },
-      login: (email, password) => api.request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }), auth: false }),
-      register: (name, email, password) => api.request('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }), auth: false }),
-      verify: () => api.request('/auth/verify', { method: 'GET' }),
-      forgot: (email) => api.request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }), auth: false }),
-      reset: (email, token, newPassword) => api.request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email, token, newPassword }), auth: false }),
-      cards: () => api.request('/cards', { method: 'GET' }),
-      createCard: (formData) => api.request('/cards', { method: 'POST', body: formData })
+    const elements = {
+      welcomeSection: document.getElementById('welcomeSection'),
+      dashboardSection: document.getElementById('dashboardSection'),
+      creationSection: document.getElementById('creationSection'),
+      authModal: document.getElementById('authModal'),
+      modalContent: document.querySelector('.modal-content'),
+      closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
+      loginForm: document.getElementById('loginForm'),
+      registerForm: document.getElementById('registerForm'),
+      resetPasswordForm: document.querySelector('#resetPasswordFormContainer form'),
+      createCardForm: document.getElementById('createCardForm'),
+      loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+      registerSubmitBtn: document.getElementById('registerSubmitBtn'),
+      createCardSubmitBtn: document.getElementById('createCardSubmitBtn'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      showCreateFormBtn: document.getElementById('showCreateFormBtn'),
+      showDashboardBtn: document.getElementById('showDashboardBtn'),
+      openLoginBtn: document.getElementById('openLoginBtn'),
+      openRegisterBtn: document.getElementById('openRegisterBtn'),
+      showRegisterBtn: document.getElementById('showRegisterBtn'),
+      showLoginBtn: document.getElementById('showLoginBtn'),
+      showForgotPasswordBtn: document.getElementById('showForgotPasswordBtn'),
+      showLoginFromResetBtn: document.getElementById('showLoginFromResetBtn'),
+      appNotificationArea: document.getElementById('appNotificationArea'),
+      userWelcomeMessage: document.getElementById('userWelcomeMessage'),
+      userCardsList: document.getElementById('userCardsList'),
+      particleCanvas: document.getElementById('particle-canvas'),
+      currentYear: document.getElementById('currentYear')
     };
 
-    const ui = {
-      setYear() { els.year && (els.year.textContent = new Date().getFullYear()) },
-      toast(msg, type = 'info', ms = 4000) {
-        if (!els.toastArea) return alert(msg);
-        const n = document.createElement('div');
-        n.role = 'status'; n.ariaLive = 'polite';
-        n.className = `pointer-events-auto px-4 py-3 mb-3 rounded-lg shadow-lg text-white ${({
-          info: 'bg-sky-600', success: 'bg-emerald-600', error: 'bg-rose-600', warn: 'bg-amber-600'
-        })[type] || 'bg-sky-600'}`;
-        n.innerHTML = `<div class="flex items-start gap-3">
-          <span class="font-medium">${htmlesc(msg)}</span>
-          <button class="ml-auto opacity-80 hover:opacity-100">✕</button>
-        </div>`;
-        els.toastArea.appendChild(n);
-        const close = () => { n.classList.add('opacity-0', 'translate-y-1'); setTimeout(() => n.remove(), 200); };
-        n.querySelector('button')?.addEventListener('click', close);
-        setTimeout(close, ms);
-      },
-      show(view) {
-        ['welcome', 'dash', 'create'].forEach(v => {
-          const elv = ({ welcome: els.welcome, dash: els.dash, create: els.create })[v];
-          elv?.classList.toggle('hidden', v !== view);
-        })
-      },
-      setLoadingCards(on) {
-        state.loading = on;
-        if (!els.list) return;
-        if (on) {
-          els.list.innerHTML = ui.skeletonGrid();
-          els.list.dataset.loading = '1';
-        } else {
-          delete els.list.dataset.loading;
-        }
-      },
-      skeletonGrid() {
-        const tiles = Array.from({ length: 8 }).map(() => `
-          <div class="break-inside-avoid rounded-xl overflow-hidden bg-gray-700/60 animate-pulse h-[180px] mb-4"></div>
-        `).join('');
-        return `<div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">${tiles}</div>`;
-      },
-      emptyState() {
-        return `
-          <div class="rounded-xl bg-gray-700/60 p-8 text-center">
-            <h3 class="text-white text-lg font-semibold mb-2">Você ainda não criou cartões</h3>
-            <p class="text-gray-300 mb-4">Comece um agora — é rápido e bonito ✨</p>
-            <button id="ctaCreateNow" class="px-4 py-2 rounded-md bg-fuchsia-600 text-white hover:bg-fuchsia-500">Criar novo cartão</button>
-          </div>
-        `;
-      },
-      grid(cards) {
-        const items = cards.map(card => {
-          const url = `card.html?id=${encodeURIComponent(card.id)}`;
-          const date = fmtDate(card.createdAt);
-          const img = card.fotoUrl ? `<img src="${htmlesc(card.fotoUrl)}" alt="foto" class="w-full h-40 object-cover">` : `<div class="w-full h-40 bg-gradient-to-br from-fuchsia-700/40 to-indigo-700/30"></div>`;
-          return `
-          <article class="break-inside-avoid mb-4 rounded-xl overflow-hidden bg-gray-700/60 ring-1 ring-white/5 hover:ring-fuchsia-500/40 transition">
-            ${img}
-            <div class="p-4 space-y-2">
-              <h3 class="text-white font-semibold">Para: ${htmlesc(card.para)}</h3>
-              <p class="text-gray-300 line-clamp-2">${htmlesc(card.mensagem || '')}</p>
-              <p class="text-xs text-gray-400">${date}</p>
-              <div class="flex gap-2 pt-2">
-                <a href="${url}" class="px-3 py-1 rounded-md bg-gray-600 text-white hover:bg-gray-500">Abrir</a>
-                <button data-copy="${url}" class="px-3 py-1 rounded-md bg-gray-600 text-white hover:bg-gray-500">Copiar link</button>
-                <button data-share='${htmlesc(JSON.stringify({ title: "MessageLove", text: `Cartão para ${card.para}`, url }))}' class="px-3 py-1 rounded-md bg-gray-600 text-white hover:bg-gray-500">Compartilhar</button>
-                <button data-preview='${htmlesc(JSON.stringify(card))}' class="ml-auto px-3 py-1 rounded-md bg-fuchsia-600 text-white hover:bg-fuchsia-500">Preview</button>
-              </div>
-            </div>
-          </article>`;
-        }).join('');
+    const validateElements = () => {
+      const critical = ['particleCanvas','appNotificationArea','welcomeSection','dashboardSection','creationSection'];
+      const missing = critical.filter(k => !elements[k]);
+      if (missing.length) { console.error('Elementos críticos não encontrados:', missing); return false; }
+      return true;
+    };
 
-        return `<div class="cards-masonry columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">${items}</div>`;
+    const particles = {
+      ctx: null,
+      animationFrameId: null,
+      resizeTimeout: null,
+      init() {
+        if (!elements.particleCanvas) return;
+        this.ctx = elements.particleCanvas.getContext('2d');
+        this.setupEventListeners();
+        this.resizeCanvas();
+        this.createParticles();
+        this.animate();
       },
-      applyGridBehaviors() {
-    
-        els.list?.addEventListener('click', (e) => {
-          const t = e.target.closest('button'); if (!t) return;
-          if (t.dataset.copy) { copy(t.dataset.copy); }
-          else if (t.dataset.share) {
-            try { const p = JSON.parse(t.dataset.share); share(p.title, p.text, p.url); }
-            catch { copy(location.origin); }
-          } else if (t.dataset.preview) {
-            try { const c = JSON.parse(t.dataset.preview); ui.openPreview(c); } catch { }
-          }
+      setupEventListeners() {
+        const updatePos = (x, y) => {
+          const rect = elements.particleCanvas.getBoundingClientRect();
+          state.interactionPos = { x: x - rect.left, y: y - rect.top };
+        };
+        window.addEventListener('mousemove', e => updatePos(e.clientX, e.clientY));
+        window.addEventListener('touchmove', e => updatePos(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+        const clearPos = () => state.interactionPos = { x: null, y: null };
+        window.addEventListener('mouseleave', clearPos);
+        window.addEventListener('touchend', clearPos);
+        window.addEventListener('resize', () => {
+          clearTimeout(this.resizeTimeout);
+          this.resizeTimeout = setTimeout(() => { this.resizeCanvas(); this.createParticles(); }, 100);
         });
-        $('#ctaCreateNow')?.addEventListener('click', () => viewTransition(() => ui.show('create')));
       },
-      openPreview(card) {
-       
-        const wrap = document.createElement('div');
-        wrap.className = 'fixed inset-0 z-50 grid place-items-center bg-black/60 p-4';
-        wrap.innerHTML = `
-          <div class="max-w-xl w-full bg-gray-800 rounded-xl overflow-hidden shadow-xl ring-1 ring-white/10">
-            ${card.fotoUrl ? `<img src="${htmlesc(card.fotoUrl)}" alt="" class="w-full h-64 object-cover">` : ''}
-            <div class="p-5 space-y-2">
-              <h3 class="text-white text-xl font-semibold">Para: ${htmlesc(card.para)}</h3>
-              <p class="text-gray-300 whitespace-pre-line">${htmlesc(card.mensagem || '')}</p>
-              <p class="text-xs text-gray-400">De: ${htmlesc(card.de || 'Anônimo')} • ${fmtDate(card.createdAt)}</p>
-              <div class="flex gap-2 pt-2">
-                <a href="card.html?id=${encodeURIComponent(card.id)}" class="px-3 py-2 rounded-md bg-fuchsia-600 text-white hover:bg-fuchsia-500">Abrir cartão</a>
-                <button class="ml-auto px-3 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-600" data-close>Fechar</button>
-              </div>
-            </div>
-          </div>`;
-        document.body.appendChild(wrap);
-        wrap.addEventListener('click', (e) => { if (e.target === wrap || e.target.closest('[data-close]')) wrap.remove(); });
+      resizeCanvas() {
+        elements.particleCanvas.width = window.innerWidth;
+        elements.particleCanvas.height = window.innerHeight;
       },
-      updateToolbar() {
-        const hasBar = document.querySelector('#cardsToolbar');
-        if (!hasBar) return;
-        els.search && (els.search.value = state.search);
-        els.sort && (els.sort.value = state.sort);
-        els.filter && (els.filter.value = state.filter);
+      createParticles() {
+        state.particles = [];
+        const density = window.innerWidth < 768 ? config.PARTICLE_CONFIG.density.mobile : config.PARTICLE_CONFIG.density.desktop;
+        const count = Math.min((elements.particleCanvas.height * elements.particleCanvas.width) / density, 80);
+        for (let i = 0; i < count; i++) {
+          state.particles.push({
+            x: Math.random() * elements.particleCanvas.width,
+            y: Math.random() * elements.particleCanvas.height,
+            directionX: Math.random() * 0.3 - 0.15,
+            directionY: Math.random() * 0.3 - 0.15,
+            size: Math.random() * 3 + 2,
+            color: config.PARTICLE_CONFIG.colors[Math.floor(Math.random()*config.PARTICLE_CONFIG.colors.length)],
+            phase: Math.random() * Math.PI * 2
+          });
+        }
+      },
+      animate() {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+        this.ctx.fillRect(0, 0, elements.particleCanvas.width, elements.particleCanvas.height);
+        state.particles.forEach(p => { this.updateParticle(p); this.drawParticle(p); });
+        this.drawConnections();
+        this.animationFrameId = requestAnimationFrame(() => this.animate());
+      },
+      updateParticle(p) {
+        if (state.interactionPos.x !== null && state.interactionPos.y !== null) {
+          const dx = state.interactionPos.x - p.x;
+          const dy = state.interactionPos.y - p.y;
+          const d = Math.hypot(dx, dy);
+          if (d < config.PARTICLE_CONFIG.interactionRadius) {
+            const f = (config.PARTICLE_CONFIG.interactionRadius - d) / config.PARTICLE_CONFIG.interactionRadius;
+            p.directionX -= dx * f * 0.015;
+            p.directionY -= dy * f * 0.015;
+          }
+        }
+        p.phase += 0.02;
+        p.x += p.directionX + Math.sin(p.phase) * 0.3;
+        p.y += p.directionY + Math.cos(p.phase) * 0.3;
+        if (p.x > elements.particleCanvas.width || p.x < 0) p.directionX = -p.directionX;
+        if (p.y > elements.particleCanvas.height || p.y < 0) p.directionY = -p.directionY;
+      },
+      drawParticle(p) {
+        this.ctx.save();
+        this.ctx.translate(p.x, p.y);
+        this.ctx.scale(p.size / 4, p.size / 4);
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, -3);
+        this.ctx.bezierCurveTo(-3, -5, -6, -2, -6, 1);
+        this.ctx.bezierCurveTo(-6, 4, -3, 6, 0, 3);
+        this.ctx.bezierCurveTo(3, 6, 6, 4, 6, 1);
+        this.ctx.bezierCurveTo(6, -2, -3, -5, 0, -3);
+        this.ctx.closePath();
+        this.ctx.fillStyle = p.color;
+        this.ctx.shadowColor = config.PARTICLE_CONFIG.glow;
+        this.ctx.shadowBlur = 8;
+        this.ctx.fill();
+        this.ctx.restore();
+      },
+      drawConnections() {
+        for (let i = 0; i < state.particles.length; i++) {
+          for (let j = i + 1; j < state.particles.length; j++) {
+            const p1 = state.particles[i], p2 = state.particles[j];
+            const d = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+            if (d < config.PARTICLE_CONFIG.connectionDistance) {
+              this.ctx.beginPath();
+              this.ctx.moveTo(p1.x, p1.y);
+              this.ctx.lineTo(p2.x, p2.y);
+              this.ctx.strokeStyle = `rgba(255, 182, 193, ${1 - d / config.PARTICLE_CONFIG.connectionDistance})`;
+              this.ctx.lineWidth = 0.5;
+              this.ctx.stroke();
+            }
+          }
+        }
+      },
+      cleanup() {
+        if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+        clearTimeout(this.resizeTimeout);
+      }
+    };
+
+    const apiService = {
+      async request(endpoint, options = {}, retries = config.MAX_RETRIES) {
+        const attempt = config.MAX_RETRIES - retries + 1;
+        const headers = new Headers(options.headers || {});
+        if (!(options.body instanceof FormData)) headers.set('Content-Type', 'application/json');
+        if (state.authToken) headers.set('Authorization', `Bearer ${state.authToken}`);
+        try {
+          const response = await fetch(`${config.API_URL}${endpoint}`, { ...options, headers });
+          const data = await this.parseResponse(response);
+          if (!response.ok) throw this.createError(response, data);
+          return data;
+        } catch (error) {
+          return this.handleRetry(error, endpoint, options, retries, attempt);
+        }
+      },
+      parseResponse(response) {
+        return response.text().then(t => (t ? JSON.parse(t) : {}));
+      },
+      createError(response, data) {
+        let message = `Erro ${response.status}: ${data.message || response.statusText}`;
+        if (Array.isArray(data.errors)) {
+          message = data.errors.map(e => e.msg || e.message).join(' ');
+        } else if (response.status === 429) {
+          message = 'Muitas tentativas. Tente novamente em alguns minutos.';
+        } else if (response.status === 500) {
+          message += data.data?.error ? ` - ${data.data.error}` : ' - Erro interno do servidor.';
+        }
+        const err = new Error(message);
+        err.status = response.status;
+        err.data = data;
+        return err;
+      },
+      async handleRetry(error, endpoint, options, retries, attempt) {
+        const isCorsError = !error.status && String(error.message || '').includes('Failed to fetch');
+        const isAuthError = error.status === 401;
+        const isRateLimitError = error.status === 429;
+        console.error(`API Error on ${endpoint} (Tentativa ${attempt}/${config.MAX_RETRIES}):`, {
+          status: error.status || 'N/A', message: error.message, data: error.data, attempt
+        });
+        if (isAuthError) { auth.logout(); throw new Error('Sessão expirada. Faça login novamente.'); }
+        if (retries > 0 && !isCorsError && !isAuthError && !isRateLimitError) {
+          await new Promise(r => setTimeout(r, config.RETRY_DELAY));
+          return this.request(endpoint, options, retries - 1);
+        }
+        throw isCorsError ? new Error('Erro de conexão com o servidor. Verifique sua conexão.') : error;
+      },
+      login(email, password) {
+        return this.request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+      },
+      register(name, email, password) {
+        return this.request('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+      },
+      requestPasswordReset(email) {
+        return this.request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+      },
+      performPasswordReset(email, token, newPassword) {
+        return this.request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email, token, newPassword }) });
+      },
+     verifyToken() { return this.request('/auth/verify'); },
+      getCards() { return this.request('/cards'); },
+      createCard(formData) { return this.request('/cards', { method: 'POST', body: formData }); }
+    };
+
+    const uiService = {
+      showView(view) {
+        ['welcome', 'dashboard', 'creation'].forEach(v => {
+          elements[`${v}Section`]?.classList.toggle('hidden', v !== view);
+        });
+      },
+      updateAuthUI() {
+        if (state.currentUser) {
+          elements.logoutBtn?.classList.remove('hidden');
+          if (elements.userWelcomeMessage) elements.userWelcomeMessage.textContent = `Olá, ${state.currentUser.name}!`;
+          this.showView('dashboard');
+          cardService.loadCards().catch(console.error);
+        } else {
+          elements.logoutBtn?.classList.add('hidden');
+          this.showView('welcome');
+        }
+      },
+      openAuthModal(initialForm = 'login') {
+        if (!elements.authModal) return;
+        this.showAuthForm(initialForm);
+        elements.authModal.classList.remove('hidden');
+        elements.authModal.setAttribute('aria-hidden', 'false');
+        setTimeout(() => {
+          elements.authModal.classList.remove('opacity-0');
+          elements.modalContent?.classList.remove('scale-95');
+        }, 10);
+      },
+      closeAuthModal() {
+        if (!elements.authModal) return;
+        elements.authModal.classList.add('opacity-0');
+        elements.modalContent?.classList.add('scale-95');
+        elements.authModal.setAttribute('aria-hidden', 'true');
+        setTimeout(() => {
+          elements.authModal.classList.add('hidden');
+          elements.loginForm?.reset();
+          elements.registerForm?.reset();
+          elements.resetPasswordForm?.reset();
+        }, 300);
+      },
+      showAuthForm(formName) {
+        const forms = {
+          login: elements.loginForm?.parentElement,
+          register: elements.registerForm?.parentElement,
+          reset: elements.resetPasswordForm?.parentElement
+        };
+        Object.values(forms).forEach(f => f && f.classList.add('hidden'));
+        if (forms[formName]) forms[formName].classList.remove('hidden');
+      },
+      showNotification(message, type = 'info', duration = 5000) {
+        if (!elements.appNotificationArea) return;
+        const types = { info: 'bg-blue-500', success: 'bg-green-500', error: 'bg-red-600', warning: 'bg-yellow-500' };
+        const n = document.createElement('div');
+        n.className = `
+          p-4 mb-4 text-sm md:text-base rounded-lg shadow-lg text-white 
+          transition-all duration-300 ease-in-out transform relative
+          opacity-0 translate-y-4 ${types[type] || types.info}
+        `;
+        n.innerHTML = `
+          <span>${message}</span>
+          <button class="notification-close absolute top-2 right-2 text-white hover:text-gray-200">×</button>
+        `;
+        elements.appNotificationArea.appendChild(n);
+        requestAnimationFrame(() => n.classList.remove('opacity-0','translate-y-4'));
+        const closeBtn = n.querySelector('.notification-close');
+        const close = () => { n.classList.add('opacity-0'); n.addEventListener('transitionend', () => n.remove(), { once: true }); };
+        closeBtn.addEventListener('click', close);
+        setTimeout(close, duration);
+      },
+      setButtonLoading(button, isLoading) {
+        if (!button) return;
+        button.disabled = isLoading;
+        button.classList.toggle('opacity-75', isLoading);
+        button.classList.toggle('cursor-not-allowed', isLoading);
+        if (isLoading) {
+          button.dataset.originalText = button.innerHTML;
+          button.innerHTML = `
+            <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+            Carregando...
+          `;
+        } else if (button.dataset.originalText) {
+          button.innerHTML = button.dataset.originalText;
+        }
+      },
+      updateFooterYear() {
+        if (elements.currentYear) elements.currentYear.textContent = new Date().getFullYear();
       }
     };
 
     const auth = {
-      save(token, user) { state.token = token; state.user = user; sessionStorage.setItem('token', token); sessionStorage.setItem('user', JSON.stringify(user)); },
-      clear() { state.token = null; state.user = null; sessionStorage.removeItem('token'); sessionStorage.removeItem('user'); },
-      async login(e) {
-        e.preventDefault();
-        const email = els.loginForm.email.value.trim().toLowerCase();
-        const password = els.loginForm.password.value;
-        els.loginBtn.disabled = true;
-        try {
-          const data = await api.login(email, password);
-          auth.save(data.token, data.user);
-          ui.toast('Login realizado!', 'success'); viewTransition(() => ui.show('dash')); dataLayer();
-          await cards.load(); // carrega cards pós login
-        } catch (e) { ui.toast(e.message || 'Falha no login', 'error'); }
-        finally { els.loginBtn.disabled = false; els.loginForm.password.value = ''; }
+      isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); },
+      isValidPassword(password) { return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/.test(password); },
+      sanitizeInput(input, isEmail = false) { const s = input.trim(); return isEmail ? s.toLowerCase() : s; },
+      storeUserData(token, user) {
+        state.authToken = token; state.currentUser = user;
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('user', JSON.stringify(user));
       },
-      async register(e) {
-        e.preventDefault();
-        const name = els.registerForm.name.value.trim();
-        const email = els.registerForm.email.value.trim().toLowerCase();
-        const password = els.registerForm.password.value;
-        els.registerBtn.disabled = true;
-        try {
-          const data = await api.register(name, email, password);
-          auth.save(data.token, data.user);
-          ui.toast(`Bem-vindo, ${data.user.name}!`, 'success'); viewTransition(() => ui.show('dash'));
-          await cards.load();
-        } catch (e) { ui.toast(e.message || 'Falha no registro', 'error'); }
-        finally { els.registerBtn.disabled = false; els.registerForm.password.value = ''; }
+      clearUserData() {
+        state.authToken = null; state.currentUser = null;
+        sessionStorage.removeItem('token'); sessionStorage.removeItem('user');
       },
-      logout() { auth.clear(); ui.toast('Você saiu.', 'info'); viewTransition(() => ui.show('welcome')); els.list && (els.list.innerHTML = ''); },
-      startTokenChecks() {
-        if (!state.token) return;
-        api.verify().catch(() => auth.logout());
-        setInterval(() => state.token && api.verify().catch(() => auth.logout()), cfg.TOKEN_CHECK_INTERVAL);
-      }
-    };
-
-    const cards = {
-      applyFilters() {
-        let arr = [...state.cards];
-        if (state.search) {
-          const q = state.search.toLowerCase();
-          arr = arr.filter(c => (c.para || '').toLowerCase().includes(q) || (c.de || '').toLowerCase().includes(q) || (c.mensagem || '').toLowerCase().includes(q));
-        }
-        if (state.filter === 'withPhoto') arr = arr.filter(c => !!c.fotoUrl);
-        if (state.filter === 'noPhoto') arr = arr.filter(c => !c.fotoUrl);
-        if (state.sort === 'date_desc') arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        if (state.sort === 'date_asc') arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        state.filtered = arr;
+      handleAuthSuccess(response, isRegistration = false) {
+        this.storeUserData(response.token, response.user);
+        uiService.closeAuthModal();
+        uiService.showNotification(isRegistration ? `Bem-vindo, ${response.user.name}!` : 'Login realizado com sucesso!','success');
+        uiService.updateAuthUI();
+        history.replaceState(null, '', window.location.pathname);
       },
-      async load() {
-        if (!state.user || !els.list) return;
-        ui.setLoadingCards(true);
+      async login(event) {
+        event.preventDefault();
+        if (!elements.loginSubmitBtn || !elements.loginForm) return;
+        const email = this.sanitizeInput(elements.loginForm.email.value, true);
+        const password = elements.loginForm.password.value;
+        uiService.setButtonLoading(elements.loginSubmitBtn, true);
         try {
-          const data = await api.cards();
-          state.cards = Array.isArray(data) ? data : [];
-          cards.applyFilters();
-          viewTransition(() => {
-            els.list.innerHTML = state.filtered.length ? ui.grid(state.filtered) : ui.emptyState();
-            ui.applyGridBehaviors();
-          });
+          if (!email || !password) throw new Error('Por favor, preencha todos os campos.');
+          if (!this.isValidEmail(email)) throw new Error('Por favor, insira um email válido.');
+          const response = await apiService.login(email, password);
+          this.handleAuthSuccess(response);
         } catch (e) {
-          ui.toast(`Erro ao carregar cartões: ${e.message}`, 'error');
-          els.list.innerHTML = ui.emptyState();
-          ui.applyGridBehaviors();
+          this.handleAuthError(e);
         } finally {
-          ui.setLoadingCards(false);
+          uiService.setButtonLoading(elements.loginSubmitBtn, false);
+          elements.loginForm.password.value = '';
         }
       },
-      async create(e) {
-        e.preventDefault();
-        if (!state.user) return ui.toast('Faça login para criar.', 'warn');
-        const fd = new FormData(els.createForm);
-        for (const f of ['de', 'para', 'mensagem']) {
-          if (!fd.get(f)) return ui.toast(`Preencha o campo ${f}.`, 'warn');
-        }
-        els.createBtn.disabled = true;
+      async register(event) {
+        event.preventDefault();
+        if (!elements.registerSubmitBtn || !elements.registerForm) return;
+        const name = this.sanitizeInput(elements.registerForm.name.value);
+        const email = this.sanitizeInput(elements.registerForm.email.value, true);
+        const password = elements.registerForm.password.value;
+        uiService.setButtonLoading(elements.registerSubmitBtn, true);
         try {
-          const res = await api.createCard(fd);
-          ui.toast('Cartão criado!', 'success');
-          els.createForm.reset();
-          viewTransition(() => ui.show('dash'));
-          await cards.load();
-          setTimeout(() => location.href = `card.html?id=${encodeURIComponent(res.id)}`, 350);
-        } catch (e) { ui.toast(e.message || 'Erro ao criar cartão', 'error'); }
-        finally { els.createBtn.disabled = false; }
-      }
-    };
-
-    const particles = (() => {
-      let ctx, raf, pts = [];
-      const resize = () => {
-        const dpr = Math.min(devicePixelRatio || 1, 2);
-        const w = innerWidth, h = innerHeight;
-        els.particle.width = Math.floor(w * dpr);
-        els.particle.height = Math.floor(h * dpr);
-        els.particle.style.width = w + 'px'; els.particle.style.height = h + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      };
-      const spawn = () => {
-        pts = [];
-        const density = innerWidth < 768 ? cfg.PARTICLE.density.mobile : cfg.PARTICLE.density.desktop;
-        const n = Math.min((innerWidth * innerHeight) / density, 80) | 0;
-        for (let i = 0; i < n; i++) {
-          pts.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, dx: Math.random() * 0.3 - 0.15, dy: Math.random() * 0.3 - 0.15, s: Math.random() * 3 + 2, c: cfg.PARTICLE.colors[(Math.random() * cfg.PARTICLE.colors.length) | 0], ph: Math.random() * Math.PI * 2 });
+          if (!name || !email || !password) throw new Error('Por favor, preencha todos os campos.');
+          if (!this.isValidEmail(email)) throw new Error('Por favor, insira um email válido.');
+          if (!this.isValidPassword(password)) throw new Error('A senha deve ter pelo menos 8 caracteres, incluindo letras e números.');
+          const response = await apiService.register(name, email, password);
+          this.handleAuthSuccess(response, true);
+        } catch (e) {
+          this.handleAuthError(e);
+        } finally {
+          uiService.setButtonLoading(elements.registerSubmitBtn, false);
+          elements.registerForm.password.value = '';
         }
-      };
-      const draw = () => {
-        ctx.fillStyle = 'rgba(0,0,0,.03)'; ctx.fillRect(0, 0, els.particle.width, els.particle.height);
-        for (const p of pts) {
-          p.x += p.dx + Math.sin(p.ph) * 0.3; p.y += p.dy + Math.cos(p.ph) * 0.3; p.ph += 0.02;
-          if (p.x < 0 || p.x > innerWidth) p.dx *= -1; if (p.y < 0 || p.y > innerHeight) p.dy *= -1;
-          ctx.save(); ctx.translate(p.x, p.y); const sc = p.s / 4; ctx.scale(sc, sc);
-          ctx.beginPath(); ctx.moveTo(0, -3); ctx.bezierCurveTo(-3, -5, -6, -2, -6, 1); ctx.bezierCurveTo(-6, 4, -3, 6, 0, 3); ctx.bezierCurveTo(3, 6, 6, 4, 6, 1); ctx.bezierCurveTo(6, -2, 3, -5, 0, -3); ctx.closePath();
-          ctx.fillStyle = p.c; ctx.shadowColor = cfg.PARTICLE.glow; ctx.shadowBlur = 8; ctx.fill(); ctx.restore();
-        }
-        raf = requestAnimationFrame(draw);
-      };
-      const onResize = () => { resize(); spawn(); };
-      return {
-        init() {
-          if (!els.particle) return;
-          ctx = els.particle.getContext('2d'); resize(); spawn(); raf && cancelAnimationFrame(raf); raf = requestAnimationFrame(draw);
-          addEventListener('resize', onResize);
-        }
-      };
-    })();
-
-  
-    const bind = () => {
-      els.logoutBtn?.addEventListener('click', auth.logout);
-      els.loginForm?.addEventListener('submit', auth.login);
-      els.registerForm?.addEventListener('submit', auth.register);
-      els.resetForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = e.target.email.value.trim().toLowerCase();
-        const token = e.target.token.value.trim();
-        const newPassword = e.target.newPassword.value;
+      },
+      async resetPassword(event) {
+        event.preventDefault();
+        if (!elements.resetPasswordForm) return;
+        const submitBtn = elements.resetPasswordForm.querySelector('button[type="submit"]');
+        const emailInput = elements.resetPasswordForm.querySelector('input[name="email"]');
+        const tokenInput = elements.resetPasswordForm.querySelector('input[name="token"]');
+        const newPassInput = elements.resetPasswordForm.querySelector('input[name="newPassword"]');
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = this.sanitizeInput(emailInput ? emailInput.value : (urlParams.get('email') || ''), true);
+        const token = tokenInput ? tokenInput.value : urlParams.get('token');
+        const newPassword = newPassInput ? newPassInput.value : '';
+        uiService.setButtonLoading(submitBtn, true);
         try {
           if (token && newPassword) {
-            await api.reset(email, token, newPassword);
-            ui.toast('Senha alterada! Faça login.', 'success');
-            ui.show('welcome');
+            if (!email || !this.isValidEmail(email)) throw new Error('Por favor, insira um email válido.');
+            if (!this.isValidPassword(newPassword)) throw new Error('A senha deve ter pelo menos 8 caracteres, incluindo letras e números.');
+            await apiService.performPasswordReset(email, token, newPassword);
+            uiService.showNotification('Senha alterada com sucesso. Faça login.','success');
+            uiService.showAuthForm('login');
+            history.replaceState(null, '', window.location.pathname);
           } else {
-            await api.forgot(email);
-            ui.toast('Se o email existir, enviaremos instruções.', 'success');
-            ui.show('welcome');
+            if (!email || !this.isValidEmail(email)) throw new Error('Por favor, insira um email válido.');
+            await apiService.requestPasswordReset(email);
+            uiService.showNotification('Se o email existir, enviaremos instruções.','success');
+            uiService.showAuthForm('login');
           }
-        } catch (err) { ui.toast(err.message || 'Erro ao processar.', 'error'); }
-      });
-      els.createForm?.addEventListener('submit', cards.create);
-      els.showCreate?.addEventListener('click', () => viewTransition(() => ui.show('create')));
-      els.showDash?.addEventListener('click', () => viewTransition(() => ui.show('dash')));
-      els.openLogin?.addEventListener('click', () => ui.show('welcome'));
-      els.openRegister?.addEventListener('click', () => ui.show('welcome'));
-
-      // toolbar
-      const deb = (fn, ms = 300) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); } };
-      els.search?.addEventListener('input', deb(e => { state.search = e.target.value.trim(); cards.applyFilters(); els.list.innerHTML = state.filtered.length ? ui.grid(state.filtered) : ui.emptyState(); ui.applyGridBehaviors(); }));
-      els.sort?.addEventListener('change', e => { state.sort = e.target.value; cards.applyFilters(); els.list.innerHTML = state.filtered.length ? ui.grid(state.filtered) : ui.emptyState(); ui.applyGridBehaviors(); });
-      els.filter?.addEventListener('change', e => { state.filter = e.target.value; cards.applyFilters(); els.list.innerHTML = state.filtered.length ? ui.grid(state.filtered) : ui.emptyState(); ui.applyGridBehaviors(); });
-    };
-
-
-    const init = async () => {
-      ui.setYear();
-      particles.init();
-      if (state.user) {
-        ui.show('dash');
-        els.userWelcome && (els.userWelcome.textContent = `Olá, ${state.user.name}!`);
-        auth.startTokenChecks();
-        await cards.load();
-      } else {
-        ui.show('welcome');
+        } catch (e) {
+          uiService.showNotification(e.message || 'Erro ao processar solicitação.','error');
+        } finally {
+          uiService.setButtonLoading(submitBtn, false);
+          if (newPassInput) newPassInput.value = '';
+        }
+      },
+      logout() { this.clearUserData(); uiService.showNotification('Você saiu da sua conta.','info'); uiService.updateAuthUI(); },
+      handleAuthError(error) {
+        let msg = error.message || 'Falha na comunicação com o servidor.';
+        if (error.status === 401) msg = 'Email ou senha incorretos.';
+        else if (error.status === 409) msg = 'Este email já está registrado.';
+        else if (error.status === 429) msg = 'Muitas tentativas. Tente novamente em alguns minutos.';
+        uiService.showNotification(msg, 'error');
+      },
+      init() {
+        const token = sessionStorage.getItem('token');
+        const user = sessionStorage.getItem('user');
+        if (token && user) {
+          try { state.authToken = token; state.currentUser = JSON.parse(user); this.verifyTokenPeriodically(); }
+          catch { this.clearUserData(); }
+        }
+        const qp = new URLSearchParams(window.location.search);
+        if (qp.get('token') && qp.get('email')) uiService.openAuthModal('reset');
+        uiService.updateAuthUI();
+      },
+      verifyTokenPeriodically() {
+        apiService.verifyToken().catch(() => this.logout());
+        setInterval(() => apiService.verifyToken().catch(() => this.logout()), config.TOKEN_CHECK_INTERVAL);
       }
-      ui.updateToolbar();
-      bind();
     };
 
-    return { init };
+    const cardService = {
+      async create(event) {
+        event.preventDefault();
+        if (!state.currentUser || !elements.createCardSubmitBtn || !elements.createCardForm) return;
+        uiService.setButtonLoading(elements.createCardSubmitBtn, true);
+        try {
+          const formData = new FormData(elements.createCardForm);
+          for (const f of ['de','para','mensagem']) if (!formData.get(f)) throw new Error(`Por favor, preencha o campo ${f}.`);
+          const response = await apiService.createCard(formData);
+          if (!response.id) throw new Error('Erro ao criar cartão. Tente novamente.');
+          uiService.showNotification('Cartão criado com sucesso!','success');
+          elements.createCardForm.reset();
+          uiService.showView('dashboard');
+          window.location.href = `card.html?id=${response.id}`;
+        } catch (e) {
+          uiService.showNotification(e.message, 'error');
+        } finally {
+          uiService.setButtonLoading(elements.createCardSubmitBtn, false);
+        }
+      },
+      async loadCards() {
+        if (!state.currentUser || !elements.userCardsList) return;
+        try { const cards = await apiService.getCards(); this.renderCards(cards); }
+        catch (e) { uiService.showNotification(`Erro ao carregar cartões: ${e.message}`, 'error'); }
+      },
+      renderCards(cards) {
+        if (!elements.userCardsList) return;
+        if (!cards.length) {
+          elements.userCardsList.innerHTML = `
+            <div class="bg-gray-700 p-4 rounded-lg text-gray-400">
+              Você ainda não criou nenhum cartão. Crie um agora!
+            </div>`;
+          return;
+        }
+        elements.userCardsList.innerHTML = cards.map(card => `
+          <div class="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
+            <h3 class="text-lg font-semibold text-white">Para: ${card.para}</h3>
+            <p class="text-gray-400 truncate">${card.mensagem}</p>
+            <p class="text-sm text-gray-500">Criado em: ${new Date(card.createdAt).toLocaleDateString('pt-BR')}</p>
+            <a href="card.html?id=${card.id}" class="text-fuchsia-400 hover:text-fuchsia-300 mt-2 inline-block">Ver cartão</a>
+          </div>`).join('');
+      },
+      showCreationForm() { uiService.showView('creation'); },
+      showDashboard() { uiService.showView('dashboard'); }
+    };
+
+    const bindEvents = () => {
+      elements.logoutBtn?.addEventListener('click', () => auth.logout());
+      elements.loginForm?.addEventListener('submit', e => auth.login(e));
+      elements.registerForm?.addEventListener('submit', e => auth.register(e));
+      elements.resetPasswordForm?.addEventListener('submit', e => auth.resetPassword(e));
+      elements.createCardForm?.addEventListener('submit', e => cardService.create(e));
+      elements.showCreateFormBtn?.addEventListener('click', () => cardService.showCreationForm());
+      elements.showDashboardBtn?.addEventListener('click', () => cardService.showDashboard());
+      elements.openLoginBtn?.addEventListener('click', () => uiService.openAuthModal('login'));
+      elements.openRegisterBtn?.addEventListener('click', () => uiService.openAuthModal('register'));
+      elements.closeAuthModalBtn?.addEventListener('click', () => uiService.closeAuthModal());
+      elements.authModal?.addEventListener('click', e => { if (e.target === elements.authModal) uiService.closeAuthModal(); });
+      elements.showRegisterBtn?.addEventListener('click', () => uiService.showAuthForm('register'));
+      elements.showLoginBtn?.addEventListener('click', () => uiService.showAuthForm('login'));
+      elements.showForgotPasswordBtn?.addEventListener('click', () => uiService.showAuthForm('reset'));
+      elements.showLoginFromResetBtn?.addEventListener('click', () => uiService.showAuthForm('login'));
+    };
+
+    const init = () => {
+      if (!validateElements()) return;
+      particles.init();
+      uiService.updateFooterYear();
+      auth.init();
+      bindEvents();
+    };
+
+    const cleanup = () => { particles.cleanup(); };
+
+    return { init, cleanup };
   })();
 
-  App.init();
+  MessageLoveApp.init();
+  window.addEventListener('beforeunload', () => { MessageLoveApp.cleanup(); });
 });
-
