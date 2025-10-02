@@ -1,31 +1,28 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
-const User = require('./users'); 
+const basename = path.basename(__filename);
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  throw new Error("A variável de ambiente DATABASE_URL não foi definida.");
-}
-
-
-const sequelize = new Sequelize(databaseUrl, {
-    dialect: 'postgres',
-    protocol: 'postgres',
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false 
-        }
-    },
-    logging: false,
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  logging: false,
+  dialectOptions: process.env.DATABASE_URL?.includes('render.com') ? { ssl: { require: true } } : {}
 });
 
 const db = {};
+fs.readdirSync(__dirname)
+  .filter(f => f !== basename && f.endsWith('.js'))
+  .forEach(f => {
+    const model = require(path.join(__dirname, f))(sequelize, DataTypes);
+    db[model.name] = model;
+  });
 
-
-db.Card = require('./cards')(sequelize, DataTypes);
-db.User = require('./users')(sequelize, DataTypes);
+// MUITO IMPORTANTE: só chamar associate depois de todos os models carregados
+Object.values(db).forEach(model => {
+  if (typeof model.associate === 'function') model.associate(db);
+});
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

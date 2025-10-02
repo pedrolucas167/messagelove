@@ -44,10 +44,9 @@ const schemas = {
 
 router.get('/', auth, async (req, res) => {
   try {
-    const cards = await Card.findAll({
-      where: { userId: req.userId },
-      order: [['created_at', 'DESC']]
-    });
+    const card = await Card.findByPk(req.params.id, {
+  include: [{ association: 'user', attributes: ['id','name','email'] }]
+});
     logger.info('Buscando cartões do usuário', { userId: req.userId });
     return res.json(cards);
   } catch (e) {
