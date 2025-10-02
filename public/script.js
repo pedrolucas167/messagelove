@@ -228,7 +228,13 @@ document.addEventListener('DOMContentLoaded', () => {
       register(name, email, password) {
         return this.request('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
       },
-      verifyToken() { return this.request('/auth/verify'); },
+      requestPasswordReset(email) {
+        return this.request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+      },
+      performPasswordReset(email, token, newPassword) {
+        return this.request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email, token, newPassword }) });
+      },
+      verifyToken() { return this.request('/cards'); },
       getCards() { return this.request('/cards'); },
       createCard(formData) { return this.request('/cards', { method: 'POST', body: formData }); }
     };
@@ -269,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
           elements.authModal.classList.add('hidden');
           elements.loginForm?.reset();
           elements.registerForm?.reset();
+          elements.resetPasswordForm?.reset();
         }, 300);
       },
       showAuthForm(formName) {
@@ -382,17 +389,33 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         if (!elements.resetPasswordForm) return;
         const submitBtn = elements.resetPasswordForm.querySelector('button[type="submit"]');
-        const email = this.sanitizeInput(elements.resetPasswordForm.email.value, true);
+        const emailInput = elements.resetPasswordForm.querySelector('input[name="email"]');
+        const tokenInput = elements.resetPasswordForm.querySelector('input[name="token"]');
+        const newPassInput = elements.resetPasswordForm.querySelector('input[name="newPassword"]');
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = this.sanitizeInput(emailInput ? emailInput.value : (urlParams.get('email') || ''), true);
+        const token = tokenInput ? tokenInput.value : urlParams.get('token');
+        const newPassword = newPassInput ? newPassInput.value : '';
         uiService.setButtonLoading(submitBtn, true);
         try {
-          if (!email || !this.isValidEmail(email)) throw new Error('Por favor, insira um email válido.');
-          await apiService.request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email }) });
-          uiService.showNotification('Instruções de redefinição de senha enviadas para seu email.','success');
-          uiService.showAuthForm('login');
+          if (token && newPassword) {
+            if (!email || !this.isValidEmail(email)) throw new Error('Por favor, insira um email válido.');
+            if (!this.isValidPassword(newPassword)) throw new Error('A senha deve ter pelo menos 8 caracteres, incluindo letras e números.');
+            await apiService.performPasswordReset(email, token, newPassword);
+            uiService.showNotification('Senha alterada com sucesso. Faça login.','success');
+            uiService.showAuthForm('login');
+            history.replaceState(null, '', window.location.pathname);
+          } else {
+            if (!email || !this.isValidEmail(email)) throw new Error('Por favor, insira um email válido.');
+            await apiService.requestPasswordReset(email);
+            uiService.showNotification('Se o email existir, enviaremos instruções.','success');
+            uiService.showAuthForm('login');
+          }
         } catch (e) {
-          uiService.showNotification(e.message || 'Erro ao solicitar redefinição de senha.','error');
+          uiService.showNotification(e.message || 'Erro ao processar solicitação.','error');
         } finally {
           uiService.setButtonLoading(submitBtn, false);
+          if (newPassInput) newPassInput.value = '';
         }
       },
       logout() { this.clearUserData(); uiService.showNotification('Você saiu da sua conta.','info'); uiService.updateAuthUI(); },
@@ -410,6 +433,8 @@ document.addEventListener('DOMContentLoaded', () => {
           try { state.authToken = token; state.currentUser = JSON.parse(user); this.verifyTokenPeriodically(); }
           catch { this.clearUserData(); }
         }
+        const qp = new URLSearchParams(window.location.search);
+        if (qp.get('token') && qp.get('email')) uiService.openAuthModal('reset');
         uiService.updateAuthUI();
       },
       verifyTokenPeriodically() {

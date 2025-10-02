@@ -22,10 +22,10 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  "https://messagelove.com.br",
-  "https://www.messagelove.com.br",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
+  'https://messagelove.com.br',
+  'https://www.messagelove.com.br',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
   'https://messagelove.onrender.com/api'
 ];
 
@@ -42,15 +42,13 @@ const corsOptions = {
   optionsSuccessStatus: 204
 };
 
-// Middlewares
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // preflight
+app.options('*', cors(corsOptions));
 app.use(helmet());
 app.use(compression());
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limit (libera OPTIONS)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -59,11 +57,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/cards', cardRoutes);
 
-// Rota raiz
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'online',
@@ -74,7 +70,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404
 app.use((req, res) => {
   res.status(404).json({
     error: 'Endpoint not found',
@@ -82,7 +77,6 @@ app.use((req, res) => {
   });
 });
 
-// Handler de erro
 app.use((err, req, res, next) => {
   logger.error(err.stack);
   if (err.message === 'Not allowed by CORS') {
@@ -97,7 +91,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Inicialização
 const PORT = process.env.PORT || 3001;
 
 const startServer = async () => {
@@ -122,7 +115,6 @@ const startServer = async () => {
 
 startServer();
 
-// Shutdown graceful
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received. Shutting down gracefully...');
   try {
@@ -133,3 +125,5 @@ process.on('SIGTERM', async () => {
     process.exit(1);
   }
 });
+
+module.exports = app;
