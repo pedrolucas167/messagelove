@@ -44,9 +44,16 @@ const schemas = {
 
 router.get('/', auth, async (req, res) => {
   try {
-    const card = await Card.findByPk(req.params.id, {
-  include: [{ association: 'user', attributes: ['id','name','email'] }]
-});
+    const cards = await Card.findAll({
+      where: { userId: req.userId },
+      attributes: [
+        'id', 'de', 'para', 'mensagem',
+        'fotoUrl', 'youtubeVideoId', 'youtubeStartTime',
+        'createdAt', 'updatedAt'
+      ],
+      order: [['createdAt', 'DESC']],         
+    });
+
     logger.info('Buscando cartões do usuário', { userId: req.userId });
     return res.json(cards);
   } catch (e) {
@@ -54,6 +61,7 @@ router.get('/', auth, async (req, res) => {
     return res.status(500).json({ error: 'Erro ao buscar cartões' });
   }
 });
+
 
 router.get('/:id', async (req, res) => {
   try {
