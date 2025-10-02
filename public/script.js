@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       performPasswordReset(email, token, newPassword) {
         return this.request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email, token, newPassword }) });
       },
-      verifyToken() { return this.request('/cards'); },
+     verifyToken() { return this.request('/auth/verify'); },
       getCards() { return this.request('/cards'); },
       createCard(formData) { return this.request('/cards', { method: 'POST', body: formData }); }
     };
