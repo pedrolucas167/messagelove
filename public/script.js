@@ -403,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
       els.filter?.addEventListener('change', e => { state.filter = e.target.value; cards.applyFilters(); els.list.innerHTML = state.filtered.length ? ui.grid(state.filtered) : ui.emptyState(); ui.applyGridBehaviors(); });
     };
 
+
     const init = async () => {
       ui.setYear();
       particles.init();
