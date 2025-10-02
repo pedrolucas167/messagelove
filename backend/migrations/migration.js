@@ -13,7 +13,6 @@ module.exports = {
     });
     await queryInterface.addIndex('users', ['email'], { name: 'idx_users_email' });
 
-    // sessions (se o seu código usa)
     await queryInterface.createTable('sessions', {
       id: { type: Sequelize.UUID, primaryKey: true, allowNull: false, defaultValue: Sequelize.fn('gen_random_uuid') },
       user_id: { type: Sequelize.UUID, allowNull: false,
