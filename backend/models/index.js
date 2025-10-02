@@ -3,7 +3,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const User = require('./users'); 
 
-// Pega a URL do banco de dados das variáveis de ambiente
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   throw new Error("A variável de ambiente DATABASE_URL não foi definida.");

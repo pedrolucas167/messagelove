@@ -30,14 +30,12 @@ module.exports = function authenticate(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Normaliza o id do usuário independente do campo usado no payload
     const userId = decoded.userId || decoded.sub || decoded.id;
     if (!userId) {
       logger.warn('Payload do token sem userId/sub/id', { url: req.url, method: req.method });
       return res.status(401).json({ success: false, error: 'Token inválido.' });
     }
 
-    // Disponibiliza de forma consistente para as rotas/serviços
     req.userId = userId;
     req.user = {
       id: userId,
