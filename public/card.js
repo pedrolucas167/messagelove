@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const CardViewer = (() => {
-    // ===== Config =====
     const cfg = {
       API_URL: (() => {
         const meta = document.querySelector('meta[name="api-url"]')?.content?.trim();
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
       DATE_FMT: new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' })
     };
 
-    // ===== Elements (com checagem defensiva) =====
     const $ = (id) => document.getElementById(id);
     const el = {
       unveilingScreen: $('unveiling-screen'),
@@ -54,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const qs = new URLSearchParams(location.search);
     const formatDate = (iso) => (iso ? cfg.DATE_FMT.format(new Date(iso)) : '');
 
-    // ===== API com timeout e retry exponencial =====
     const api = {
       async request(path, { method = 'GET', headers = {}, body, auth = false, timeout = cfg.REQ_TIMEOUT_MS } = {}) {
         const url = `${cfg.API_URL}${path}`;
@@ -97,9 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
       getCard: (id) => api.request(`/cards/${encodeURIComponent(id)}`, { auth: false }) // público
     };
 
-    // ===== UI =====
     const ui = (() => {
-      // live region para acessibilidade
+    
       let live = document.querySelector('[data-live-region]');
       if (!live) {
         live = document.createElement('div');
@@ -216,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return { notify, showUnveiling, renderCard, openView, showError };
     })();
 
-    // ===== Partículas leves (DPR-aware) =====
+
     const particles = (() => {
       let ctx, raf, resizeTid;
       let pts = [];
