@@ -13,10 +13,8 @@ const cardRoutes = require('./routes/cardRoutes');
 
 const app = express();
 
-// atrás de proxy (Render/Vercel/Nginx)
 app.set('trust proxy', 1);
 
-// Origens permitidas (sem paths)
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
