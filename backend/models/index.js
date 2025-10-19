@@ -1,4 +1,6 @@
 'use strict';
+require('dotenv').config();
+
 
 const fs = require('fs');
 const path = require('path');
@@ -19,7 +21,6 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
-// MUITO IMPORTANTE: só chamar associate depois de todos os models carregados
 Object.values(db).forEach(model => {
   if (typeof model.associate === 'function') model.associate(db);
 });

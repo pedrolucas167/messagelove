@@ -6,6 +6,10 @@
   "type": "commonjs",
   "scripts": {
     "start": "node app.js",
+      "start": "node app.js",
+      "dev": "nodemon app.js",
+      "lint": "eslint .",
+      "format": "prettier --write .",
     "build": "echo 'Build completo'",
     "render-build": "mkdir -p src && cp -R . src/backend",
     "verify-structure": "node -e \"console.log('Estrutura:', require('fs').readdirSync('.'))\""
