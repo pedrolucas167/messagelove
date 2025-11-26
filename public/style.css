@@ -620,6 +620,12 @@ body.card-is-open .card-page-footer a:hover {
   70% { transform: scale(1); box-shadow: 0 0 0 15px hsla(330, 70%, 60%, 0); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 hsla(330, 70%, 60%, 0); }
 }
+details > summary {
+  list-style: none;
+}
+details summary::-webkit-details-marker {
+  display: none;
+}
 
 /* ============================================
    RESPONSIVIDADE

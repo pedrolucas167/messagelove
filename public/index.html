@@ -42,21 +42,302 @@
     <main class="relative flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
         <div class="container mx-auto text-center w-full max-w-5xl xl:max-w-6xl">
 
-            <section id="welcomeSection" class="">
-                <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-4">
-                    Message<span class="text-fuchsia-500">Love</span>
-                </h1>
-                <p class="text-base sm:text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                    A forma mais especial de dizer "eu te amo". Crie cartões digitais com fotos, vídeos e mensagens que tocam o coração.
-                </p>
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <button id="openLoginBtn" class="w-full sm:w-auto bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
-                        Entrar
-                    </button>
-                    <button id="openRegisterBtn" class="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105">
-                        Cadastre-se grátis
-                    </button>
+            <section id="welcomeSection" class="space-y-24">
+                <div class="relative overflow-hidden bg-gradient-to-br from-fuchsia-600/90 via-purple-700/80 to-indigo-800/80 rounded-3xl p-8 sm:p-12 text-left shadow-2xl">
+                    <div class="absolute -top-24 -right-20 h-72 w-72 rounded-full bg-fuchsia-400/40 blur-3xl"></div>
+                    <div class="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 translate-y-24 rounded-full bg-purple-500/40 blur-3xl"></div>
+                    <div class="relative grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
+                        <div class="space-y-8 text-white">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-sm font-medium uppercase tracking-[0.18em]">Nova experiência MessageLove</span>
+                            <h1 class="font-black leading-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
+                                Crie memórias digitais que emocionam de verdade
+                            </h1>
+                            <p class="max-w-xl text-base sm:text-lg text-white/80">
+                                Transforme histórias em presentes inesquecíveis com fotos, vídeos, trilhas sonoras e surpresas interativas. Ideal para aniversários, casamentos ou para surpreender quem você ama.
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button id="openRegisterBtn" class="w-full sm:w-auto rounded-2xl bg-white px-8 py-3 text-base font-semibold text-fuchsia-700 shadow-lg shadow-fuchsia-900/30 transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl">
+                                    Começar grátis
+                                </button>
+                                <button id="openLoginBtn" class="w-full sm:w-auto rounded-2xl border border-white/40 px-8 py-3 text-base font-semibold text-white transition-all duration-200 hover:bg-white/10">
+                                    Já tenho conta
+                                </button>
+                            </div>
+                            <dl class="grid gap-6 sm:grid-cols-3 text-sm text-white/80">
+                                <div>
+                                    <dt class="text-3xl font-black text-white">45k+</dt>
+                                    <dd>Memórias compartilhadas com emoção</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-3xl font-black text-white">4.9/5</dt>
+                                    <dd>Avaliação média dos casais e famílias</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-3xl font-black text-white">30+</dt>
+                                    <dd>Países com lembranças criadas no MessageLove</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-6 -top-6 h-16 w-16 rounded-2xl border border-white/30"></div>
+                            <div class="absolute -right-4 top-24 h-20 w-20 rounded-full bg-white/10 blur-xl"></div>
+                            <div class="relative rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur">
+                                <div class="space-y-6">
+                                    <div class="flex items-center gap-3">
+                                        <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-xl font-semibold text-white">01</span>
+                                        <div>
+                                            <p class="text-sm font-medium text-white/60">Prévia exclusiva</p>
+                                            <p class="text-lg font-semibold text-white">Mensagem com trilha única</p>
+                                        </div>
+                                    </div>
+                                    <div class="rounded-2xl bg-white/10 p-4">
+                                        <p class="text-sm uppercase tracking-[0.3em] text-white/50">Acesso privado</p>
+                                        <p class="mt-2 text-xl font-semibold text-white">messagelove.app/ana-e-rafa</p>
+                                    </div>
+                                    <div class="grid gap-4 sm:grid-cols-2">
+                                        <div class="rounded-2xl bg-white/10 p-4 text-white/80">
+                                            <p class="text-xs uppercase tracking-[0.2em] text-white/50">Emoções</p>
+                                            <p class="text-lg font-semibold">Chuva de emojis</p>
+                                        </div>
+                                        <div class="rounded-2xl bg-white/10 p-4 text-white/80">
+                                            <p class="text-xs uppercase tracking-[0.2em] text-white/50">Momentos</p>
+                                            <p class="text-lg font-semibold">Linha do tempo visual</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 rounded-2xl border border-white/20 px-4 py-3 text-white/80">
+                                        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white">❤</span>
+                                        <p class="text-sm">“Nunca vi algo tão emocionante, virou tradição na nossa família.”</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <section class="text-left">
+                    <div class="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
+                        <div class="space-y-6 text-white">
+                            <h2 class="text-3xl sm:text-4xl font-bold">Presenteie com algo que ninguém espera</h2>
+                            <p class="text-base text-gray-300 max-w-xl">
+                                MessageLove combina histórias, imagens, vídeos e interações para criar páginas personalizadas que surpreendem em qualquer ocasião. É fácil de montar, simples de compartilhar e inesquecível para quem recebe.
+                            </p>
+                            <div class="grid gap-6 sm:grid-cols-2">
+                                <div class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg">
+                                    <p class="text-sm uppercase tracking-[0.2em] text-fuchsia-200">Surpreenda</p>
+                                    <h3 class="mt-2 text-xl font-semibold text-white">Experiência imersiva</h3>
+                                    <p class="mt-3 text-sm text-gray-200">Adicione música, cronômetro especial e efeitos que fazem o coração acelerar.</p>
+                                </div>
+                                <div class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg">
+                                    <p class="text-sm uppercase tracking-[0.2em] text-fuchsia-200">Compartilhe</p>
+                                    <h3 class="mt-2 text-xl font-semibold text-white">Link + QR Code</h3>
+                                    <p class="mt-3 text-sm text-gray-200">Envie em segundos por mensagem, redes sociais ou entregue impresso, do jeitinho que preferir.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rounded-3xl border border-white/10 bg-gray-900/60 p-8 shadow-2xl backdrop-blur">
+                            <h3 class="text-2xl font-semibold text-white">Por que quem usa indica?</h3>
+                            <ul class="mt-6 space-y-4 text-sm text-gray-200">
+                                <li class="flex items-start gap-3">
+                                    <span class="mt-1 h-2.5 w-2.5 rounded-full bg-fuchsia-400"></span>
+                                    <span>Entrega emoção imediata com página personalizada e design profissional.</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="mt-1 h-2.5 w-2.5 rounded-full bg-fuchsia-400"></span>
+                                    <span>Suporte humano 24h para ajustar cada detalhe antes da surpresa.</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="mt-1 h-2.5 w-2.5 rounded-full bg-fuchsia-400"></span>
+                                    <span>Totalmente seguro: você decide quem acessa e por quanto tempo.</span>
+                                </li>
+                            </ul>
+                            <button type="button" class="mt-8 w-full rounded-2xl bg-fuchsia-600 px-8 py-3 text-base font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 hover:bg-fuchsia-500" onclick="document.getElementById('showCreateFormBtn')?.click();">
+                                Quero montar meu cartão agora
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="rounded-3xl border border-white/10 bg-white/5 p-8 sm:p-12 text-left shadow-xl">
+                    <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="max-w-xl space-y-4 text-white">
+                            <h2 class="text-3xl font-bold">Crie uma memória em 4 passos simples</h2>
+                            <p class="text-gray-200">Sem complicação: cada etapa foi pensada para você finalizar em minutos e já receber tudo pronto para compartilhar.</p>
+                        </div>
+                        <a href="#" id="ctaCreateFlow" class="inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3 text-sm font-semibold text-fuchsia-700 shadow-lg shadow-fuchsia-900/20 transition duration-200 hover:-translate-y-1" onclick="document.getElementById('openRegisterBtn').click(); return false;">
+                            Começar agora
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                    <div class="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                        <article class="group rounded-2xl border border-white/10 bg-gray-900/60 p-6 shadow-lg transition-transform duration-200 hover:-translate-y-1">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-lg font-bold text-white">1</span>
+                            <h3 class="mt-6 text-xl font-semibold text-white">Preencha a história</h3>
+                            <p class="mt-3 text-sm text-gray-200">Conte quem é o presenteado, os detalhes marcantes e o motivo da surpresa.</p>
+                        </article>
+                        <article class="group rounded-2xl border border-white/10 bg-gray-900/60 p-6 shadow-lg transition-transform duration-200 hover:-translate-y-1">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-lg font-bold text-white">2</span>
+                            <h3 class="mt-6 text-xl font-semibold text-white">Personalize com mídias</h3>
+                            <p class="mt-3 text-sm text-gray-200">Envie fotos, vídeos e escolha a trilha sonora que combina com o momento.</p>
+                        </article>
+                        <article class="group rounded-2xl border border-white/10 bg-gray-900/60 p-6 shadow-lg transition-transform duration-200 hover:-translate-y-1">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-lg font-bold text-white">3</span>
+                            <h3 class="mt-6 text-xl font-semibold text-white">Receba link + QR Code</h3>
+                            <p class="mt-3 text-sm text-gray-200">Tudo chega automaticamente para você testar, compartilhar ou imprimir.</p>
+                        </article>
+                        <article class="group rounded-2xl border border-white/10 bg-gray-900/60 p-6 shadow-lg transition-transform duration-200 hover:-translate-y-1">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-lg font-bold text-white">4</span>
+                            <h3 class="mt-6 text-xl font-semibold text-white">Surpreenda quem você ama</h3>
+                            <p class="mt-3 text-sm text-gray-200">Compartilhe o link, imprima o QR Code ou entregue junto com outro presente.</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="rounded-3xl border border-white/10 bg-gray-900/60 p-8 sm:p-12 text-left shadow-xl">
+                    <div class="grid gap-12 lg:grid-cols-2">
+                        <div class="space-y-6 text-white">
+                            <h2 class="text-3xl font-bold">Confiança que emociona</h2>
+                            <p class="text-gray-200">Quem cria com MessageLove sente orgulho de compartilhar. Somos referência em experiências digitais que fortalecem laços.</p>
+                            <div class="grid gap-6 sm:grid-cols-2">
+                                <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+                                    <p class="text-3xl font-black text-white">10k+</p>
+                                    <p class="mt-1 text-sm text-gray-200">Memórias feitas somente em 2024</p>
+                                </div>
+                                <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+                                    <p class="text-3xl font-black text-white">85%</p>
+                                    <p class="mt-1 text-sm text-gray-200">Indicam para amigos e familiares</p>
+                                </div>
+                                <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+                                    <p class="text-3xl font-black text-white">3M+</p>
+                                    <p class="mt-1 text-sm text-gray-200">Visualizações emocionadas nas redes</p>
+                                </div>
+                                <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+                                    <p class="text-3xl font-black text-white">24h</p>
+                                    <p class="mt-1 text-sm text-gray-200">Suporte para ajustar cada detalhe</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-8">
+                            <div class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg">
+                                <p class="text-sm uppercase tracking-[0.25em] text-fuchsia-200">Impacto real</p>
+                                <blockquote class="mt-4 text-lg font-semibold text-white">“Foi a surpresa mais marcante do nosso aniversário. Todos choraram ao ver o vídeo com fotos antigas e mensagens dos amigos.”</blockquote>
+                                <p class="mt-3 text-sm text-gray-300">Ana &amp; Júlia • São Paulo/SP</p>
+                            </div>
+                            <div class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg">
+                                <p class="text-sm uppercase tracking-[0.25em] text-fuchsia-200">Além da tela</p>
+                                <p class="mt-3 text-sm text-gray-200">Muitas pessoas imprimem o QR Code e entregam junto a caixas de presente, flores ou convites especiais. Você escolhe o formato e nós cuidamos da magia digital.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="rounded-3xl border border-white/10 bg-white/5 p-8 sm:p-12 text-left shadow-xl">
+                    <div class="flex flex-col gap-6 text-white sm:flex-row sm:items-end sm:justify-between">
+                        <div class="max-w-xl space-y-4">
+                            <h2 class="text-3xl font-bold">Escolha o plano que combina com a sua história</h2>
+                            <p class="text-gray-200">Planos flexíveis para presentes pontuais ou coleções de memórias. Pagamento seguro e garantia de satisfação.</p>
+                        </div>
+                        <p class="rounded-full bg-fuchsia-500/20 px-4 py-2 text-sm font-semibold text-fuchsia-100">Promo especial: 20% off até o Natal</p>
+                    </div>
+                    <div class="mt-10 grid gap-6 lg:grid-cols-2">
+                        <article class="relative overflow-hidden rounded-3xl border border-white/10 bg-gray-900/60 p-8 shadow-2xl">
+                            <span class="absolute right-6 top-6 rounded-full bg-fuchsia-600 px-4 py-1 text-xs font-semibold tracking-wide text-white">Mais escolhido</span>
+                            <h3 class="text-2xl font-semibold text-white">Forever</h3>
+                            <p class="mt-2 text-sm text-gray-300">Presente único, acesso vitalício.</p>
+                            <div class="mt-6 flex items-baseline gap-2 text-white">
+                                <span class="text-4xl font-black">R$ 29,90</span>
+                                <span class="text-sm text-gray-300">pagamento único</span>
+                            </div>
+                            <ul class="mt-6 space-y-3 text-sm text-gray-200">
+                                <li>Link personalizado + QR Code exclusivo</li>
+                                <li>Até 7 fotos, vídeo do YouTube e efeito de emojis</li>
+                                <li>Música ambiente e contagem regressiva</li>
+                                <li>Suporte dedicado para revisar antes de enviar</li>
+                            </ul>
+                            <button class="mt-8 w-full rounded-2xl bg-fuchsia-600 px-6 py-3 text-base font-semibold text-white transition-transform duration-200 hover:-translate-y-1 hover:bg-fuchsia-500" onclick="document.getElementById('openRegisterBtn').click();">
+                                Criar com este plano
+                            </button>
+                        </article>
+                        <article class="rounded-3xl border border-white/10 bg-gray-900/40 p-8 shadow-lg">
+                            <h3 class="text-2xl font-semibold text-white">Coleção anual</h3>
+                            <p class="mt-2 text-sm text-gray-300">Para quem ama eternizar cada capítulo.</p>
+                            <div class="mt-6 flex items-baseline gap-2 text-white">
+                                <span class="text-4xl font-black">R$ 19,90</span>
+                                <span class="text-sm text-gray-300">por memória adicional</span>
+                            </div>
+                            <ul class="mt-6 space-y-3 text-sm text-gray-200">
+                                <li>Biblioteca de memórias com customização ilimitada</li>
+                                <li>Acesso compartilhado com familiares e amigos</li>
+                                <li>Modelos sazonais exclusivos e lançamentos antecipados</li>
+                                <li>Backup automático e edição sempre que quiser</li>
+                            </ul>
+                            <button class="mt-8 w-full rounded-2xl border border-white/30 px-6 py-3 text-base font-semibold text-white transition-transform duration-200 hover:-translate-y-1 hover:bg-white/10" onclick="document.getElementById('openRegisterBtn').click();">
+                                Falar com o time
+                            </button>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="rounded-3xl border border-white/10 bg-gray-900/60 p-8 sm:p-12 text-left shadow-xl">
+                    <div class="max-w-3xl space-y-6 text-white">
+                        <h2 class="text-3xl font-bold">Perguntas frequentes</h2>
+                        <p class="text-gray-200">Tudo o que você precisa saber para criar sua primeira memória com confiança.</p>
+                    </div>
+                    <div class="mt-10 space-y-4">
+                        <details class="group rounded-2xl border border-white/10 bg-white/5 p-6">
+                            <summary class="flex cursor-pointer items-center justify-between text-lg font-semibold text-white">
+                                O acesso expira?
+                                <span class="ml-4 text-xl transition-transform duration-200 group-open:rotate-45">+</span>
+                            </summary>
+                            <p class="mt-4 text-sm text-gray-200">Você escolhe: acesso vitalício ou por tempo limitado. Mesmo após encerrar, pode reativar quando quiser sem perder conteúdo.</p>
+                        </details>
+                        <details class="group rounded-2xl border border-white/10 bg-white/5 p-6">
+                            <summary class="flex cursor-pointer items-center justify-between text-lg font-semibold text-white">
+                                Em quanto tempo recebo meu cartão?
+                                <span class="ml-4 text-xl transition-transform duration-200 group-open:rotate-45">+</span>
+                            </summary>
+                            <p class="mt-4 text-sm text-gray-200">Assim que concluir sua criação, geramos o link e o QR Code automaticamente. Você visualiza, edita e envia na mesma hora.</p>
+                        </details>
+                        <details class="group rounded-2xl border border-white/10 bg-white/5 p-6">
+                            <summary class="flex cursor-pointer items-center justify-between text-lg font-semibold text-white">
+                                Posso imprimir ou embalar o QR Code?
+                                <span class="ml-4 text-xl transition-transform duration-200 group-open:rotate-45">+</span>
+                            </summary>
+                            <p class="mt-4 text-sm text-gray-200">Sim! Enviamos arquivos em alta resolução para você colocar em caixas de presente, convites, quadros ou até em um mural de fotos.</p>
+                        </details>
+                        <details class="group rounded-2xl border border-white/10 bg-white/5 p-6">
+                            <summary class="flex cursor-pointer items-center justify-between text-lg font-semibold text-white">
+                                Como funciona o suporte?
+                                <span class="ml-4 text-xl transition-transform duration-200 group-open:rotate-45">+</span>
+                            </summary>
+                            <p class="mt-4 text-sm text-gray-200">Conte com atendimento humano 24h via chat e e-mail. Ajudamos a revisar textos, ajustar fotos e garantir que tudo esteja perfeito para o grande momento.</p>
+                        </details>
+                    </div>
+                </section>
+
+                <section class="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-600 via-rose-600 to-purple-700 p-8 sm:p-12 text-left shadow-2xl">
+                    <div class="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
+                        <div class="space-y-6 text-white">
+                            <h2 class="text-3xl sm:text-4xl font-bold">Pronto para criar o presente mais lembrado do ano?</h2>
+                            <p class="max-w-2xl text-base text-white/80">Em poucos minutos você personaliza tudo, envia para quem ama e guarda a reação para sempre. MessageLove é a forma moderna de dizer “eu te amo”.</p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button class="w-full sm:w-auto rounded-2xl bg-white px-8 py-3 text-base font-semibold text-fuchsia-700 shadow-lg shadow-fuchsia-900/30 transition-transform duration-200 hover:-translate-y-1" onclick="document.getElementById('openRegisterBtn').click();">
+                                    Criar minha memória agora
+                                </button>
+                                <button class="w-full sm:w-auto rounded-2xl border border-white/40 px-8 py-3 text-base font-semibold text-white transition duration-200 hover:bg-white/10" onclick="document.getElementById('showCreateFormBtn').click();">
+                                    Ver como funciona
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative hidden lg:block">
+                            <div class="absolute inset-0 rounded-full bg-white/10 blur-3xl"></div>
+                            <div class="relative flex flex-col items-center justify-center rounded-3xl bg-white/10 px-10 py-12 text-center shadow-xl backdrop-blur">
+                                <p class="text-sm uppercase tracking-[0.3em] text-white/60">Suporte humano</p>
+                                <p class="mt-4 text-4xl font-black text-white">24 / 7</p>
+                                <p class="mt-3 text-sm text-white/70">Acompanhamos você até o momento da surpresa</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </section>
 
             <section id="dashboardSection" class="hidden text-left w-full">

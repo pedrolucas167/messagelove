@@ -1,0 +1,18 @@
+import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { extractTokenFromHeader } from "@/server/utils/auth";
+import { verifyToken } from "@/server/services/auth-service";
+
+export async function GET(request: NextRequest) {
+  try {
+    const token = extractTokenFromHeader(request);
+    if (!token) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
+    const payload = verifyToken(token);
+    return NextResponse.json({ ok: true, userId: payload.userId });
+  } catch (error) {
+    console.error("GET /api/auth/verify", error);
+    return NextResponse.json({ ok: false }, { status: 401 });
+  }
+}
