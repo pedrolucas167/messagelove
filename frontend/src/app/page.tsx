@@ -1,9 +1,11 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { format, Locale } from "date-fns";
+import { ptBR, enUS, es, hi, ar } from "date-fns/locale";
 import { nanoid } from "nanoid";
+import { useTranslation } from "@/lib/useTranslation";
+import type { Language, TranslationKey } from "@/lib/translations";
 
 type User = { id: string; name: string; email: string };
 type Card = {
@@ -124,39 +126,6 @@ const StarIcon = () => (
 /* ═══════════════════════════════════════════════════════════════════════════════
    DATA
    ═══════════════════════════════════════════════════════════════════════════════ */
-const creationSteps = [
-  { icon: <GiftIcon />, title: "Preencha os campos", description: "Siga o formulário simples e construa sua memória passo a passo." },
-  { icon: <PaymentIcon />, title: "Pagamento seguro", description: "Use cartão de crédito ou PIX com total segurança." },
-  { icon: <QRCodeIcon />, title: "QR Code e Link", description: "Receba instantaneamente o QR Code e link por e-mail." },
-  { icon: <ShareIcon />, title: "Compartilhe a memória", description: "Surpreenda alguém ou guarde para sempre enviando o link." },
-];
-
-const trustItems = [
-  { value: "10.000+", label: "memórias criadas em 2024", stars: false },
-  { value: "4.97/5", label: "avaliação média", stars: true },
-  { value: "85%", label: "dos clientes recomendam", stars: false },
-  { value: "30+", label: "países alcançados", stars: false },
-];
-
-const faqItems = [
-  { q: "O que é o MessageLove?", a: "É uma plataforma onde você cria memórias digitais únicas — como surpresas para quem você ama ou para guardar momentos especiais." },
-  { q: "O que está incluído na minha página personalizada?", a: "Sua página inclui um link exclusivo, QR Code, até 7 fotos, música de fundo, efeito de emojis, contagem regressiva e URL personalizada." },
-  { q: "A página personalizada expira?", a: "Não! Com o plano 'Para Sempre', sua memória fica disponível eternamente." },
-  { q: "Quanto tempo leva para receber o link e QR Code?", a: "Você recebe instantaneamente após a criação. Tudo automático!" },
-  { q: "Como posso entrar em contato com o suporte?", a: "Oferecemos suporte 24h via chat, e-mail e Instagram. Estamos sempre prontos para ajudar." },
-  { q: "Quais formas de pagamento estão disponíveis?", a: "Aceitamos cartão de crédito e PIX, com total segurança." },
-];
-
-const planFeatures = [
-  "Link exclusivo + QR Code personalizado",
-  "Até 7 fotos para contar toda a história",
-  "Música de fundo (aquela que traz memórias)",
-  "Chuva de emojis para alegrar os olhos",
-  "Contagem regressiva para o grande dia",
-  "URL personalizada (ex: messagelove.app/seu-nome)",
-  "Suporte 24h para garantir que tudo esteja perfeito",
-];
-
 type ViewState = "welcome" | "dashboard" | "creation";
 type AuthModalState = "none" | "login" | "register";
 
@@ -164,6 +133,8 @@ type AuthModalState = "none" | "login" | "register";
    COMPONENT
    ═══════════════════════════════════════════════════════════════════════════════ */
 export default function HomePage() {
+  const { t, lang, setLang, languages } = useTranslation();
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [view, setView] = useState<ViewState>("welcome");
@@ -172,6 +143,46 @@ export default function HomePage() {
   const [authModal, setAuthModal] = useState<AuthModalState>("none");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createForm, setCreateForm] = useState({ de: "", para: "", mensagem: "", youtubeVideoId: "", youtubeStartTime: "", foto: null as File | null });
+
+  // Translated arrays - inside component to use t()
+  const creationSteps = [
+    { icon: <GiftIcon />, title: t("steps.step1.title"), description: t("steps.step1.description") },
+    { icon: <PaymentIcon />, title: t("steps.step2.title"), description: t("steps.step2.description") },
+    { icon: <QRCodeIcon />, title: t("steps.step3.title"), description: t("steps.step3.description") },
+    { icon: <ShareIcon />, title: t("steps.step4.title"), description: t("steps.step4.description") },
+  ];
+
+  const trustItems = [
+    { value: "10.000+", label: t("trust.memories"), stars: false },
+    { value: "4.97/5", label: t("trust.rating"), stars: true },
+    { value: "85%", label: t("trust.recommend"), stars: false },
+    { value: "30+", label: t("trust.countries"), stars: false },
+  ];
+
+  const faqItems = [
+    { q: t("faq.q1"), a: t("faq.a1") },
+    { q: t("faq.q2"), a: t("faq.a2") },
+    { q: t("faq.q3"), a: t("faq.a3") },
+    { q: t("faq.q4"), a: t("faq.a4") },
+    { q: t("faq.q5"), a: t("faq.a5") },
+    { q: t("faq.q6"), a: t("faq.a6") },
+  ];
+
+  const planFeatures = [
+    t("pricing.feature1"),
+    t("pricing.feature2"),
+    t("pricing.feature3"),
+    t("pricing.feature4"),
+    t("pricing.feature5"),
+    t("pricing.feature6"),
+    t("pricing.feature7"),
+  ];
+
+  // Get date-fns locale based on current language
+  const getDateLocale = () => {
+    const locales: Record<Language, Locale> = { pt: ptBR, en: enUS, es, hi, ar };
+    return locales[lang] || ptBR;
+  };
 
   useEffect(() => {
     const savedToken = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
@@ -209,7 +220,7 @@ export default function HomePage() {
     setCurrentUser(null);
     setCards([]);
     setView("welcome");
-    pushNotification("Você saiu da sua conta.", "info");
+    pushNotification(t("notifications.loggedOut"), "info");
   };
 
   const loadCards = async (authToken: string) => {
@@ -218,7 +229,7 @@ export default function HomePage() {
       setCards(data);
     } catch (error) {
       console.error(error);
-      pushNotification("Erro ao carregar cartões", "error");
+      pushNotification(t("notifications.loadError"), "error");
     }
   };
 
@@ -232,10 +243,10 @@ export default function HomePage() {
         body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
       });
       handleAuthSuccess(data);
-      pushNotification("Login realizado com sucesso!", "success");
+      pushNotification(t("notifications.loginSuccess"), "success");
       event.currentTarget.reset();
     } catch (error) {
-      pushNotification(error instanceof Error ? error.message : "Erro no login", "error");
+      pushNotification(error instanceof Error ? error.message : t("notifications.loginError"), "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -251,10 +262,10 @@ export default function HomePage() {
         body: JSON.stringify({ name: form.get("name"), email: form.get("email"), password: form.get("password") }),
       });
       handleAuthSuccess(data);
-      pushNotification(`Bem-vindo, ${data.user.name}!`, "success");
+      pushNotification(`${t("notifications.welcome")}, ${data.user.name}!`, "success");
       event.currentTarget.reset();
     } catch (error) {
-      pushNotification(error instanceof Error ? error.message : "Erro ao cadastrar", "error");
+      pushNotification(error instanceof Error ? error.message : t("notifications.registerError"), "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -262,7 +273,7 @@ export default function HomePage() {
 
   const handleCreateCard = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!token) return pushNotification("Faça login para criar cartões", "warning");
+    if (!token) return pushNotification(t("notifications.loginRequired"), "warning");
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -273,12 +284,12 @@ export default function HomePage() {
       if (createForm.youtubeStartTime) formData.append("youtubeStartTime", createForm.youtubeStartTime);
       if (createForm.foto) formData.append("foto", createForm.foto);
       await apiRequest("/api/cards", { method: "POST", body: formData, token });
-      pushNotification("Cartão criado com sucesso!", "success");
+      pushNotification(t("notifications.cardCreated"), "success");
       setCreateForm({ de: "", para: "", mensagem: "", youtubeVideoId: "", youtubeStartTime: "", foto: null });
       setView("dashboard");
       await loadCards(token);
     } catch (error) {
-      pushNotification(error instanceof Error ? error.message : "Erro ao criar cartão", "error");
+      pushNotification(error instanceof Error ? error.message : t("notifications.cardError"), "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -292,35 +303,100 @@ export default function HomePage() {
   const goToCreate = () => (currentUser ? setView("creation") : setAuthModal("register"));
 
   return (
-    <div className="relative min-h-screen bg-[#0f0520] text-white antialiased">
+    <div className="relative min-h-screen bg-gradient-to-br from-[#2d1b4e] via-[#1e1333] to-[#0f0520] text-white antialiased">
       {/* Background gradient orbs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-32 top-0 h-[500px] w-[500px] rounded-full bg-purple-600/30 blur-[120px]" />
-        <div className="absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-fuchsia-500/20 blur-[100px]" />
-        <div className="absolute bottom-0 left-1/3 h-[350px] w-[350px] rounded-full bg-violet-600/25 blur-[100px]" />
+        <div className="absolute -left-32 top-0 h-[600px] w-[600px] rounded-full bg-purple-600/40 blur-[150px]" />
+        <div className="absolute right-0 top-1/4 h-[500px] w-[500px] rounded-full bg-fuchsia-500/30 blur-[120px]" />
+        <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-violet-600/25 blur-[100px]" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0f0520]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2 text-xl font-bold tracking-tight">
-            <HeartGiftIcon />
-            <span>Message<span className="text-fuchsia-400">Love</span></span>
+      <header className="sticky top-0 z-50 bg-transparent">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            {/* Heart Logo */}
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-fuchsia-600 shadow-lg shadow-pink-500/30">
+              <svg viewBox="0 0 24 24" fill="white" className="h-6 w-6">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </div>
+            <span className="text-2xl font-bold tracking-tight">
+              Message<span className="text-fuchsia-400">Love</span>
+            </span>
           </div>
+          
           {currentUser ? (
             <div className="flex items-center gap-4">
-              <span className="hidden text-sm text-gray-400 sm:inline">Olá, {currentUser.name}</span>
-              <button onClick={handleLogout} className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-medium transition hover:bg-white/10">
-                Sair
+              {/* Language Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setLangMenuOpen(!langMenuOpen)}
+                  className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-gray-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <span>{languages.find(l => l.code === lang)?.flag}</span>
+                  <span className="hidden sm:inline">{languages.find(l => l.code === lang)?.code.toUpperCase()}</span>
+                  <svg className={`h-4 w-4 transition ${langMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {langMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-40 rounded-xl bg-[#2d1b4e] border border-white/10 shadow-xl overflow-hidden">
+                    {languages.map((language) => (
+                      <button
+                        key={language.code}
+                        onClick={() => { setLang(language.code); setLangMenuOpen(false); }}
+                        className={`flex w-full items-center gap-3 px-4 py-3 text-sm transition hover:bg-white/10 ${lang === language.code ? 'bg-white/5 text-fuchsia-400' : 'text-gray-300'}`}
+                      >
+                        <span>{language.flag}</span>
+                        <span>{language.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="hidden text-sm text-gray-300 sm:inline">{t("nav.hello")}, {currentUser.name}</span>
+              <button onClick={handleLogout} className="rounded-full border border-white/20 px-5 py-2 text-sm font-medium transition hover:bg-white/10">
+                {t("nav.logout")}
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm">
-              <button onClick={() => setAuthModal("login")} className="rounded-full px-4 py-1.5 font-medium transition hover:bg-white/10">
-                Entrar
+            <div className="flex items-center gap-3">
+              {/* Language Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setLangMenuOpen(!langMenuOpen)}
+                  className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-gray-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <span>{languages.find(l => l.code === lang)?.flag}</span>
+                  <span className="hidden sm:inline">{languages.find(l => l.code === lang)?.code.toUpperCase()}</span>
+                  <svg className={`h-4 w-4 transition ${langMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {langMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-40 rounded-xl bg-[#2d1b4e] border border-white/10 shadow-xl overflow-hidden">
+                    {languages.map((language) => (
+                      <button
+                        key={language.code}
+                        onClick={() => { setLang(language.code); setLangMenuOpen(false); }}
+                        className={`flex w-full items-center gap-3 px-4 py-3 text-sm transition hover:bg-white/10 ${lang === language.code ? 'bg-white/5 text-fuchsia-400' : 'text-gray-300'}`}
+                      >
+                        <span>{language.flag}</span>
+                        <span>{language.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button className="hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-gray-300 transition hover:bg-white/10 hover:text-white sm:flex">
+                📷 {t("nav.gallery")}
               </button>
-              <button onClick={() => setAuthModal("register")} className="rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-5 py-1.5 font-semibold shadow-lg shadow-purple-500/25 transition hover:shadow-purple-500/40">
-                Criar memória
+              <button 
+                onClick={goToCreate} 
+                className="rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-600 px-6 py-2.5 text-sm font-bold shadow-lg shadow-pink-500/30 transition hover:-translate-y-0.5 hover:shadow-pink-500/50"
+              >
+                {t("nav.create")}
               </button>
             </div>
           )}
@@ -333,81 +409,131 @@ export default function HomePage() {
            ═══════════════════════════════════════════════════════════════════════ */}
         {view === "welcome" && (
           <>
-            {/* Promo Banner */}
-            <div className="border-b border-white/5 bg-gradient-to-r from-fuchsia-600/20 via-purple-600/20 to-fuchsia-600/20 py-2 text-center text-sm font-medium">
-              <span className="mr-2 rounded-full bg-fuchsia-500 px-2 py-0.5 text-xs font-bold">Natal!</span>
-              Todos os planos com 20% de desconto!
-            </div>
-
-            {/* Hero Section */}
-            <section className="relative overflow-hidden py-20 sm:py-28">
+            {/* Hero Section - New Design */}
+            <section className="relative overflow-hidden pb-20 pt-8 sm:pb-32 sm:pt-12">
               <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
+                <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+                  {/* Left Content */}
                   <div className="max-w-xl space-y-8">
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-fuchsia-400">Não dê um presente comum.</p>
-                    <h1 className="text-4xl font-black leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-                      Dê algo que faz o <span className="bg-gradient-to-r from-fuchsia-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">coração acelerar</span>
-                      <HeartGiftIcon />
-                    </h1>
-                    <p className="text-lg text-gray-300">
-                      Transforme momentos simples em surpresas emocionantes. Seja aniversário, casamento ou só porque você lembrou — crie sua memória agora e envie para quem você ama.
-                    </p>
-                    <p className="text-base text-gray-400">Em poucos minutos, você terá tudo pronto para eternizar um sentimento.</p>
-
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                      <button onClick={goToCreate} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-8 py-4 text-base font-bold shadow-xl shadow-purple-500/30 transition duration-300 hover:-translate-y-0.5 hover:shadow-purple-500/50">
-                        Criar sua memória
-                      </button>
-                      <span className="inline-flex items-center gap-2 rounded-full bg-green-500/20 px-4 py-2 text-sm font-semibold text-green-300">
-                        <span className="h-2 w-2 rounded-full bg-green-400" />
-                        20% off - Natal!
-                      </span>
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 rounded-full bg-pink-500/20 px-4 py-2 text-sm font-medium text-pink-300">
+                      <span className="text-lg">💝</span>
+                      {t("hero.badge")}
                     </div>
+                    
+                    {/* Main Title */}
+                    <h1 className="text-4xl font-black leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]">
+                      {t("hero.titlePart1")}{" "}
+                      <span className="bg-gradient-to-r from-pink-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+                        {t("hero.titleHighlight")}
+                      </span>{" "}
+                      {t("hero.titlePart2")}
+                    </h1>
+                    
+                    {/* Subtitle */}
+                    <p className="text-lg leading-relaxed text-gray-300">
+                      {t("hero.subtitle")}
+                    </p>
 
-                    {/* Social proof */}
-                    <div className="flex items-center gap-4 pt-4">
-                      <div className="flex -space-x-3">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div key={i} className="h-10 w-10 rounded-full border-2 border-[#0f0520] bg-gradient-to-br from-fuchsia-400 to-purple-500" />
-                        ))}
-                      </div>
-                      <p className="text-sm text-gray-300">
-                        <span className="font-bold text-white">45.000+</span> memórias eternizadas
-                      </p>
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                      <button 
+                        onClick={goToCreate} 
+                        className="group inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-600 px-8 py-4 text-base font-bold shadow-xl shadow-pink-500/30 transition duration-300 hover:-translate-y-1 hover:shadow-pink-500/50"
+                      >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        {t("hero.cta")}
+                      </button>
+                      <button 
+                        onClick={() => setAuthModal("login")}
+                        className="inline-flex items-center justify-center rounded-full border-2 border-white/20 bg-white/5 px-8 py-4 text-base font-bold backdrop-blur transition duration-300 hover:border-white/40 hover:bg-white/10"
+                      >
+                        {t("hero.seeExamples")}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Hero mockup */}
-                  <div className="relative">
-                    <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-fuchsia-500/20 via-purple-500/20 to-pink-500/20 blur-2xl" />
-                    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#1a0a2e] to-[#120820] p-1 shadow-2xl">
-                      <div className="rounded-2xl bg-gradient-to-br from-fuchsia-900/40 via-purple-900/40 to-violet-900/40 p-6 sm:p-8">
-                        <div className="space-y-4 rounded-2xl bg-black/40 p-4 backdrop-blur">
-                          <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500" />
-                            <div>
-                              <p className="text-sm text-gray-400">De: Pedro</p>
-                              <p className="font-semibold">Para: Ana ❤️</p>
+                  {/* Right Side - Phone Mockup with Card Preview */}
+                  <div className="relative flex justify-center lg:justify-end">
+                    {/* Floating hearts decoration */}
+                    <div className="absolute -right-8 top-0 text-4xl opacity-60">💕</div>
+                    <div className="absolute -left-4 bottom-20 text-3xl opacity-40">💜</div>
+                    
+                    {/* Phone Frame */}
+                    <div className="relative w-[300px] sm:w-[340px]">
+                      {/* Glow effect */}
+                      <div className="absolute -inset-8 rounded-[3rem] bg-gradient-to-r from-pink-500/30 via-fuchsia-500/30 to-purple-500/30 blur-3xl" />
+                      
+                      {/* Phone bezel */}
+                      <div className="relative rounded-[2.5rem] border-[6px] border-gray-800/80 bg-gradient-to-b from-gray-800 to-gray-900 p-1 shadow-2xl">
+                        {/* Screen */}
+                        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-b from-[#2a1548] via-[#1e1030] to-[#150a25]">
+                          {/* Status bar */}
+                          <div className="flex items-center justify-between px-6 pb-2 pt-3 text-[10px] text-gray-400">
+                            <span className="font-medium">9:41</span>
+                            <div className="flex items-center gap-1">
+                              <div className="flex h-3 w-5 items-center rounded-sm border border-gray-400 px-0.5">
+                                <div className="h-1.5 w-3 rounded-sm bg-green-400" />
+                              </div>
                             </div>
                           </div>
-                          <div className="space-y-2 rounded-xl bg-white/5 p-4">
-                            <p className="text-sm italic text-gray-300">&quot;Cada segundo ao seu lado é uma eternidade de felicidade. Te amo mais do que as palavras podem dizer...&quot;</p>
-                          </div>
-                          <div className="grid grid-cols-3 gap-2">
-                            {[1, 2, 3].map((i) => (
-                              <div key={i} className="aspect-square rounded-lg bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30" />
-                            ))}
-                          </div>
-                          <div className="flex items-center gap-2 rounded-xl bg-fuchsia-500/20 p-3">
-                            <span className="text-2xl">🎵</span>
-                            <div className="flex-1">
-                              <p className="text-xs text-gray-400">Tocando agora</p>
-                              <p className="text-sm font-medium">Nossa música especial</p>
+                          
+                          {/* Card Content */}
+                          <div className="px-5 pb-6">
+                            {/* Heart icon */}
+                            <div className="mb-4 flex justify-center">
+                              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-fuchsia-600 shadow-lg shadow-pink-500/40">
+                                <svg viewBox="0 0 24 24" fill="white" className="h-7 w-7">
+                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                              </div>
                             </div>
+                            
+                            {/* Para text */}
+                            <div className="mb-4 text-center">
+                              <p className="text-lg font-bold text-white">Para: Meu Amor 🧡</p>
+                              <p className="mt-1 text-sm text-gray-400">Estamos juntos há</p>
+                            </div>
+                            
+                            {/* Time Counter */}
+                            <div className="mb-5 flex justify-center gap-3">
+                              <div className="flex h-16 w-16 flex-col items-center justify-center rounded-xl bg-white/10 backdrop-blur">
+                                <span className="text-2xl font-bold text-white">2</span>
+                                <span className="text-[10px] text-gray-400">anos</span>
+                              </div>
+                              <div className="flex h-16 w-16 flex-col items-center justify-center rounded-xl bg-white/10 backdrop-blur">
+                                <span className="text-2xl font-bold text-white">5</span>
+                                <span className="text-[10px] text-gray-400">meses</span>
+                              </div>
+                              <div className="flex h-16 w-16 flex-col items-center justify-center rounded-xl bg-white/10 backdrop-blur">
+                                <span className="text-2xl font-bold text-white">18</span>
+                                <span className="text-[10px] text-gray-400">dias</span>
+                              </div>
+                            </div>
+                            
+                            {/* Photo preview */}
+                            <div className="overflow-hidden rounded-2xl">
+                              <div className="aspect-[4/3] bg-gradient-to-br from-pink-400/40 via-fuchsia-400/30 to-purple-500/40 p-4">
+                                <div className="flex h-full items-center justify-center">
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                                      <div key={i} className="h-8 w-8 rounded-full bg-white/20 backdrop-blur" style={{ 
+                                        animation: `pulse ${1 + i * 0.2}s ease-in-out infinite`
+                                      }} />
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Home indicator */}
+                          <div className="flex justify-center pb-2">
+                            <div className="h-1 w-28 rounded-full bg-white/30" />
                           </div>
                         </div>
-                        <div className="absolute -right-4 top-8 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500 px-3 py-1.5 text-xs font-bold shadow-lg">✨ Link exclusivo</div>
-                        <div className="absolute -left-4 bottom-12 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 px-3 py-1.5 text-xs font-bold shadow-lg">🎁 QR Code</div>
                       </div>
                     </div>
                   </div>
@@ -420,15 +546,15 @@ export default function HomePage() {
               <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 <div className="mx-auto max-w-2xl text-center">
                   <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
-                    Crie uma memória em <span className="bg-gradient-to-r from-fuchsia-400 to-purple-400 bg-clip-text text-transparent">4 passos</span>!
+                    {t("steps.title")} <span className="bg-gradient-to-r from-pink-400 to-fuchsia-400 bg-clip-text text-transparent">{t("steps.titleHighlight")}</span>!
                   </h2>
-                  <p className="mt-4 text-gray-400">Surpreenda alguém especial com uma lembrança digital que faz o coração acelerar. É fácil, rápido e inesquecível.</p>
+                  <p className="mt-4 text-gray-400">{t("steps.subtitle")}</p>
                 </div>
 
                 <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {creationSteps.map((step, index) => (
-                    <div key={step.title} className="group relative rounded-3xl border border-white/10 bg-white/5 p-6 transition duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:bg-white/10">
-                      <div className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 text-sm font-bold shadow-lg">{index + 1}</div>
+                    <div key={step.title} className="group relative rounded-3xl border border-white/10 bg-white/5 p-6 transition duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:bg-white/10">
+                      <div className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-600 text-sm font-bold shadow-lg">{index + 1}</div>
                       <div className="mb-4 mt-2">{step.icon}</div>
                       <h3 className="text-lg font-bold">{step.title}</h3>
                       <p className="mt-2 text-sm text-gray-400">{step.description}</p>
@@ -437,8 +563,8 @@ export default function HomePage() {
                 </div>
 
                 <div className="mt-12 text-center">
-                  <button onClick={goToCreate} className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-bold text-purple-900 shadow-xl transition duration-300 hover:-translate-y-0.5 hover:shadow-2xl">
-                    Começar agora! Fácil e simples <span>→</span>
+                  <button onClick={goToCreate} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-600 px-8 py-4 text-base font-bold text-white shadow-xl shadow-pink-500/30 transition duration-300 hover:-translate-y-0.5 hover:shadow-pink-500/50">
+                    {t("steps.cta")} <span>→</span>
                   </button>
                 </div>
               </div>
@@ -450,7 +576,7 @@ export default function HomePage() {
                 <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
                   <div className="space-y-8">
                     <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
-                      Confiança de sobra. Emoção também. <span className="bg-gradient-to-r from-fuchsia-400 to-purple-400 bg-clip-text text-transparent">E memórias que duram para sempre.</span>
+                      {t("trust.title")} <span className="bg-gradient-to-r from-pink-400 to-fuchsia-400 bg-clip-text text-transparent">{t("trust.titleHighlight")}</span>
                     </h2>
                     <div className="grid gap-4 sm:grid-cols-2">
                       {trustItems.map((item) => (
@@ -470,27 +596,27 @@ export default function HomePage() {
                   <div className="space-y-6">
                     <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-500/10 to-purple-500/10 p-6">
                       <div className="mb-4"><TrustIcon /></div>
-                      <h3 className="text-xl font-bold">Presente digital. Impacto real.</h3>
-                      <p className="mt-2 text-gray-400">MessageLove se tornou referência em criar memórias emocionantes — e as redes sociais estão cheias de histórias que fazem o coração acelerar.</p>
+                      <h3 className="text-xl font-bold">{t("trust.digital.title")}</h3>
+                      <p className="mt-2 text-gray-400">{t("trust.digital.desc")}</p>
                     </div>
 
                     <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                      <h3 className="text-xl font-bold">Forte presença nas redes</h3>
+                      <h3 className="text-xl font-bold">{t("trust.social.title")}</h3>
                       <div className="mt-4 flex gap-6">
                         <div>
                           <p className="text-2xl font-black">30k+</p>
-                          <p className="text-sm text-gray-400">seguidores</p>
+                          <p className="text-sm text-gray-400">{t("trust.social.followers")}</p>
                         </div>
                         <div>
                           <p className="text-2xl font-black">3M+</p>
-                          <p className="text-sm text-gray-400">curtidas</p>
+                          <p className="text-sm text-gray-400">{t("trust.social.likes")}</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                      <h3 className="text-xl font-bold">Impressão que vai além da tela</h3>
-                      <p className="mt-2 text-gray-400">Mesmo sendo digital, a experiência MessageLove é tão poderosa que muitos imprimem o QR Code e entregam pessoalmente — em cartões, caixas de presente ou até no dia do casamento.</p>
+                      <h3 className="text-xl font-bold">{t("trust.beyond.title")}</h3>
+                      <p className="mt-2 text-gray-400">{t("trust.beyond.desc")}</p>
                     </div>
                   </div>
                 </div>
@@ -502,29 +628,29 @@ export default function HomePage() {
               <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 <div className="mx-auto max-w-2xl text-center">
                   <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
-                    Escolha seu tipo de presente: <span className="bg-gradient-to-r from-fuchsia-400 to-purple-400 bg-clip-text text-transparent">para sempre</span>
+                    {t("pricing.title")} <span className="bg-gradient-to-r from-fuchsia-400 to-purple-400 bg-clip-text text-transparent">{t("pricing.forever")}</span>
                     <InfinityIcon />
-                    <span className="text-gray-400"> ou por um tempo</span>
+                    <span className="text-gray-400"> {t("pricing.orTemp")}</span>
                   </h2>
-                  <p className="mt-4 text-gray-400">Escolha o plano que combina com o sentimento que você quer guardar para sempre:</p>
+                  <p className="mt-4 text-gray-400">{t("pricing.subtitle")}</p>
                 </div>
 
                 <div className="mt-12 flex justify-center">
                   <div className="w-full max-w-md">
                     <div className="relative overflow-hidden rounded-3xl border-2 border-fuchsia-500/50 bg-gradient-to-br from-[#1a0a2e] to-[#120820] p-8 shadow-2xl shadow-fuchsia-500/10">
-                      <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-3 py-1 text-xs font-bold">Mais escolhido</div>
-                      <div className="absolute left-4 top-4 rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-300">Super Promoção de Natal</div>
+                      <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-3 py-1 text-xs font-bold">{t("pricing.popular")}</div>
+                      <div className="absolute left-4 top-4 rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-300">{t("pricing.promo")}</div>
 
                       <div className="mt-8 flex items-center gap-2">
                         <InfinityIcon className="h-6 w-6" />
-                        <h3 className="text-2xl font-bold">Para Sempre</h3>
+                        <h3 className="text-2xl font-bold">{t("pricing.forever")}</h3>
                       </div>
 
                       <div className="mt-6">
                         <span className="text-sm text-gray-400 line-through">R$ 35,90</span>
                         <div className="flex items-baseline gap-2">
                           <span className="text-5xl font-black">R$ 29,90</span>
-                          <span className="text-gray-400">Por usuário, pagamento único</span>
+                          <span className="text-gray-400">{t("pricing.perUser")}</span>
                         </div>
                       </div>
 
@@ -538,10 +664,10 @@ export default function HomePage() {
                       </ul>
 
                       <button onClick={goToCreate} className="mt-8 w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 py-4 text-base font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
-                        Criar minha memória agora
+                        {t("pricing.cta")}
                       </button>
 
-                      <p className="mt-4 text-center text-xs text-gray-500">Pagamento 100% seguro com garantia de reembolso</p>
+                      <p className="mt-4 text-center text-xs text-gray-500">{t("pricing.guarantee")}</p>
                     </div>
                   </div>
                 </div>
@@ -552,8 +678,8 @@ export default function HomePage() {
             <section className="border-t border-white/5 py-20 sm:py-28">
               <div className="mx-auto max-w-3xl px-4 sm:px-6">
                 <div className="text-center">
-                  <h2 className="text-3xl font-black tracking-tight sm:text-4xl">Perguntas Frequentes</h2>
-                  <p className="mt-4 text-gray-400">Aqui você encontra respostas claras para qualquer dúvida. Afinal, queremos que sua experiência seja suave e emocionante desde o primeiro clique.</p>
+                  <h2 className="text-3xl font-black tracking-tight sm:text-4xl">{t("faq.title")}</h2>
+                  <p className="mt-4 text-gray-400">{t("faq.subtitle")}</p>
                 </div>
 
                 <div className="mt-12 space-y-4">
@@ -574,15 +700,15 @@ export default function HomePage() {
             <section className="border-t border-white/5 bg-gradient-to-r from-fuchsia-600/20 via-purple-600/20 to-pink-600/20 py-20 sm:py-28">
               <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
                 <h2 className="text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-                  Precisa de ajuda? <span className="bg-gradient-to-r from-fuchsia-400 to-purple-400 bg-clip-text text-transparent">Fale conosco!</span>
+                  {t("footer.ctaTitle")} <span className="bg-gradient-to-r from-fuchsia-400 to-purple-400 bg-clip-text text-transparent">{t("footer.ctaHighlight")}</span>
                 </h2>
-                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-300">Estamos aqui para garantir que sua memória seja perfeita. Suporte humano 24/7 pronto para ajudar.</p>
+                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-300">{t("footer.ctaSubtitle")}</p>
                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                   <button onClick={goToCreate} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-8 py-4 text-base font-bold shadow-xl transition duration-300 hover:-translate-y-0.5">
-                    Criar minha memória
+                    {t("footer.ctaButton")}
                   </button>
                   <a href="https://instagram.com/messagelove" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/20 px-8 py-4 text-base font-bold transition hover:bg-white/10">
-                    Contato pelo Instagram
+                    {t("footer.instagram")}
                   </a>
                 </div>
               </div>
@@ -598,11 +724,11 @@ export default function HomePage() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
               <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h1 className="text-3xl font-black">Suas Memórias</h1>
-                  <p className="text-gray-400">Gerencie e visualize seus cartões criados.</p>
+                  <h1 className="text-3xl font-black">{t("dashboard.title")}</h1>
+                  <p className="text-gray-400">{t("dashboard.subtitle")}</p>
                 </div>
                 <button onClick={() => setView("creation")} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-6 py-3 font-bold shadow-lg transition hover:-translate-y-0.5">
-                  + Nova memória
+                  + {t("dashboard.newMemory")}
                 </button>
               </div>
 
@@ -612,10 +738,10 @@ export default function HomePage() {
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20">
                       <GiftIcon />
                     </div>
-                    <p className="text-xl font-semibold">Nenhuma memória ainda</p>
-                    <p className="mt-2 text-gray-400">Crie sua primeira memória e surpreenda quem você ama!</p>
+                    <p className="text-xl font-semibold">{t("dashboard.empty")}</p>
+                    <p className="mt-2 text-gray-400">{t("dashboard.emptyDesc")}</p>
                     <button onClick={() => setView("creation")} className="mt-6 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-6 py-3 font-bold shadow-lg transition hover:-translate-y-0.5">
-                      Criar primeira memória
+                      {t("dashboard.createFirst")}
                     </button>
                   </div>
                 )}
@@ -626,12 +752,12 @@ export default function HomePage() {
                         <img src={card.fotoUrl} alt="" className="h-full w-full object-cover" />
                       </div>
                     )}
-                    <p className="text-sm text-fuchsia-400">De: {card.de}</p>
-                    <h3 className="mt-1 text-xl font-bold">Para: {card.para}</h3>
+                    <p className="text-sm text-fuchsia-400">{t("dashboard.from")}: {card.de}</p>
+                    <h3 className="mt-1 text-xl font-bold">{t("dashboard.to")}: {card.para}</h3>
                     <p className="mt-2 line-clamp-3 text-sm text-gray-400">{card.mensagem}</p>
                     <p className="mt-4 text-xs text-gray-500">{card.createdDate}</p>
                     <a href={`/cards/${card.id}`} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-fuchsia-400 transition hover:text-fuchsia-300">
-                      Ver memória →
+                      {t("dashboard.viewMemory")} →
                     </a>
                   </article>
                 ))}
@@ -648,7 +774,7 @@ export default function HomePage() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
               <button onClick={() => setView("dashboard")} className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-400 transition hover:text-white">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                Voltar para minhas memórias
+                {t("creation.back")}
               </button>
 
               <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
@@ -657,15 +783,15 @@ export default function HomePage() {
                   <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/5 to-transparent p-6 sm:p-8">
                     <div className="mb-6">
                       <h1 className="text-2xl font-black sm:text-3xl">
-                        Criar nova memória <span className="animate-pulse">✨</span>
+                        {t("creation.title")} <span className="animate-pulse">✨</span>
                       </h1>
-                      <p className="mt-2 text-gray-400">Preencha os campos e veja sua memória ganhar vida ao lado →</p>
+                      <p className="mt-2 text-gray-400">{t("creation.subtitle")}</p>
                     </div>
 
                     {/* Progress indicator */}
                     <div className="mb-8">
                       <div className="flex items-center justify-between text-xs text-gray-400">
-                        <span>Progresso</span>
+                        <span>{t("creation.progress")}</span>
                         <span>{Math.round(((createForm.de ? 1 : 0) + (createForm.para ? 1 : 0) + (createForm.mensagem ? 1 : 0)) / 3 * 100)}%</span>
                       </div>
                       <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
@@ -682,28 +808,28 @@ export default function HomePage() {
                         <label className="block">
                           <span className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-xs text-fuchsia-400">1</span>
-                            De (remetente)
+                            {t("creation.from")}
                           </span>
                           <input 
                             type="text" 
                             value={createForm.de} 
                             onChange={(e) => setCreateForm((p) => ({ ...p, de: e.target.value }))} 
                             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20" 
-                            placeholder="Seu nome" 
+                            placeholder={t("creation.fromPlaceholder")} 
                             required 
                           />
                         </label>
                         <label className="block">
                           <span className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-xs text-fuchsia-400">2</span>
-                            Para (destinatário)
+                            {t("creation.to")}
                           </span>
                           <input 
                             type="text" 
                             value={createForm.para} 
                             onChange={(e) => setCreateForm((p) => ({ ...p, para: e.target.value }))} 
                             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20" 
-                            placeholder="Quem vai receber" 
+                            placeholder={t("creation.toPlaceholder")} 
                             required 
                           />
                         </label>
@@ -713,18 +839,18 @@ export default function HomePage() {
                       <label className="block">
                         <span className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-xs text-fuchsia-400">3</span>
-                          Mensagem especial
+                          {t("creation.message")}
                         </span>
                         <textarea 
                           value={createForm.mensagem} 
                           onChange={(e) => setCreateForm((p) => ({ ...p, mensagem: e.target.value }))} 
                           className="h-32 w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20" 
-                          placeholder="Escreva sua mensagem do coração... 💕" 
+                          placeholder={t("creation.messagePlaceholder")} 
                           required 
                         />
                         <div className="mt-1 flex justify-between text-xs text-gray-500">
-                          <span>Seja criativo e emocionante!</span>
-                          <span>{createForm.mensagem.length} caracteres</span>
+                          <span>{t("creation.beCreative")}</span>
+                          <span>{createForm.mensagem.length} {t("creation.characters")}</span>
                         </div>
                       </label>
 
@@ -732,7 +858,7 @@ export default function HomePage() {
                       <label className="block">
                         <span className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-500/20 text-xs text-purple-400">📷</span>
-                          Foto (opcional)
+                          {t("creation.photo")}
                         </span>
                         <div className="relative">
                           <input 
@@ -746,7 +872,7 @@ export default function HomePage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <span className="text-sm">
-                              {createForm.foto ? createForm.foto.name : "Clique para adicionar uma foto"}
+                              {createForm.foto ? createForm.foto.name : t("creation.photoClick")}
                             </span>
                           </div>
                         </div>
@@ -760,7 +886,7 @@ export default function HomePage() {
                               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                             </svg>
                           </span>
-                          <span className="text-sm font-medium text-gray-300">Música do YouTube (opcional)</span>
+                          <span className="text-sm font-medium text-gray-300">{t("creation.youtube")}</span>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                           <input 
@@ -768,7 +894,7 @@ export default function HomePage() {
                             value={createForm.youtubeVideoId} 
                             onChange={(e) => setCreateForm((p) => ({ ...p, youtubeVideoId: e.target.value }))} 
                             className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-fuchsia-500" 
-                            placeholder="ID do vídeo (ex: dQw4w9WgXcQ)" 
+                            placeholder={t("creation.youtubeIdPlaceholder")} 
                           />
                           <input 
                             type="number" 
@@ -776,10 +902,10 @@ export default function HomePage() {
                             value={createForm.youtubeStartTime} 
                             onChange={(e) => setCreateForm((p) => ({ ...p, youtubeStartTime: e.target.value }))} 
                             className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-fuchsia-500" 
-                            placeholder="Início em segundos" 
+                            placeholder={t("creation.youtubeTimePlaceholder")} 
                           />
                         </div>
-                        <p className="mt-2 text-xs text-gray-500">Cole o ID do vídeo que aparece na URL após &quot;v=&quot;</p>
+                        <p className="mt-2 text-xs text-gray-500">{t("creation.youtubeHelp")}</p>
                       </div>
 
                       {/* Submit */}
@@ -795,11 +921,11 @@ export default function HomePage() {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                               </svg>
-                              Criando sua memória...
+                              {t("creation.creating")}
                             </>
                           ) : (
                             <>
-                              Criar memória
+                              {t("creation.submit")}
                               <span className="text-lg">❤️</span>
                             </>
                           )}
@@ -858,10 +984,10 @@ export default function HomePage() {
                                 </div>
                                 <div className="flex-1 overflow-hidden">
                                   <p className="truncate text-[10px] text-gray-400">
-                                    De: <span className="text-gray-300">{createForm.de || "Seu nome"}</span>
+                                    {t("dashboard.from")}: <span className="text-gray-300">{createForm.de || t("creation.fromPlaceholder")}</span>
                                   </p>
                                   <p className="truncate text-xs font-semibold text-white">
-                                    Para: {createForm.para || "Destinatário"} {createForm.para && "❤️"}
+                                    {t("dashboard.to")}: {createForm.para || t("creation.toPlaceholder")} {createForm.para && "❤️"}
                                   </p>
                                 </div>
                               </div>
@@ -874,7 +1000,7 @@ export default function HomePage() {
                                       &quot;{createForm.mensagem}&quot;
                                     </>
                                   ) : (
-                                    <span className="text-gray-500">Sua mensagem aparecerá aqui...</span>
+                                    <span className="text-gray-500">{t("creation.previewMessage")}</span>
                                   )}
                                 </p>
                               </div>
@@ -895,8 +1021,8 @@ export default function HomePage() {
                                 <div className="flex items-center gap-2 rounded-xl bg-red-500/10 p-2">
                                   <span className="text-lg">🎵</span>
                                   <div className="flex-1 overflow-hidden">
-                                    <p className="text-[10px] text-gray-400">Tocando agora</p>
-                                    <p className="truncate text-xs font-medium text-white">Música especial</p>
+                                    <p className="text-[10px] text-gray-400">{t("creation.nowPlaying")}</p>
+                                    <p className="truncate text-xs font-medium text-white">{t("creation.specialMusic")}</p>
                                   </div>
                                   <div className="flex gap-0.5">
                                     <div className="h-3 w-0.5 animate-pulse rounded-full bg-red-400" style={{ animationDelay: "0ms" }} />
@@ -911,26 +1037,26 @@ export default function HomePage() {
                             {/* Features indicators */}
                             <div className="mt-3 flex flex-wrap gap-1.5">
                               <span className={`rounded-full px-2 py-0.5 text-[9px] font-medium transition-all ${createForm.de && createForm.para ? "bg-green-500/20 text-green-400" : "bg-white/10 text-gray-500"}`}>
-                                ✓ Link exclusivo
+                                ✓ {t("preview.exclusiveLink")}
                               </span>
                               <span className={`rounded-full px-2 py-0.5 text-[9px] font-medium transition-all ${createForm.mensagem ? "bg-green-500/20 text-green-400" : "bg-white/10 text-gray-500"}`}>
-                                ✓ QR Code
+                                ✓ {t("preview.qrCode")}
                               </span>
                               {createForm.foto && (
                                 <span className="rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-[9px] font-medium text-fuchsia-400">
-                                  📷 Foto
+                                  📷 {t("preview.photo")}
                                 </span>
                               )}
                               {createForm.youtubeVideoId && (
                                 <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[9px] font-medium text-red-400">
-                                  🎵 Música
+                                  🎵 {t("preview.music")}
                                 </span>
                               )}
                             </div>
                             
                             {/* Bottom action preview */}
                             <div className="mt-4 rounded-xl bg-gradient-to-r from-fuchsia-500/80 to-purple-600/80 p-2.5 text-center">
-                              <span className="text-[10px] font-bold text-white">Compartilhar memória →</span>
+                              <span className="text-[10px] font-bold text-white">{t("preview.shareMemory")}</span>
                             </div>
                           </div>
                           
@@ -943,7 +1069,7 @@ export default function HomePage() {
                       
                       {/* Floating labels */}
                       <div className="absolute -right-4 top-16 animate-bounce rounded-full bg-gradient-to-r from-green-400 to-emerald-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg">
-                        Preview ao vivo!
+                        {t("preview.livePreview")}
                       </div>
                     </div>
                   </div>
@@ -963,24 +1089,24 @@ export default function HomePage() {
                 <HeartGiftIcon />
                 <span>Message<span className="text-fuchsia-400">Love</span></span>
               </div>
-              <p className="mt-4 text-sm text-gray-400">Uma plataforma onde você cria memórias digitais únicas — como surpresas para quem você ama ou para guardar momentos especiais.</p>
+              <p className="mt-4 text-sm text-gray-400">{t("footer.description")}</p>
             </div>
             <div>
-              <h4 className="font-semibold">Links Adicionais</h4>
+              <h4 className="font-semibold">{t("footer.additionalLinks")}</h4>
               <ul className="mt-4 space-y-2 text-sm text-gray-400">
-                <li><button onClick={goToCreate} className="hover:text-white">Criar agora</button></li>
-                <li><button onClick={() => setAuthModal("login")} className="hover:text-white">Galeria de Memórias</button></li>
+                <li><button onClick={goToCreate} className="hover:text-white">{t("footer.createNow")}</button></li>
+                <li><button onClick={() => setAuthModal("login")} className="hover:text-white">{t("footer.memoryGallery")}</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold">Legal</h4>
+              <h4 className="font-semibold">{t("footer.legal")}</h4>
               <ul className="mt-4 space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">Termos de uso</a></li>
-                <li><a href="#" className="hover:text-white">Política de privacidade</a></li>
+                <li><a href="#" className="hover:text-white">{t("footer.terms")}</a></li>
+                <li><a href="#" className="hover:text-white">{t("footer.privacy")}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold">Redes Sociais</h4>
+              <h4 className="font-semibold">{t("footer.socialNetworks")}</h4>
               <div className="mt-4 flex gap-4">
                 <a href="https://instagram.com/messagelove" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white">Instagram</a>
                 <a href="https://tiktok.com/@messagelove" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white">TikTok</a>
@@ -988,8 +1114,8 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-sm text-gray-500 sm:flex-row">
-            <p>© 2025 MessageLove - Todos os direitos reservados</p>
-            <p>Desenvolvido com ❤️ por <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noreferrer" className="text-fuchsia-400 hover:underline">Pedro Marques</a></p>
+            <p>{t("footer.rights")}</p>
+            <p>{t("footer.developedBy")} <a href="https://pedrolucas167.github.io/portfolio/" target="_blank" rel="noreferrer" className="text-fuchsia-400 hover:underline">Pedro Marques</a></p>
           </div>
         </div>
       </footer>
@@ -1012,6 +1138,7 @@ export default function HomePage() {
           onSwitchMode={(mode) => setAuthModal(mode)}
           onLogin={handleLogin}
           onRegister={handleRegister}
+          t={t}
         />
       )}
     </div>
@@ -1084,12 +1211,12 @@ function getPasswordStrengthColor(strength: PasswordStrength): string {
   }
 }
 
-function getPasswordStrengthLabel(strength: PasswordStrength): string {
+function getPasswordStrengthLabel(strength: PasswordStrength, t: (key: TranslationKey) => string): string {
   switch (strength) {
-    case "weak": return "Fraca";
-    case "medium": return "Média";
-    case "strong": return "Forte";
-    case "very-strong": return "Muito forte";
+    case "weak": return t("password.weak");
+    case "medium": return t("password.medium");
+    case "strong": return t("password.strong");
+    case "very-strong": return t("password.veryStrong");
   }
 }
 
@@ -1100,9 +1227,10 @@ type AuthModalProps = {
   onSwitchMode: (mode: "login" | "register") => void;
   onLogin: (e: FormEvent<HTMLFormElement>) => void;
   onRegister: (e: FormEvent<HTMLFormElement>) => void;
+  t: (key: TranslationKey) => string;
 };
 
-function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegister }: AuthModalProps) {
+function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegister, t }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
@@ -1119,10 +1247,10 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
   };
 
   const passwordRules = [
-    { label: "Mínimo 6 caracteres", valid: formData.password.length >= 6 },
-    { label: "Letra maiúscula", valid: /[A-Z]/.test(formData.password) },
-    { label: "Letra minúscula", valid: /[a-z]/.test(formData.password) },
-    { label: "Número", valid: /\d/.test(formData.password) },
+    { label: t("password.minChars"), valid: formData.password.length >= 6 },
+    { label: t("password.uppercase"), valid: /[A-Z]/.test(formData.password) },
+    { label: t("password.lowercase"), valid: /[a-z]/.test(formData.password) },
+    { label: t("password.number"), valid: /\d/.test(formData.password) },
   ];
 
   const isLoginValid = validations.email && formData.password.length > 0;
@@ -1182,14 +1310,14 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
           {mode === "login" ? (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-2xl font-black">Bem-vindo de volta! 👋</h2>
-                <p className="mt-1 text-sm text-gray-400">Acesse sua conta para continuar criando memórias.</p>
+                <h2 className="text-2xl font-black">{t("auth.welcomeBack")}</h2>
+                <p className="mt-1 text-sm text-gray-400">{t("auth.loginSubtitle")}</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Email field */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">E-mail</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">{t("auth.email")}</label>
                   <div className="relative">
                     <input
                       type="email"
@@ -1197,7 +1325,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                       value={formData.email}
                       onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
                       onBlur={() => setTouched((p) => ({ ...p, email: true }))}
-                      placeholder="seu@email.com"
+                      placeholder={t("auth.emailPlaceholder")}
                       required
                       className={`w-full rounded-xl border bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-gray-500 ${
                         touched.email && !validations.email 
@@ -1212,13 +1340,13 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                     )}
                   </div>
                   {touched.email && !validations.email && formData.email && (
-                    <p className="mt-1 text-xs text-red-400">Digite um e-mail válido</p>
+                    <p className="mt-1 text-xs text-red-400">{t("auth.invalidEmail")}</p>
                   )}
                 </div>
 
                 {/* Password field */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Senha</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">{t("auth.password")}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -1242,7 +1370,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                 {/* Forgot password link */}
                 <div className="text-right">
                   <button type="button" className="text-sm text-fuchsia-400 transition hover:text-fuchsia-300">
-                    Esqueceu a senha?
+                    {t("auth.forgotPassword")}
                   </button>
                 </div>
 
@@ -1255,10 +1383,10 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                   {isSubmitting ? (
                     <>
                       <LoadingSpinner />
-                      <span>Entrando...</span>
+                      <span>{t("auth.loggingIn")}</span>
                     </>
                   ) : (
-                    "Entrar"
+                    t("auth.loginButton")
                   )}
                 </button>
               </form>
@@ -1269,7 +1397,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                   <div className="w-full border-t border-white/10" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-[#150a24] px-2 text-gray-500">ou</span>
+                  <span className="bg-[#150a24] px-2 text-gray-500">{t("auth.or")}</span>
                 </div>
               </div>
 
@@ -1285,29 +1413,29 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Continuar com Google
+                  {t("auth.continueWithGoogle")}
                 </button>
               </div>
 
               {/* Switch to register */}
               <p className="text-center text-sm text-gray-400">
-                Não tem conta?{" "}
+                {t("auth.noAccount")}{" "}
                 <button onClick={() => handleSwitchMode("register")} className="font-semibold text-fuchsia-400 transition hover:text-fuchsia-300">
-                  Cadastre-se grátis
+                  {t("auth.signUpFree")}
                 </button>
               </p>
             </div>
           ) : (
             <div className="space-y-5">
               <div className="text-center">
-                <h2 className="text-2xl font-black">Crie sua conta ✨</h2>
-                <p className="mt-1 text-sm text-gray-400">Comece a criar memórias inesquecíveis.</p>
+                <h2 className="text-2xl font-black">{t("auth.createAccount")}</h2>
+                <p className="mt-1 text-sm text-gray-400">{t("auth.registerSubtitle")}</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name field */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Nome completo</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">{t("auth.fullName")}</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -1315,7 +1443,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                       value={formData.name}
                       onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                       onBlur={() => setTouched((p) => ({ ...p, name: true }))}
-                      placeholder="Seu nome"
+                      placeholder={t("auth.namePlaceholder")}
                       required
                       className={`w-full rounded-xl border bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-gray-500 ${
                         touched.name && !validations.name 
@@ -1330,13 +1458,13 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                     )}
                   </div>
                   {touched.name && !validations.name && formData.name && (
-                    <p className="mt-1 text-xs text-red-400">Nome deve ter pelo menos 2 caracteres</p>
+                    <p className="mt-1 text-xs text-red-400">{t("auth.nameMinChars")}</p>
                   )}
                 </div>
 
                 {/* Email field */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">E-mail</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">{t("auth.email")}</label>
                   <div className="relative">
                     <input
                       type="email"
@@ -1344,7 +1472,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                       value={formData.email}
                       onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
                       onBlur={() => setTouched((p) => ({ ...p, email: true }))}
-                      placeholder="seu@email.com"
+                      placeholder={t("auth.emailPlaceholder")}
                       required
                       className={`w-full rounded-xl border bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-gray-500 ${
                         touched.email && !validations.email 
@@ -1359,13 +1487,13 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                     )}
                   </div>
                   {touched.email && !validations.email && formData.email && (
-                    <p className="mt-1 text-xs text-red-400">Digite um e-mail válido</p>
+                    <p className="mt-1 text-xs text-red-400">{t("auth.invalidEmail")}</p>
                   )}
                 </div>
 
                 {/* Password field */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Senha</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">{t("auth.password")}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -1373,7 +1501,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                       value={formData.password}
                       onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
                       onBlur={() => setTouched((p) => ({ ...p, password: true }))}
-                      placeholder="Crie uma senha forte"
+                      placeholder={t("auth.createPassword")}
                       required
                       className={`w-full rounded-xl border bg-white/5 px-4 py-3 pr-12 text-white outline-none transition placeholder:text-gray-500 ${
                         touched.password && !validations.password 
@@ -1405,7 +1533,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                           passwordStrength.strength === "medium" ? "text-yellow-400" :
                           "text-green-400"
                         }`}>
-                          {getPasswordStrengthLabel(passwordStrength.strength)}
+                          {getPasswordStrengthLabel(passwordStrength.strength, t)}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-1">
@@ -1422,14 +1550,14 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
 
                 {/* Confirm password field */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">Confirmar senha</label>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">{t("auth.confirmPassword")}</label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData((p) => ({ ...p, confirmPassword: e.target.value }))}
                       onBlur={() => setTouched((p) => ({ ...p, confirmPassword: true }))}
-                      placeholder="Repita sua senha"
+                      placeholder={t("auth.repeatPassword")}
                       required
                       className={`w-full rounded-xl border bg-white/5 px-4 py-3 pr-12 text-white outline-none transition placeholder:text-gray-500 ${
                         touched.confirmPassword && !validations.confirmPassword 
@@ -1446,7 +1574,7 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                     </button>
                   </div>
                   {touched.confirmPassword && !validations.confirmPassword && formData.confirmPassword && (
-                    <p className="mt-1 text-xs text-red-400">As senhas não coincidem</p>
+                    <p className="mt-1 text-xs text-red-400">{t("auth.passwordsNotMatch")}</p>
                   )}
                 </div>
 
@@ -1464,10 +1592,10 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                     {agreedToTerms && <CheckIcon />}
                   </button>
                   <span className="text-xs text-gray-400">
-                    Concordo com os{" "}
-                    <a href="#" className="text-fuchsia-400 hover:underline">Termos de Uso</a>
-                    {" "}e{" "}
-                    <a href="#" className="text-fuchsia-400 hover:underline">Política de Privacidade</a>
+                    {t("auth.agreeTerms")}{" "}
+                    <a href="#" className="text-fuchsia-400 hover:underline">{t("auth.termsOfUse")}</a>
+                    {" "}{t("auth.and")}{" "}
+                    <a href="#" className="text-fuchsia-400 hover:underline">{t("auth.privacyPolicy")}</a>
                   </span>
                 </div>
 
@@ -1480,19 +1608,19 @@ function AuthModal({ mode, isSubmitting, onClose, onSwitchMode, onLogin, onRegis
                   {isSubmitting ? (
                     <>
                       <LoadingSpinner />
-                      <span>Criando conta...</span>
+                      <span>{t("auth.registering")}</span>
                     </>
                   ) : (
-                    "Criar minha conta"
+                    t("auth.registerButton")
                   )}
                 </button>
               </form>
 
               {/* Switch to login */}
               <p className="text-center text-sm text-gray-400">
-                Já tem conta?{" "}
+                {t("auth.haveAccount")}{" "}
                 <button onClick={() => handleSwitchMode("login")} className="font-semibold text-fuchsia-400 transition hover:text-fuchsia-300">
-                  Faça login
+                  {t("auth.doLogin")}
                 </button>
               </p>
             </div>
