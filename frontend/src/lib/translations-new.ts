@@ -1,0 +1,845 @@
+export type Language = "pt" | "en" | "es" | "hi" | "ar";
+
+type TranslationKey = keyof typeof translations;
+
+export const translations = {
+  // ===== NAVIGATION =====
+  "nav.home": {
+    pt: "Início",
+    en: "Home",
+    es: "Inicio",
+    hi: "होम",
+    ar: "الرئيسية",
+  },
+  "nav.create": {
+    pt: "Criar Carta",
+    en: "Create Letter",
+    es: "Crear Carta",
+    hi: "पत्र बनाएं",
+    ar: "إنشاء رسالة",
+  },
+  "nav.myLetters": {
+    pt: "Minhas Cartas",
+    en: "My Letters",
+    es: "Mis Cartas",
+    hi: "मेरे पत्र",
+    ar: "رسائلي",
+  },
+  "nav.login": {
+    pt: "Entrar",
+    en: "Login",
+    es: "Iniciar Sesión",
+    hi: "लॉगिन",
+    ar: "تسجيل الدخول",
+  },
+
+  // ===== HERO SECTION =====
+  "hero.badge": {
+    pt: "✨ Mensagens do Coração",
+    en: "✨ Messages from the Heart",
+    es: "✨ Mensajes del Corazón",
+    hi: "✨ दिल से संदेश",
+    ar: "✨ رسائل من القلب",
+  },
+  "hero.title": {
+    pt: "Transforme Sentimentos em",
+    en: "Transform Feelings into",
+    es: "Transforma Sentimientos en",
+    hi: "भावनाओं को बदलें",
+    ar: "حوّل المشاعر إلى",
+  },
+  "hero.titleHighlight": {
+    pt: "Cartas Mágicas",
+    en: "Magical Letters",
+    es: "Cartas Mágicas",
+    hi: "जादुई पत्रों में",
+    ar: "رسائل سحرية",
+  },
+  "hero.subtitle": {
+    pt: "Escreva cartas digitais únicas com músicas, playlists, gifs animados e muito carinho. Para quem você ama, admira ou sente saudades.",
+    en: "Write unique digital letters with music, playlists, animated gifs and lots of love. For those you love, admire or miss.",
+    es: "Escribe cartas digitales únicas con música, playlists, gifs animados y mucho cariño. Para quien amas, admiras o extrañas.",
+    hi: "संगीत, प्लेलिस्ट, एनिमेटेड गिफ़ और बहुत प्यार के साथ अनोखे डिजिटल पत्र लिखें। जिन्हें आप प्यार करते हैं, प्रशंसा करते हैं या याद करते हैं।",
+    ar: "اكتب رسائل رقمية فريدة مع الموسيقى وقوائم التشغيل والصور المتحركة والكثير من الحب. لمن تحبهم أو تعجب بهم أو تفتقدهم.",
+  },
+  "hero.cta": {
+    pt: "Começar a Escrever",
+    en: "Start Writing",
+    es: "Empezar a Escribir",
+    hi: "लिखना शुरू करें",
+    ar: "ابدأ الكتابة",
+  },
+  "hero.ctaSecondary": {
+    pt: "Ver Exemplos",
+    en: "See Examples",
+    es: "Ver Ejemplos",
+    hi: "उदाहरण देखें",
+    ar: "شاهد الأمثلة",
+  },
+
+  // ===== CATEGORIES =====
+  "categories.title": {
+    pt: "Para Quem é Sua Carta?",
+    en: "Who is Your Letter For?",
+    es: "¿Para Quién es Tu Carta?",
+    hi: "आपका पत्र किसके लिए है?",
+    ar: "لمن رسالتك؟",
+  },
+  "categories.subtitle": {
+    pt: "Escolha a ocasião especial e deixe seu coração falar",
+    en: "Choose the special occasion and let your heart speak",
+    es: "Elige la ocasión especial y deja hablar a tu corazón",
+    hi: "विशेष अवसर चुनें और अपने दिल को बोलने दें",
+    ar: "اختر المناسبة الخاصة ودع قلبك يتحدث",
+  },
+  "categories.love": {
+    pt: "💕 Amor",
+    en: "💕 Love",
+    es: "💕 Amor",
+    hi: "💕 प्यार",
+    ar: "💕 حب",
+  },
+  "categories.loveDesc": {
+    pt: "Para seu amor, namorado(a), esposo(a) ou crush",
+    en: "For your love, boyfriend/girlfriend, spouse or crush",
+    es: "Para tu amor, novio(a), esposo(a) o crush",
+    hi: "अपने प्यार, प्रेमी/प्रेमिका, पति/पत्नी या क्रश के लिए",
+    ar: "لحبيبك، صديقك/صديقتك، زوجك أو من تعجب به",
+  },
+  "categories.friendship": {
+    pt: "🤝 Amizade",
+    en: "🤝 Friendship",
+    es: "🤝 Amistad",
+    hi: "🤝 दोस्ती",
+    ar: "🤝 صداقة",
+  },
+  "categories.friendshipDesc": {
+    pt: "Para aquele amigo especial que está longe ou perto",
+    en: "For that special friend who is far or near",
+    es: "Para ese amigo especial que está lejos o cerca",
+    hi: "उस खास दोस्त के लिए जो दूर या पास है",
+    ar: "لذلك الصديق المميز البعيد أو القريب",
+  },
+  "categories.family": {
+    pt: "👨‍👩‍👧‍👦 Família",
+    en: "👨‍👩‍👧‍👦 Family",
+    es: "👨‍👩‍👧‍👦 Familia",
+    hi: "👨‍👩‍👧‍👦 परिवार",
+    ar: "👨‍👩‍👧‍👦 عائلة",
+  },
+  "categories.familyDesc": {
+    pt: "Para pais, avós, irmãos e toda a família",
+    en: "For parents, grandparents, siblings and all family",
+    es: "Para padres, abuelos, hermanos y toda la familia",
+    hi: "माता-पिता, दादा-दादी, भाई-बहन और पूरे परिवार के लिए",
+    ar: "للآباء والأجداد والإخوة وجميع أفراد الأسرة",
+  },
+  "categories.gratitude": {
+    pt: "🙏 Gratidão",
+    en: "🙏 Gratitude",
+    es: "🙏 Gratitud",
+    hi: "🙏 कृतज्ञता",
+    ar: "🙏 امتنان",
+  },
+  "categories.gratitudeDesc": {
+    pt: "Para agradecer alguém que fez diferença em sua vida",
+    en: "To thank someone who made a difference in your life",
+    es: "Para agradecer a alguien que marcó la diferencia en tu vida",
+    hi: "उसे धन्यवाद देने के लिए जिसने आपके जीवन में फर्क किया",
+    ar: "لشكر شخص أحدث فرقًا في حياتك",
+  },
+  "categories.missing": {
+    pt: "💭 Saudades",
+    en: "💭 Missing You",
+    es: "💭 Te Extraño",
+    hi: "💭 याद आती है",
+    ar: "💭 اشتياق",
+  },
+  "categories.missingDesc": {
+    pt: "Para quem está longe mas sempre no coração",
+    en: "For those who are far but always in your heart",
+    es: "Para quien está lejos pero siempre en el corazón",
+    hi: "जो दूर हैं लेकिन हमेशा दिल में",
+    ar: "لمن هم بعيدون لكن دائمًا في القلب",
+  },
+  "categories.celebration": {
+    pt: "🎉 Celebração",
+    en: "🎉 Celebration",
+    es: "🎉 Celebración",
+    hi: "🎉 उत्सव",
+    ar: "🎉 احتفال",
+  },
+  "categories.celebrationDesc": {
+    pt: "Aniversários, conquistas e momentos especiais",
+    en: "Birthdays, achievements and special moments",
+    es: "Cumpleaños, logros y momentos especiales",
+    hi: "जन्मदिन, उपलब्धियां और विशेष क्षण",
+    ar: "أعياد الميلاد والإنجازات واللحظات الخاصة",
+  },
+
+  // ===== LETTER CREATION =====
+  "letter.title": {
+    pt: "Sua Carta Especial",
+    en: "Your Special Letter",
+    es: "Tu Carta Especial",
+    hi: "आपका विशेष पत्र",
+    ar: "رسالتك الخاصة",
+  },
+  "letter.from": {
+    pt: "De:",
+    en: "From:",
+    es: "De:",
+    hi: "से:",
+    ar: "من:",
+  },
+  "letter.fromPlaceholder": {
+    pt: "Seu nome ou apelido carinhoso",
+    en: "Your name or loving nickname",
+    es: "Tu nombre o apodo cariñoso",
+    hi: "आपका नाम या प्यारा उपनाम",
+    ar: "اسمك أو لقبك المحبب",
+  },
+  "letter.to": {
+    pt: "Para:",
+    en: "To:",
+    es: "Para:",
+    hi: "को:",
+    ar: "إلى:",
+  },
+  "letter.toPlaceholder": {
+    pt: "Nome de quem vai receber",
+    en: "Name of who will receive",
+    es: "Nombre de quien recibirá",
+    hi: "प्राप्त करने वाले का नाम",
+    ar: "اسم من سيتلقى",
+  },
+  "letter.message": {
+    pt: "Sua Mensagem do Coração",
+    en: "Your Message from the Heart",
+    es: "Tu Mensaje del Corazón",
+    hi: "आपके दिल का संदेश",
+    ar: "رسالتك من القلب",
+  },
+  "letter.messagePlaceholder": {
+    pt: "Escreva aqui tudo que seu coração quer dizer... Pode ser um poema, uma declaração, uma lembrança especial, ou simplesmente o que você sente. Não há regras, apenas sentimentos. 💝",
+    en: "Write here everything your heart wants to say... It can be a poem, a declaration, a special memory, or simply what you feel. There are no rules, just feelings. 💝",
+    es: "Escribe aquí todo lo que tu corazón quiere decir... Puede ser un poema, una declaración, un recuerdo especial, o simplemente lo que sientes. No hay reglas, solo sentimientos. 💝",
+    hi: "यहां वह सब लिखें जो आपका दिल कहना चाहता है... यह एक कविता हो सकती है, एक घोषणा, एक विशेष स्मृति, या बस जो आप महसूस करते हैं। कोई नियम नहीं, बस भावनाएं। 💝",
+    ar: "اكتب هنا كل ما يريد قلبك أن يقوله... يمكن أن يكون قصيدة، إعلانًا، ذكرى خاصة، أو ببساطة ما تشعر به. لا توجد قواعد، فقط مشاعر. 💝",
+  },
+  "letter.paperStyle": {
+    pt: "Estilo do Papel",
+    en: "Paper Style",
+    es: "Estilo del Papel",
+    hi: "कागज की शैली",
+    ar: "نمط الورق",
+  },
+
+  // ===== CUTE ANIMALS =====
+  "animals.title": {
+    pt: "Escolha um Bichinho Fofo",
+    en: "Choose a Cute Animal",
+    es: "Elige un Animalito Tierno",
+    hi: "एक प्यारा जानवर चुनें",
+    ar: "اختر حيوانًا لطيفًا",
+  },
+  "animals.subtitle": {
+    pt: "Adicione mais fofura à sua carta",
+    en: "Add more cuteness to your letter",
+    es: "Agrega más ternura a tu carta",
+    hi: "अपने पत्र में और प्यारापन जोड़ें",
+    ar: "أضف المزيد من اللطافة لرسالتك",
+  },
+
+  // ===== MUSIC SECTION =====
+  "music.title": {
+    pt: "Adicione Música",
+    en: "Add Music",
+    es: "Agrega Música",
+    hi: "संगीत जोड़ें",
+    ar: "أضف موسيقى",
+  },
+  "music.subtitle": {
+    pt: "Uma trilha sonora especial para sua mensagem",
+    en: "A special soundtrack for your message",
+    es: "Una banda sonora especial para tu mensaje",
+    hi: "आपके संदेश के लिए एक विशेष साउंडट्रैक",
+    ar: "موسيقى تصويرية خاصة لرسالتك",
+  },
+  "music.single": {
+    pt: "Uma Música",
+    en: "Single Song",
+    es: "Una Canción",
+    hi: "एक गाना",
+    ar: "أغنية واحدة",
+  },
+  "music.playlist": {
+    pt: "Playlist Completa",
+    en: "Full Playlist",
+    es: "Playlist Completa",
+    hi: "पूरी प्लेलिस्ट",
+    ar: "قائمة تشغيل كاملة",
+  },
+  "music.searchPlaceholder": {
+    pt: "Buscar música no YouTube...",
+    en: "Search for music on YouTube...",
+    es: "Buscar música en YouTube...",
+    hi: "YouTube पर संगीत खोजें...",
+    ar: "ابحث عن موسيقى على يوتيوب...",
+  },
+  "music.playlistPlaceholder": {
+    pt: "Cole o link da playlist do YouTube ou Spotify",
+    en: "Paste YouTube or Spotify playlist link",
+    es: "Pega el enlace de la playlist de YouTube o Spotify",
+    hi: "YouTube या Spotify प्लेलिस्ट लिंक पेस्ट करें",
+    ar: "الصق رابط قائمة تشغيل يوتيوب أو سبوتيفاي",
+  },
+
+  // ===== GIFTS SECTION =====
+  "gifts.title": {
+    pt: "Sugestões de Presente",
+    en: "Gift Suggestions",
+    es: "Sugerencias de Regalo",
+    hi: "उपहार सुझाव",
+    ar: "اقتراحات الهدايا",
+  },
+  "gifts.subtitle": {
+    pt: "Adicione uma sugestão carinhosa junto à carta",
+    en: "Add a loving suggestion along with the letter",
+    es: "Agrega una sugerencia cariñosa junto a la carta",
+    hi: "पत्र के साथ एक प्यारा सुझाव जोड़ें",
+    ar: "أضف اقتراحًا محببًا مع الرسالة",
+  },
+  "gifts.chocolate": {
+    pt: "🍫 Caixa de Chocolates",
+    en: "🍫 Chocolate Box",
+    es: "🍫 Caja de Chocolates",
+    hi: "🍫 चॉकलेट बॉक्स",
+    ar: "🍫 علبة شوكولاتة",
+  },
+  "gifts.chocolateDesc": {
+    pt: "Que tal uma caixa de chocolates artesanais?",
+    en: "How about a box of artisan chocolates?",
+    es: "¿Qué tal una caja de chocolates artesanales?",
+    hi: "हस्तनिर्मित चॉकलेट का बॉक्स कैसा रहेगा?",
+    ar: "ما رأيك بعلبة شوكولاتة حرفية؟",
+  },
+  "gifts.book": {
+    pt: "📚 Livro Especial",
+    en: "📚 Special Book",
+    es: "📚 Libro Especial",
+    hi: "📚 विशेष पुस्तक",
+    ar: "📚 كتاب مميز",
+  },
+  "gifts.bookDesc": {
+    pt: "Sugira o livro favorito de vocês",
+    en: "Suggest your favorite book together",
+    es: "Sugiere el libro favorito de ustedes",
+    hi: "अपनी पसंदीदा किताब सुझाएं",
+    ar: "اقترح كتابك المفضل معًا",
+  },
+  "gifts.flowers": {
+    pt: "💐 Flores",
+    en: "💐 Flowers",
+    es: "💐 Flores",
+    hi: "💐 फूल",
+    ar: "💐 زهور",
+  },
+  "gifts.flowersDesc": {
+    pt: "Um buquê para alegrar o dia",
+    en: "A bouquet to brighten the day",
+    es: "Un ramo para alegrar el día",
+    hi: "दिन को रोशन करने के लिए फूलों का गुलदस्ता",
+    ar: "باقة لإضاءة اليوم",
+  },
+  "gifts.dinner": {
+    pt: "🍽️ Jantar Especial",
+    en: "🍽️ Special Dinner",
+    es: "🍽️ Cena Especial",
+    hi: "🍽️ विशेष रात्रिभोज",
+    ar: "🍽️ عشاء مميز",
+  },
+  "gifts.dinnerDesc": {
+    pt: "Convide para um jantar romântico",
+    en: "Invite for a romantic dinner",
+    es: "Invita a una cena romántica",
+    hi: "रोमांटिक डिनर के लिए आमंत्रित करें",
+    ar: "ادعُ لعشاء رومانسي",
+  },
+  "gifts.bookInput": {
+    pt: "Nome do livro que deseja sugerir",
+    en: "Name of the book you want to suggest",
+    es: "Nombre del libro que deseas sugerir",
+    hi: "जिस पुस्तक का आप सुझाव देना चाहते हैं उसका नाम",
+    ar: "اسم الكتاب الذي تريد اقتراحه",
+  },
+
+  // ===== GIF CARDS =====
+  "gifs.title": {
+    pt: "Escolha um GIF",
+    en: "Choose a GIF",
+    es: "Elige un GIF",
+    hi: "एक GIF चुनें",
+    ar: "اختر صورة متحركة",
+  },
+  "gifs.subtitle": {
+    pt: "Adicione movimento e emoção",
+    en: "Add movement and emotion",
+    es: "Agrega movimiento y emoción",
+    hi: "गति और भावना जोड़ें",
+    ar: "أضف الحركة والعاطفة",
+  },
+  "gifs.searchPlaceholder": {
+    pt: "Buscar GIFs (amor, abraço, saudade...)",
+    en: "Search GIFs (love, hug, miss...)",
+    es: "Buscar GIFs (amor, abrazo, extrañar...)",
+    hi: "GIF खोजें (प्यार, गले लगाना, याद...)",
+    ar: "ابحث عن صور متحركة (حب، عناق، اشتياق...)",
+  },
+
+  // ===== PHOTO SECTION =====
+  "photo.title": {
+    pt: "Adicione uma Foto",
+    en: "Add a Photo",
+    es: "Agrega una Foto",
+    hi: "एक फोटो जोड़ें",
+    ar: "أضف صورة",
+  },
+  "photo.subtitle": {
+    pt: "Uma imagem especial de vocês",
+    en: "A special image of you together",
+    es: "Una imagen especial de ustedes",
+    hi: "आप दोनों की एक खास तस्वीर",
+    ar: "صورة خاصة لكما معًا",
+  },
+  "photo.upload": {
+    pt: "Clique para enviar ou arraste uma foto",
+    en: "Click to upload or drag a photo",
+    es: "Haz clic para subir o arrastra una foto",
+    hi: "अपलोड करने के लिए क्लिक करें या फोटो खींचें",
+    ar: "انقر للتحميل أو اسحب صورة",
+  },
+
+  // ===== PREVIEW & ACTIONS =====
+  "preview.title": {
+    pt: "Prévia da Carta",
+    en: "Letter Preview",
+    es: "Vista Previa de la Carta",
+    hi: "पत्र का पूर्वावलोकन",
+    ar: "معاينة الرسالة",
+  },
+  "actions.save": {
+    pt: "Salvar Carta",
+    en: "Save Letter",
+    es: "Guardar Carta",
+    hi: "पत्र सहेजें",
+    ar: "حفظ الرسالة",
+  },
+  "actions.share": {
+    pt: "Compartilhar",
+    en: "Share",
+    es: "Compartir",
+    hi: "साझा करें",
+    ar: "مشاركة",
+  },
+  "actions.copy": {
+    pt: "Copiar Link",
+    en: "Copy Link",
+    es: "Copiar Enlace",
+    hi: "लिंक कॉपी करें",
+    ar: "نسخ الرابط",
+  },
+  "actions.download": {
+    pt: "Baixar como Imagem",
+    en: "Download as Image",
+    es: "Descargar como Imagen",
+    hi: "छवि के रूप में डाउनलोड करें",
+    ar: "تنزيل كصورة",
+  },
+
+  // ===== FEATURES SECTION =====
+  "features.title": {
+    pt: "Por que Escolher Nós?",
+    en: "Why Choose Us?",
+    es: "¿Por Qué Elegirnos?",
+    hi: "हमें क्यों चुनें?",
+    ar: "لماذا تختارنا؟",
+  },
+  "features.intimate.title": {
+    pt: "Cartas Intimistas",
+    en: "Intimate Letters",
+    es: "Cartas Íntimas",
+    hi: "अंतरंग पत्र",
+    ar: "رسائل حميمة",
+  },
+  "features.intimate.desc": {
+    pt: "Design inspirado em cartas de papel tradicionais, com aquele toque aconchegante e pessoal",
+    en: "Design inspired by traditional paper letters, with that cozy and personal touch",
+    es: "Diseño inspirado en cartas de papel tradicionales, con ese toque acogedor y personal",
+    hi: "पारंपरिक कागज के पत्रों से प्रेरित डिजाइन, उस आरामदायक और व्यक्तिगत स्पर्श के साथ",
+    ar: "تصميم مستوحى من الرسائل الورقية التقليدية، مع تلك اللمسة الدافئة والشخصية",
+  },
+  "features.music.title": {
+    pt: "Músicas & Playlists",
+    en: "Songs & Playlists",
+    es: "Canciones & Playlists",
+    hi: "गाने और प्लेलिस्ट",
+    ar: "أغاني وقوائم تشغيل",
+  },
+  "features.music.desc": {
+    pt: "Adicione a trilha sonora perfeita para sua mensagem, seja uma música especial ou uma playlist inteira",
+    en: "Add the perfect soundtrack to your message, whether it's a special song or an entire playlist",
+    es: "Agrega la banda sonora perfecta a tu mensaje, ya sea una canción especial o toda una playlist",
+    hi: "अपने संदेश में सही साउंडट्रैक जोड़ें, चाहे वह एक विशेष गाना हो या पूरी प्लेलिस्ट",
+    ar: "أضف الموسيقى التصويرية المثالية لرسالتك، سواء كانت أغنية خاصة أو قائمة تشغيل كاملة",
+  },
+  "features.gifts.title": {
+    pt: "Sugestões de Presente",
+    en: "Gift Suggestions",
+    es: "Sugerencias de Regalo",
+    hi: "उपहार सुझाव",
+    ar: "اقتراحات الهدايا",
+  },
+  "features.gifts.desc": {
+    pt: "Inclua sugestões carinhosas como chocolates, livros favoritos e muito mais",
+    en: "Include loving suggestions like chocolates, favorite books and much more",
+    es: "Incluye sugerencias cariñosas como chocolates, libros favoritos y mucho más",
+    hi: "चॉकलेट, पसंदीदा किताबें और बहुत कुछ जैसे प्यारे सुझाव शामिल करें",
+    ar: "قم بتضمين اقتراحات محببة مثل الشوكولاتة والكتب المفضلة وأكثر",
+  },
+  "features.gifs.title": {
+    pt: "GIFs & Animações",
+    en: "GIFs & Animations",
+    es: "GIFs & Animaciones",
+    hi: "GIF और एनिमेशन",
+    ar: "صور متحركة ورسوم",
+  },
+  "features.gifs.desc": {
+    pt: "Escolha entre milhares de GIFs para expressar ainda mais suas emoções",
+    en: "Choose from thousands of GIFs to express your emotions even more",
+    es: "Elige entre miles de GIFs para expresar aún más tus emociones",
+    hi: "अपनी भावनाओं को और भी अधिक व्यक्त करने के लिए हजारों GIF में से चुनें",
+    ar: "اختر من بين آلاف الصور المتحركة للتعبير عن مشاعرك أكثر",
+  },
+  "features.animals.title": {
+    pt: "Bichinhos Fofos",
+    en: "Cute Animals",
+    es: "Animalitos Tiernos",
+    hi: "प्यारे जानवर",
+    ar: "حيوانات لطيفة",
+  },
+  "features.animals.desc": {
+    pt: "Adicione personagens fofinhos que vão deixar sua carta ainda mais especial",
+    en: "Add cute characters that will make your letter even more special",
+    es: "Agrega personajes tiernos que harán tu carta aún más especial",
+    hi: "प्यारे पात्र जोड़ें जो आपके पत्र को और भी खास बना देंगे",
+    ar: "أضف شخصيات لطيفة ستجعل رسالتك أكثر تميزًا",
+  },
+  "features.share.title": {
+    pt: "Compartilhamento Fácil",
+    en: "Easy Sharing",
+    es: "Compartir Fácil",
+    hi: "आसान साझाकरण",
+    ar: "مشاركة سهلة",
+  },
+  "features.share.desc": {
+    pt: "Gere um link único ou QR Code para enviar sua carta de forma prática",
+    en: "Generate a unique link or QR Code to send your letter in a practical way",
+    es: "Genera un enlace único o código QR para enviar tu carta de forma práctica",
+    hi: "अपना पत्र व्यावहारिक तरीके से भेजने के लिए एक अनूठा लिंक या QR कोड बनाएं",
+    ar: "أنشئ رابطًا فريدًا أو رمز QR لإرسال رسالتك بطريقة عملية",
+  },
+
+  // ===== TESTIMONIALS =====
+  "testimonials.title": {
+    pt: "Histórias de Amor",
+    en: "Love Stories",
+    es: "Historias de Amor",
+    hi: "प्रेम कहानियां",
+    ar: "قصص حب",
+  },
+  "testimonials.subtitle": {
+    pt: "Veja como nossas cartas tocaram corações",
+    en: "See how our letters touched hearts",
+    es: "Mira cómo nuestras cartas tocaron corazones",
+    hi: "देखें कैसे हमारे पत्रों ने दिलों को छुआ",
+    ar: "شاهد كيف لمست رسائلنا القلوب",
+  },
+
+  // ===== FOOTER =====
+  "footer.tagline": {
+    pt: "Transformando sentimentos em memórias digitais",
+    en: "Transforming feelings into digital memories",
+    es: "Transformando sentimientos en memorias digitales",
+    hi: "भावनाओं को डिजिटल यादों में बदलना",
+    ar: "تحويل المشاعر إلى ذكريات رقمية",
+  },
+  "footer.links": {
+    pt: "Links Úteis",
+    en: "Useful Links",
+    es: "Enlaces Útiles",
+    hi: "उपयोगी लिंक",
+    ar: "روابط مفيدة",
+  },
+  "footer.privacy": {
+    pt: "Privacidade",
+    en: "Privacy",
+    es: "Privacidad",
+    hi: "गोपनीयता",
+    ar: "الخصوصية",
+  },
+  "footer.terms": {
+    pt: "Termos de Uso",
+    en: "Terms of Use",
+    es: "Términos de Uso",
+    hi: "उपयोग की शर्तें",
+    ar: "شروط الاستخدام",
+  },
+  "footer.contact": {
+    pt: "Contato",
+    en: "Contact",
+    es: "Contacto",
+    hi: "संपर्क",
+    ar: "اتصل بنا",
+  },
+  "footer.copyright": {
+    pt: "Feito com 💜 para conectar corações",
+    en: "Made with 💜 to connect hearts",
+    es: "Hecho con 💜 para conectar corazones",
+    hi: "💜 दिलों को जोड़ने के लिए बनाया गया",
+    ar: "صُنع بـ 💜 لربط القلوب",
+  },
+
+  // ===== AUTH =====
+  "auth.welcome": {
+    pt: "Bem-vindo de volta!",
+    en: "Welcome back!",
+    es: "¡Bienvenido de nuevo!",
+    hi: "वापसी पर स्वागत है!",
+    ar: "مرحبًا بعودتك!",
+  },
+  "auth.createAccount": {
+    pt: "Criar Conta",
+    en: "Create Account",
+    es: "Crear Cuenta",
+    hi: "खाता बनाएं",
+    ar: "إنشاء حساب",
+  },
+  "auth.email": {
+    pt: "E-mail",
+    en: "Email",
+    es: "Correo Electrónico",
+    hi: "ईमेल",
+    ar: "البريد الإلكتروني",
+  },
+  "auth.password": {
+    pt: "Senha",
+    en: "Password",
+    es: "Contraseña",
+    hi: "पासवर्ड",
+    ar: "كلمة المرور",
+  },
+  "auth.name": {
+    pt: "Nome",
+    en: "Name",
+    es: "Nombre",
+    hi: "नाम",
+    ar: "الاسم",
+  },
+  "auth.login": {
+    pt: "Entrar",
+    en: "Login",
+    es: "Iniciar Sesión",
+    hi: "लॉगिन",
+    ar: "تسجيل الدخول",
+  },
+  "auth.register": {
+    pt: "Cadastrar",
+    en: "Register",
+    es: "Registrarse",
+    hi: "रजिस्टर करें",
+    ar: "التسجيل",
+  },
+  "auth.continueWithGoogle": {
+    pt: "Continuar com Google",
+    en: "Continue with Google",
+    es: "Continuar con Google",
+    hi: "Google के साथ जारी रखें",
+    ar: "المتابعة مع جوجل",
+  },
+  "auth.or": {
+    pt: "ou",
+    en: "or",
+    es: "o",
+    hi: "या",
+    ar: "أو",
+  },
+  "auth.forgotPassword": {
+    pt: "Esqueceu a senha?",
+    en: "Forgot password?",
+    es: "¿Olvidaste tu contraseña?",
+    hi: "पासवर्ड भूल गए?",
+    ar: "نسيت كلمة المرور؟",
+  },
+  "auth.noAccount": {
+    pt: "Não tem conta?",
+    en: "Don't have an account?",
+    es: "¿No tienes cuenta?",
+    hi: "खाता नहीं है?",
+    ar: "ليس لديك حساب؟",
+  },
+  "auth.hasAccount": {
+    pt: "Já tem conta?",
+    en: "Already have an account?",
+    es: "¿Ya tienes cuenta?",
+    hi: "पहले से खाता है?",
+    ar: "هل لديك حساب؟",
+  },
+
+  // ===== PAPER STYLES =====
+  "paper.classic": {
+    pt: "Clássico",
+    en: "Classic",
+    es: "Clásico",
+    hi: "क्लासिक",
+    ar: "كلاسيكي",
+  },
+  "paper.romantic": {
+    pt: "Romântico",
+    en: "Romantic",
+    es: "Romántico",
+    hi: "रोमांटिक",
+    ar: "رومانسي",
+  },
+  "paper.vintage": {
+    pt: "Vintage",
+    en: "Vintage",
+    es: "Vintage",
+    hi: "विंटेज",
+    ar: "كلاسيكي قديم",
+  },
+  "paper.modern": {
+    pt: "Moderno",
+    en: "Modern",
+    es: "Moderno",
+    hi: "आधुनिक",
+    ar: "حديث",
+  },
+  "paper.handwritten": {
+    pt: "Manuscrito",
+    en: "Handwritten",
+    es: "Manuscrito",
+    hi: "हस्तलिखित",
+    ar: "مكتوب بخط اليد",
+  },
+
+  // ===== CUTE ANIMALS EMOJIS =====
+  "animal.bear": {
+    pt: "Ursinho",
+    en: "Bear",
+    es: "Osito",
+    hi: "भालू",
+    ar: "دب",
+  },
+  "animal.bunny": {
+    pt: "Coelhinho",
+    en: "Bunny",
+    es: "Conejito",
+    hi: "खरगोश",
+    ar: "أرنب",
+  },
+  "animal.cat": {
+    pt: "Gatinho",
+    en: "Kitty",
+    es: "Gatito",
+    hi: "बिल्ली",
+    ar: "قطة",
+  },
+  "animal.dog": {
+    pt: "Cachorrinho",
+    en: "Puppy",
+    es: "Perrito",
+    hi: "कुत्ता",
+    ar: "جرو",
+  },
+  "animal.panda": {
+    pt: "Panda",
+    en: "Panda",
+    es: "Panda",
+    hi: "पांडा",
+    ar: "باندا",
+  },
+  "animal.unicorn": {
+    pt: "Unicórnio",
+    en: "Unicorn",
+    es: "Unicornio",
+    hi: "यूनिकॉर्न",
+    ar: "يونيكورن",
+  },
+  "animal.penguin": {
+    pt: "Pinguim",
+    en: "Penguin",
+    es: "Pingüino",
+    hi: "पेंगुइन",
+    ar: "بطريق",
+  },
+  "animal.fox": {
+    pt: "Raposinha",
+    en: "Fox",
+    es: "Zorrito",
+    hi: "लोमड़ी",
+    ar: "ثعلب",
+  },
+
+  // ===== MESSAGES =====
+  "msg.saved": {
+    pt: "Carta salva com sucesso!",
+    en: "Letter saved successfully!",
+    es: "¡Carta guardada con éxito!",
+    hi: "पत्र सफलतापूर्वक सहेजा गया!",
+    ar: "تم حفظ الرسالة بنجاح!",
+  },
+  "msg.copied": {
+    pt: "Link copiado!",
+    en: "Link copied!",
+    es: "¡Enlace copiado!",
+    hi: "लिंक कॉपी किया गया!",
+    ar: "تم نسخ الرابط!",
+  },
+  "msg.error": {
+    pt: "Ocorreu um erro. Tente novamente.",
+    en: "An error occurred. Please try again.",
+    es: "Ocurrió un error. Inténtalo de nuevo.",
+    hi: "एक त्रुटि हुई। कृपया पुन: प्रयास करें।",
+    ar: "حدث خطأ. حاول مرة أخرى.",
+  },
+  "msg.required": {
+    pt: "Este campo é obrigatório",
+    en: "This field is required",
+    es: "Este campo es obligatorio",
+    hi: "यह फ़ील्ड आवश्यक है",
+    ar: "هذا الحقل مطلوب",
+  },
+} as const;
+
+export function getTranslation(key: TranslationKey, lang: Language): string {
+  const translation = translations[key];
+  if (!translation) return key;
+  return translation[lang] || translation.en || key;
+}
+
+// Language names for selector
+export const languageNames: Record<Language, string> = {
+  pt: "Português",
+  en: "English",
+  es: "Español",
+  hi: "हिंदी",
+  ar: "العربية",
+};
+
+// RTL languages
+export const rtlLanguages: Language[] = ["ar"];
+
+export function isRTL(lang: Language): boolean {
+  return rtlLanguages.includes(lang);
+}

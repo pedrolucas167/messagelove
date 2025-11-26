@@ -284,33 +284,12 @@ export const translations = {
     hi: "और यादें जो हमेशा रहें।",
     ar: "وذكريات تدوم للأبد.",
   },
-  "trust.memories": {
-    pt: "memórias criadas em 2024",
-    en: "memories created in 2024",
-    es: "recuerdos creados en 2024",
-    hi: "2024 में बनी यादें",
-    ar: "ذكريات تم إنشاؤها في 2024",
-  },
-  "trust.rating": {
-    pt: "avaliação média",
-    en: "average rating",
-    es: "calificación promedio",
-    hi: "औसत रेटिंग",
-    ar: "متوسط التقييم",
-  },
   "trust.recommend": {
     pt: "dos clientes recomendam",
     en: "of customers recommend",
     es: "de clientes recomiendan",
     hi: "ग्राहक सिफारिश करते हैं",
     ar: "من العملاء يوصون",
-  },
-  "trust.countries": {
-    pt: "países alcançados",
-    en: "countries reached",
-    es: "países alcanzados",
-    hi: "देशों तक पहुंचे",
-    ar: "دول تم الوصول إليها",
   },
   "trust.digital.title": {
     pt: "100% Digital",
