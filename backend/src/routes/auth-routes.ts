@@ -13,20 +13,42 @@ import { authenticate } from "../middlewares/auth";
 import { validateRequest } from "../middlewares/validate-request";
 import { logger } from "../config/logger";
 import { env } from "../lib/env";
+import {
+  checkAccountLockout,
+  recordFailedLogin,
+  recordSuccessfulLogin,
+  generateOAuthState,
+  validateOAuthState,
+} from "../middlewares/security";
 
 const router = Router();
 
+// More aggressive rate limiting for auth endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10,
-  message: "Muitas tentativas. Por favor, tente novamente mais tarde.",
+  message: { success: false, error: "Muitas tentativas. Por favor, tente novamente mais tarde." },
   skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Even stricter for login (brute force protection)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, error: "Muitas tentativas de login. Por favor, tente novamente mais tarde." },
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 const forgotLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: "Muitas tentativas. Por favor, tente novamente mais tarde.",
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3,
+  message: { success: false, error: "Muitas solicitações de reset. Tente novamente em 1 hora." },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 router.get("/verify", authenticate, (req, res) => {
@@ -64,7 +86,8 @@ router.post(
 
 router.post(
   "/login",
-  authLimiter,
+  loginLimiter,
+  checkAccountLockout,
   body("email").isEmail().withMessage("Email inválido").normalizeEmail(),
   body("password").notEmpty().withMessage("Senha é obrigatória"),
   validateRequest,
@@ -74,10 +97,27 @@ router.post(
         email: String(req.body.email),
         password: String(req.body.password),
       });
-      logger.info("Login realizado com sucesso", { userId: result.user?.id, email: result.user?.email });
+      
+      // Record successful login (clears lockout)
+      recordSuccessfulLogin(req);
+      
+      logger.info("Login realizado com sucesso", { 
+        userId: result.user?.id, 
+        email: result.user?.email,
+        ip: req.ip,
+      });
       return res.json({ success: true, token: result.token, user: result.user });
     } catch (error) {
       if (error instanceof Error && error.message.includes("Credenciais inválidas")) {
+        // Record failed attempt
+        recordFailedLogin(req);
+        
+        logger.warn("Failed login attempt", {
+          email: req.body.email,
+          ip: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+        
         return res.status(401).json({ success: false, error: error.message });
       }
       return next(error);
@@ -143,7 +183,7 @@ router.post("/refresh", authenticate, (req, res) => {
 });
 
 // Google OAuth Routes
-router.get("/google", (req, res) => {
+router.get("/google", authLimiter, (req, res) => {
   const clientId = env.GOOGLE_CLIENT_ID;
   
   if (!clientId) {
@@ -151,8 +191,16 @@ router.get("/google", (req, res) => {
   }
 
   const redirectTo = (req.query.redirect as string) || "/";
+  
+  // Validate redirectTo to prevent open redirect attacks
+  const allowedRedirects = ["/", "/dashboard", "/cards"];
+  const sanitizedRedirect = allowedRedirects.includes(redirectTo) ? redirectTo : "/";
+  
   const baseUrl = env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`;
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  
+  // Generate secure state token to prevent CSRF
+  const state = generateOAuthState(sanitizedRedirect);
   
   const params = new URLSearchParams({
     client_id: clientId,
@@ -160,7 +208,7 @@ router.get("/google", (req, res) => {
     response_type: "code",
     scope: "openid email profile",
     access_type: "offline",
-    state: redirectTo,
+    state: state,
     prompt: "consent",
   });
   
@@ -171,12 +219,22 @@ router.get("/google", (req, res) => {
 router.get("/google/callback", async (req, res) => {
   const code = req.query.code as string;
   const error = req.query.error as string;
-  const state = (req.query.state as string) || "/";
+  const state = req.query.state as string;
   
   const baseUrl = env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`;
   
+  // Validate state to prevent CSRF attacks
+  const redirectTo = validateOAuthState(state);
+  if (!redirectTo) {
+    logger.warn("OAuth state validation failed", { 
+      ip: req.ip,
+      state: state?.substring(0, 20),
+    });
+    return res.redirect(`${baseUrl}/?error=invalid_state`);
+  }
+  
   if (error) {
-    logger.error("Google OAuth error:", { error });
+    logger.error("Google OAuth error:", { error, ip: req.ip });
     return res.redirect(`${baseUrl}/?error=oauth_error`);
   }
   
@@ -245,10 +303,14 @@ router.get("/google/callback", async (req, res) => {
       picture: userInfo.picture,
     });
     
-    logger.info("Google OAuth login successful", { userId: result.user?.id, email: userInfo.email });
+    logger.info("Google OAuth login successful", { 
+      userId: result.user?.id, 
+      email: userInfo.email,
+      ip: req.ip,
+    });
     
     // Redirect with token in URL (frontend will extract and store it)
-    const redirectUrl = new URL(state, baseUrl);
+    const redirectUrl = new URL(redirectTo, baseUrl);
     redirectUrl.searchParams.set("token", result.token);
     redirectUrl.searchParams.set("user", JSON.stringify({
       id: result.user?.id,
@@ -258,7 +320,7 @@ router.get("/google/callback", async (req, res) => {
     
     return res.redirect(redirectUrl.toString());
   } catch (error) {
-    logger.error("Google OAuth callback error:", { error });
+    logger.error("Google OAuth callback error:", { error, ip: req.ip });
     return res.redirect(`${baseUrl}/?error=oauth_failed`);
   }
 });

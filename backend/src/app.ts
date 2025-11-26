@@ -7,6 +7,7 @@ import { authRouter } from "./routes/auth-routes";
 import { cardRouter } from "./routes/card-routes";
 import { logger } from "./config/logger";
 import { logErrors, globalErrorHandler } from "./middlewares/error-handler";
+import { detectSuspiciousActivity, addRequestId } from "./middlewares/security";
 
 export const allowedOrigins = [
   "http://localhost:3000",
@@ -36,20 +37,84 @@ export function createApp() {
   const app = express();
   app.set("trust proxy", 1);
 
+  // Request ID for tracing
+  app.use(addRequestId);
+
+  // CORS
   app.use(cors(corsOptions));
   app.options("*", cors(corsOptions));
-  app.use(helmet());
+
+  // Security headers with enhanced configuration
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", ...allowedOrigins],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Allow embedding images from S3
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    noSniff: true,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    xssFilter: true,
+  }));
+
+  // Additional security headers
+  app.use((_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    res.removeHeader("X-Powered-By");
+    next();
+  });
+
   app.use(compression());
   app.use(express.json({ limit: "10kb" }));
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+  // Detect suspicious patterns in requests
+  app.use(detectSuspiciousActivity);
+
+  // Global rate limiter
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100,
     skip: (req) => req.method === "OPTIONS",
-    message: "Too many requests from this IP, please try again later",
+    message: { success: false, error: "Too many requests from this IP, please try again later" },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      return req.ip || req.socket.remoteAddress || "unknown";
+    },
   });
-  app.use(limiter);
+  app.use(globalLimiter);
+
+  // Strict rate limiter for sensitive endpoints
+  const strictLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 20,
+    message: { success: false, error: "Muitas requisições. Tente novamente mais tarde." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use("/api/auth/register", strictLimiter);
+  app.use("/api/auth/forgot-password", strictLimiter);
 
   app.use("/api/auth", authRouter);
   app.use("/api/cards", cardRouter);
@@ -64,8 +129,8 @@ export function createApp() {
       status: "online",
       message: "MessageLove API",
       version: "2.0.0",
-      environment: process.env.NODE_ENV || "development",
-      docs: "https://github.com/pedrolucas167/messagelove",
+      // Don't expose environment in production
+      ...(process.env.NODE_ENV !== "production" && { environment: process.env.NODE_ENV }),
     });
   });
 
@@ -73,7 +138,6 @@ export function createApp() {
     if (req.method === "OPTIONS") return next();
     res.status(404).json({
       error: "Endpoint não encontrado",
-      availableEndpoints: { auth: "/api/auth", cards: "/api/cards" },
     });
   });
 
