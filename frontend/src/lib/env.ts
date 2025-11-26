@@ -20,10 +20,25 @@ declare global {
   var _env: ServerEnv | undefined;
 }
 
-export const env = (() => {
+function getEnv(): ServerEnv {
   if (typeof window !== "undefined") {
     throw new Error("`env` should only be used on the server");
   }
+  
+  // Skip validation during build time
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return {
+      DATABASE_URL: process.env.DATABASE_URL || "postgresql://placeholder",
+      JWT_SECRET: process.env.JWT_SECRET || "placeholder-secret-32-characters!",
+      JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "24h",
+      AWS_REGION: process.env.AWS_REGION || "us-east-1",
+      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || "placeholder",
+      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || "placeholder",
+      AWS_S3_BUCKET: process.env.AWS_S3_BUCKET || "placeholder",
+      FRONTEND_URL: process.env.FRONTEND_URL,
+    } as ServerEnv;
+  }
+  
   if (!global._env) {
     const parsed = serverSchema.safeParse(process.env);
     if (!parsed.success) {
@@ -33,6 +48,12 @@ export const env = (() => {
     global._env = parsed.data;
   }
   return global._env;
-})();
+}
+
+export const env = new Proxy({} as ServerEnv, {
+  get(_target, prop: keyof ServerEnv) {
+    return getEnv()[prop];
+  },
+});
 
 export const clientEnv = clientSchema.parse({});

@@ -2,21 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { deleteCard, getCardById, updateCard } from "@/server/services/card-service";
 import { requireUserId } from "@/server/utils/auth";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+type RouteContext = { params: Promise<{ id: string }> };
+
+export async function GET(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
   try {
-    const { id } = params;
     const card = await getCardById(id);
     if (!card) {
       return NextResponse.json({ error: "Cartão não encontrado" }, { status: 404 });
     }
     return NextResponse.json(card);
   } catch (error) {
-    console.error(`GET /api/cards/${params.id}`, error);
+    console.error(`GET /api/cards/${id}`, error);
     return NextResponse.json({ error: "Erro ao buscar cartão" }, { status: 500 });
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
   try {
     const userId = requireUserId(request);
     const formData = await request.formData();
@@ -34,7 +37,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const card = await updateCard(
-      params.id,
+      id,
       userId,
       {
         de: formData.get("de") ? String(formData.get("de")) : undefined,
@@ -48,20 +51,21 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(card);
   } catch (error) {
-    console.error(`PUT /api/cards/${params.id}`, error);
+    console.error(`PUT /api/cards/${id}`, error);
     const message = error instanceof Error ? error.message : "Erro ao atualizar cartão";
     const status = message.includes("não encontrado") ? 404 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
   try {
     const userId = requireUserId(request);
-    await deleteCard(params.id, userId);
+    await deleteCard(id, userId);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(`DELETE /api/cards/${params.id}`, error);
+    console.error(`DELETE /api/cards/${id}`, error);
     const message = error instanceof Error ? error.message : "Erro ao deletar cartão";
     const status = message.includes("não encontrado") ? 404 : 500;
     return NextResponse.json({ error: message }, { status });

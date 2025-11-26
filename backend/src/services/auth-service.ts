@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import type { SignOptions } from "jsonwebtoken";
 import { env } from "../lib/env";
 import { ensureDatabaseConnection } from "../db";
 import { getUserModel } from "../db/models/user";
@@ -17,7 +18,11 @@ function getJwtSecret() {
 }
 
 export function generateAuthToken(userId: string) {
-  return jwt.sign({ userId }, getJwtSecret(), { expiresIn: env.JWT_EXPIRES_IN });
+  return jwt.sign(
+    { userId },
+    getJwtSecret(),
+    { expiresIn: env.JWT_EXPIRES_IN as SignOptions["expiresIn"] }
+  );
 }
 
 export async function registerUser(payload: AuthPayload) {

@@ -5,6 +5,7 @@ import {
   InferCreationAttributes,
   Model,
   NonAttribute,
+  literal,
 } from "sequelize";
 import { getSequelize } from "../sequelize";
 import { User, initUserModel } from "./user";
@@ -34,7 +35,7 @@ export function initCardModel() {
     {
       id: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.literal("gen_random_uuid()"),
+        defaultValue: literal("gen_random_uuid()"),
         allowNull: false,
         primaryKey: true,
       },

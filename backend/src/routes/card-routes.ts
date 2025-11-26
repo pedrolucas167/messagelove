@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { body, param } from "express-validator";
 import { authenticate } from "../middlewares/auth";
@@ -16,7 +16,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 *
 
 const router = Router();
 
-router.get("/", authenticate, async (req, res, next) => {
+router.get("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cards = await listCardsForUser(req.userId!);
     return res.json(cards);
@@ -29,7 +29,7 @@ router.get(
   "/:id",
   param("id").isUUID().withMessage("ID inválido"),
   validateRequest,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const card = await getCardById(String(req.params.id));
       if (!card) {
@@ -56,7 +56,7 @@ router.post(
   upload.single("foto"),
   baseValidators,
   validateRequest,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const card = await createCard(
         {
@@ -89,7 +89,7 @@ router.put(
   upload.single("foto"),
   baseValidators.map((rule) => rule.optional({ values: "falsy" })),
   validateRequest,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const card = await updateCard(
         String(req.params.id),
@@ -121,7 +121,7 @@ router.delete(
   authenticate,
   param("id").isUUID().withMessage("ID inválido"),
   validateRequest,
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       await deleteCard(String(req.params.id), req.userId!);
       logger.info("Cartão removido", { cardId: req.params.id, userId: req.userId });

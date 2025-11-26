@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import ptBR from "date-fns/locale/pt-BR";
+import { ptBR } from "date-fns/locale";
 import { nanoid } from "nanoid";
 
 type User = {
@@ -36,17 +36,10 @@ async function apiRequest<T>(
 ): Promise<T> {
   const { token, headers, ...rest } = options;
   const finalHeaders = new Headers(headers);
-  if (token) {
-    finalHeaders.set("Authorization", `Bearer ${token}`);
-  }
-  if (
-    rest.body &&
-    !(rest.body instanceof FormData) &&
-    !finalHeaders.has("Content-Type")
-  ) {
+  if (token) finalHeaders.set("Authorization", `Bearer ${token}`);
+  if (rest.body && !(rest.body instanceof FormData) && !finalHeaders.has("Content-Type")) {
     finalHeaders.set("Content-Type", "application/json");
   }
-
   const response = await fetch(path, { ...rest, headers: finalHeaders });
   const text = await response.text();
   const data = text ? (JSON.parse(text) as T) : ({} as T);
@@ -57,74 +50,106 @@ async function apiRequest<T>(
   return data;
 }
 
-const heroStats = [
-  { label: "Memórias compartilhadas", value: "45k+" },
-  { label: "Avaliação média", value: "4.9/5" },
-  { label: "Países impactados", value: "30+" },
-];
+// ─────────────────────────────────────────────────────────────────────
+// SVG Icons
+// ─────────────────────────────────────────────────────────────────────
+const HeartGiftIcon = () => (
+  <svg viewBox="0 0 64 64" fill="none" className="h-10 w-10">
+    <path d="M32 58s24-14 24-30c0-8-6-14-12-14-4 0-8 2-12 8-4-6-8-8-12-8-6 0-12 6-12 14 0 16 24 30 24 30z" fill="url(#hg1)" />
+    <defs>
+      <linearGradient id="hg1" x1="8" y1="14" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#f472b6" />
+        <stop offset="1" stopColor="#a855f7" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
 
-const whyChoose = [
-  "Entrega emoção imediata com página personalizada e design profissional.",
-  "Suporte humano 24h para ajustar cada detalhe antes da surpresa.",
-  "Totalmente seguro: você decide quem acessa e por quanto tempo.",
-];
+const GiftIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8">
+    <rect x="6" y="20" width="36" height="24" rx="4" fill="#a855f7" />
+    <rect x="4" y="12" width="40" height="10" rx="3" fill="#c084fc" />
+    <path d="M24 12v32" stroke="#fff" strokeWidth="3" />
+    <path d="M24 12c-4-6-10-8-10-4s6 4 10 4" stroke="#fbbf24" strokeWidth="2" fill="none" />
+    <path d="M24 12c4-6 10-8 10-4s-6 4-10 4" stroke="#fbbf24" strokeWidth="2" fill="none" />
+  </svg>
+);
+
+const PaymentIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8">
+    <rect x="4" y="12" width="40" height="28" rx="4" fill="#a855f7" />
+    <rect x="4" y="18" width="40" height="6" fill="#7c3aed" />
+    <rect x="8" y="30" width="12" height="4" rx="1" fill="#c4b5fd" />
+  </svg>
+);
+
+const QRCodeIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8">
+    <rect x="6" y="6" width="14" height="14" rx="2" fill="#a855f7" />
+    <rect x="28" y="6" width="14" height="14" rx="2" fill="#a855f7" />
+    <rect x="6" y="28" width="14" height="14" rx="2" fill="#a855f7" />
+    <rect x="28" y="28" width="6" height="6" fill="#c084fc" />
+    <rect x="36" y="28" width="6" height="6" fill="#c084fc" />
+    <rect x="28" y="36" width="6" height="6" fill="#c084fc" />
+    <rect x="36" y="36" width="6" height="6" fill="#c084fc" />
+    <rect x="10" y="10" width="6" height="6" fill="#fff" />
+    <rect x="32" y="10" width="6" height="6" fill="#fff" />
+    <rect x="10" y="32" width="6" height="6" fill="#fff" />
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8">
+    <circle cx="36" cy="12" r="6" fill="#a855f7" />
+    <circle cx="12" cy="24" r="6" fill="#c084fc" />
+    <circle cx="36" cy="36" r="6" fill="#a855f7" />
+    <path d="M17 21l14-6M17 27l14 6" stroke="#7c3aed" strokeWidth="2" />
+  </svg>
+);
+
+const TrustIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8">
+    <path d="M24 4L6 12v12c0 11 8 18 18 22 10-4 18-11 18-22V12L24 4z" fill="url(#ti1)" />
+    <path d="M20 24l4 4 8-8" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    <defs>
+      <linearGradient id="ti1" x1="6" y1="4" x2="42" y2="46" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#a855f7" />
+        <stop offset="1" stopColor="#ec4899" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+const InfinityIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" className="h-6 w-6 inline-block ml-2">
+    <path d="M12 24c0 4 3 8 8 8s8-4 8-8-4-8-8-8-8 4-8 8zm16 0c0-4 3-8 8-8s8 4 8 8-3 8-8 8-8-4-8-8z" stroke="url(#inf1)" strokeWidth="3" fill="none" />
+    <defs>
+      <linearGradient id="inf1" x1="12" y1="16" x2="44" y2="32" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#f472b6" />
+        <stop offset="1" stopColor="#a855f7" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+const StarIcon = () => (
+  <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-yellow-400">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+  </svg>
+);
 
 const creationSteps = [
-  {
-    title: "Preencha a história",
-    description:
-      "Conte quem é o presenteado, os detalhes marcantes e o motivo da surpresa.",
-  },
-  {
-    title: "Personalize com mídias",
-    description:
-      "Envie fotos, vídeos e escolha a trilha sonora que combina com o momento.",
-  },
-  {
-    title: "Receba link + QR Code",
-    description:
-      "Tudo chega automaticamente para você testar, compartilhar ou imprimir.",
-  },
-  {
-    title: "Surpreenda quem você ama",
-    description:
-      "Compartilhe o link, imprima o QR Code ou entregue junto com outro presente.",
-  },
+  { icon: <GiftIcon />, title: "Preencha os campos", description: "Siga o formulário simples e construa sua memória passo a passo." },
+  { icon: <PaymentIcon />, title: "Pagamento seguro", description: "Use cartão de crédito ou PIX com total segurança." },
+  { icon: <QRCodeIcon />, title: "QR Code e Link", description: "Receba instantaneamente o QR Code e link por e-mail." },
+  { icon: <ShareIcon />, title: "Compartilhe a memória", description: "Surpreenda alguém ou guarde para sempre enviando o link." },
 ];
 
-const trustMetrics = [
-  { value: "10k+", caption: "Memórias feitas somente em 2024" },
-  { value: "85%", caption: "Indicam para amigos e familiares" },
-  { value: "3M+", caption: "Visualizações emocionadas nas redes" },
-  { value: "24h", caption: "Suporte para ajustar cada detalhe" },
-];
-
-const plans = [
-  {
-    title: "Forever",
-    price: "R$ 29,90",
-    subtitle: "Presente único, acesso vitalício.",
-    badge: "Mais escolhido",
-    highlights: [
-      "Link personalizado + QR Code exclusivo",
-      "Até 7 fotos, vídeo do YouTube e efeito de emojis",
-      "Música ambiente e contagem regressiva",
-      "Suporte dedicado para revisar antes de enviar",
-    ],
-    cta: "Criar com este plano",
-  },
-  {
-    title: "Coleção anual",
-    price: "R$ 19,90",
-    subtitle: "Para quem ama eternizar cada capítulo.",
-    highlights: [
-      "Biblioteca de memórias com customização ilimitada",
-      "Acesso compartilhado com familiares e amigos",
-      "Modelos sazonais exclusivos e lançamentos antecipados",
-      "Backup automático e edição sempre que quiser",
-    ],
-    cta: "Falar com o time",
-  },
+const trustItems = [
+  { value: "10.000+", label: "memórias criadas em 2024" },
+  { value: "4.97/5", label: "avaliação média", stars: true },
+  { value: "85%", label: "dos clientes recomendam" },
+  { value: "30+", label: "países alcançados" },
 ];
 
 type ViewState = "welcome" | "dashboard" | "creation";

@@ -17,7 +17,9 @@ function getJwtSecret() {
 }
 
 export function generateAuthToken(userId: string) {
-  return jwt.sign({ userId }, getJwtSecret(), { expiresIn: env.JWT_EXPIRES_IN });
+  // Cast expiresIn to satisfy jsonwebtoken type requirements
+  const expiresIn = (env.JWT_EXPIRES_IN || "24h") as `${number}${"s" | "m" | "h" | "d"}`;
+  return jwt.sign({ userId }, getJwtSecret(), { expiresIn });
 }
 
 export async function registerUser(payload: AuthPayload) {
