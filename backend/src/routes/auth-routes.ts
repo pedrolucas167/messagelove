@@ -7,10 +7,12 @@ import {
   requestPasswordReset,
   resetPassword,
   generateAuthToken,
+  loginWithGoogle,
 } from "../services/auth-service";
 import { authenticate } from "../middlewares/auth";
 import { validateRequest } from "../middlewares/validate-request";
 import { logger } from "../config/logger";
+import { env } from "../lib/env";
 
 const router = Router();
 
@@ -138,6 +140,127 @@ router.post("/refresh", authenticate, (req, res) => {
   }
   const token = generateAuthToken(req.userId);
   return res.json({ success: true, token });
+});
+
+// Google OAuth Routes
+router.get("/google", (req, res) => {
+  const clientId = env.GOOGLE_CLIENT_ID;
+  
+  if (!clientId) {
+    return res.status(500).json({ error: "Google OAuth não está configurado" });
+  }
+
+  const redirectTo = (req.query.redirect as string) || "/";
+  const baseUrl = env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`;
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    response_type: "code",
+    scope: "openid email profile",
+    access_type: "offline",
+    state: redirectTo,
+    prompt: "consent",
+  });
+  
+  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  return res.redirect(googleAuthUrl);
+});
+
+router.get("/google/callback", async (req, res) => {
+  const code = req.query.code as string;
+  const error = req.query.error as string;
+  const state = (req.query.state as string) || "/";
+  
+  const baseUrl = env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`;
+  
+  if (error) {
+    logger.error("Google OAuth error:", { error });
+    return res.redirect(`${baseUrl}/?error=oauth_error`);
+  }
+  
+  if (!code) {
+    return res.redirect(`${baseUrl}/?error=no_code`);
+  }
+  
+  const clientId = env.GOOGLE_CLIENT_ID;
+  const clientSecret = env.GOOGLE_CLIENT_SECRET;
+  
+  if (!clientId || !clientSecret) {
+    logger.error("Google OAuth credentials not configured");
+    return res.redirect(`${baseUrl}/?error=oauth_not_configured`);
+  }
+  
+  try {
+    const redirectUri = `${baseUrl}/api/auth/google/callback`;
+    
+    // Exchange code for tokens
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    });
+    
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      logger.error("Token exchange failed:", { error: errorText });
+      return res.redirect(`${baseUrl}/?error=token_exchange_failed`);
+    }
+    
+    const tokens = await tokenResponse.json() as { access_token: string };
+    
+    // Get user info from Google
+    const userInfoResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+    
+    if (!userInfoResponse.ok) {
+      return res.redirect(`${baseUrl}/?error=user_info_failed`);
+    }
+    
+    const userInfo = await userInfoResponse.json() as {
+      sub: string;
+      email: string;
+      email_verified: boolean;
+      name: string;
+      picture?: string;
+    };
+    
+    if (!userInfo.email_verified) {
+      return res.redirect(`${baseUrl}/?error=email_not_verified`);
+    }
+    
+    // Login or register user
+    const result = await loginWithGoogle({
+      email: userInfo.email,
+      name: userInfo.name,
+      googleId: userInfo.sub,
+      picture: userInfo.picture,
+    });
+    
+    logger.info("Google OAuth login successful", { userId: result.user?.id, email: userInfo.email });
+    
+    // Redirect with token in URL (frontend will extract and store it)
+    const redirectUrl = new URL(state, baseUrl);
+    redirectUrl.searchParams.set("token", result.token);
+    redirectUrl.searchParams.set("user", JSON.stringify({
+      id: result.user?.id,
+      email: result.user?.email,
+      name: result.user?.name,
+    }));
+    
+    return res.redirect(redirectUrl.toString());
+  } catch (error) {
+    logger.error("Google OAuth callback error:", { error });
+    return res.redirect(`${baseUrl}/?error=oauth_failed`);
+  }
 });
 
 export const authRouter = router;

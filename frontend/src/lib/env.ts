@@ -9,11 +9,16 @@ const serverSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_S3_BUCKET: z.string().min(1),
   FRONTEND_URL: z.string().url().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 });
 
-const clientSchema = z.object({});
+const clientSchema = z.object({
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID: z.string().optional(),
+});
 
 type ServerEnv = z.infer<typeof serverSchema>;
+type ClientEnv = z.infer<typeof clientSchema>;
 
 declare global {
   // eslint-disable-next-line no-var
@@ -36,6 +41,8 @@ function getEnv(): ServerEnv {
       AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || "placeholder",
       AWS_S3_BUCKET: process.env.AWS_S3_BUCKET || "placeholder",
       FRONTEND_URL: process.env.FRONTEND_URL,
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     } as ServerEnv;
   }
   
@@ -56,4 +63,6 @@ export const env = new Proxy({} as ServerEnv, {
   },
 });
 
-export const clientEnv = clientSchema.parse({});
+export const clientEnv: ClientEnv = {
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+};

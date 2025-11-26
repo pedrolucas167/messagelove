@@ -54,6 +54,11 @@ export function createApp() {
   app.use("/api/auth", authRouter);
   app.use("/api/cards", cardRouter);
 
+  // Health check endpoint for Render
+  app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+  });
+
   app.get("/", (_req, res) => {
     res.status(200).json({
       status: "online",

@@ -1,0 +1,42 @@
+# Render.com Blueprint Configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API
+  - type: web
+    name: messagelove-api
+    runtime: node
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: postgresql://messagelove_user:TbE8PAgBi5EDJkjjPlM7rUqrcOPUkut0@dpg-d3engeumcj7s739fhc2g-a/messagelove
+      - key: JWT_SECRET
+        value: 4dd0b8c4c65029bf7576c86ee45032da5fb278b6109421ae70958d61c94aeaab
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: FRONTEND_URL
+        value: https://messagelove.com.br
+      - key: ALLOWED_ORIGINS
+        value: https://messagelove.com.br,https://messagelove.onrender.com,http://localhost:3000
+      - key: GOOGLE_CLIENT_ID
+        value: 989158247994-r37bumr47c6bvn8v9qh8n7pdtsf0jq5f.apps.googleusercontent.com
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: AWS_S3_BUCKET
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false

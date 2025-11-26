@@ -143,3 +143,48 @@ export async function resetPassword(payload: { email: string; token: string; new
   await user.update({ password: hashed });
   await record.update({ usedAt: new Date() });
 }
+
+export type GoogleLoginPayload = {
+  email: string;
+  name: string;
+  googleId: string;
+  picture?: string;
+};
+
+export async function loginWithGoogle(payload: GoogleLoginPayload) {
+  const email = payload.email.trim().toLowerCase();
+  const name = payload.name.trim();
+
+  if (!email || !name) {
+    throw new Error("Email e nome são obrigatórios.");
+  }
+
+  await ensureDatabaseConnection();
+  const User = getUserModel();
+
+  // Check if user already exists
+  let user = await User.unscoped().findOne({
+    where: { email },
+    attributes: ["id", "email", "name", "googleId", "createdAt", "updatedAt"],
+  });
+
+  if (user) {
+    // Update googleId if not set (user registered with email/password before)
+    if (!user.googleId) {
+      await user.update({ googleId: payload.googleId });
+    }
+  } else {
+    // Create new user (no password for Google-only users)
+    user = await User.create({
+      email,
+      name,
+      googleId: payload.googleId,
+      password: null,
+    });
+  }
+
+  const token = generateAuthToken(user.id);
+  const safeUser = await User.findByPk(user.id);
+
+  return { token, user: safeUser };
+}

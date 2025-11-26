@@ -10,8 +10,9 @@ import { getSequelize } from "../sequelize";
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare id: CreationOptional<string>;
   declare email: string;
-  declare password: string;
+  declare password: CreationOptional<string | null>;
   declare name: string;
+  declare googleId: CreationOptional<string | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -37,11 +38,17 @@ export function initUserModel() {
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true, // Allow null for OAuth users
       },
       name: {
         type: DataTypes.STRING(120),
         allowNull: false,
+      },
+      googleId: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        unique: true,
+        field: "google_id",
       },
       createdAt: {
         type: DataTypes.DATE,

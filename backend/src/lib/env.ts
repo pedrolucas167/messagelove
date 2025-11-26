@@ -9,6 +9,8 @@ const serverSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_S3_BUCKET: z.string().min(1),
   FRONTEND_URL: z.string().url().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 });
 
 type ServerEnv = z.infer<typeof serverSchema>;
