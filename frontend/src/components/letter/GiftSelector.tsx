@@ -66,7 +66,6 @@ export function GiftSelector({ gifts, onGiftsChange, translations: t }: GiftSele
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2">
           <span className="text-2xl">🎁</span>
@@ -75,7 +74,6 @@ export function GiftSelector({ gifts, onGiftsChange, translations: t }: GiftSele
         <p className="text-sm text-gray-500">{t.subtitle}</p>
       </div>
 
-      {/* Gift Grid */}
       <div className="grid grid-cols-2 gap-4">
         {gifts.map((gift) => {
           const info = giftInfo[gift.type];
@@ -95,29 +93,24 @@ export function GiftSelector({ gifts, onGiftsChange, translations: t }: GiftSele
                 }
               `}
             >
-              {/* Selection indicator */}
               {gift.selected && (
                 <div className="absolute top-2 right-2 w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center text-white text-sm">
                   ✓
                 </div>
               )}
 
-              {/* Emoji */}
               <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
                 {gift.emoji}
               </div>
 
-              {/* Title */}
               <div className="font-medium text-gray-800 mb-1">{info.name}</div>
 
-              {/* Description */}
               <div className="text-xs text-gray-500">{info.desc}</div>
             </button>
           );
         })}
       </div>
 
-      {/* Book title input (when book is selected) */}
       {gifts.find((g) => g.type === "book" && g.selected) && (
         <div className="animate-fadeIn">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -133,7 +126,6 @@ export function GiftSelector({ gifts, onGiftsChange, translations: t }: GiftSele
         </div>
       )}
 
-      {/* Custom message */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           💝 Mensagem especial sobre o presente (opcional)
@@ -147,7 +139,6 @@ export function GiftSelector({ gifts, onGiftsChange, translations: t }: GiftSele
         />
       </div>
 
-      {/* More gift ideas */}
       <div className="pt-4 border-t border-gray-100">
         <p className="text-sm text-gray-500 mb-3 text-center">Mais ideias de presentes</p>
         <div className="flex flex-wrap justify-center gap-2">
@@ -171,7 +162,6 @@ export function GiftSelector({ gifts, onGiftsChange, translations: t }: GiftSele
         </div>
       </div>
 
-      {/* Selected summary */}
       {selectedCount > 0 && (
         <div className="bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl p-4">
           <div className="flex items-center justify-between">

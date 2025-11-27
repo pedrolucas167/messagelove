@@ -42,7 +42,6 @@ type ViewState = "welcome" | "dashboard" | "create-step1" | "create-step2" | "cr
 type AuthModalState = "none" | "login" | "register";
 type PaperStyle = "classic" | "romantic" | "vintage" | "modern" | "handwritten";
 
-// API Request Helper
 async function apiRequest<T>(path: string, options: RequestInit & { token?: string } = {}): Promise<T> {
   const { token, headers, ...rest } = options;
   const finalHeaders = new Headers(headers);
@@ -57,7 +56,6 @@ async function apiRequest<T>(path: string, options: RequestInit & { token?: stri
   return data;
 }
 
-// Language Selector Component
 function LanguageSelector({ 
   lang, 
   onChangeLang 
@@ -107,7 +105,6 @@ function LanguageSelector({
   );
 }
 
-// Notification Toast Component
 function NotificationToast({ notification, onClose }: { notification: Notification; onClose: () => void }) {
   const colors = {
     success: "bg-green-500",
@@ -131,7 +128,6 @@ function NotificationToast({ notification, onClose }: { notification: Notificati
   );
 }
 
-// Auth Modal Component
 function AuthModal({
   mode,
   onClose,
@@ -164,7 +160,6 @@ function AuthModal({
           </h2>
         </div>
 
-        {/* Google Button */}
         <button
           onClick={handleGoogleAuth}
           className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all mb-4"
@@ -184,7 +179,6 @@ function AuthModal({
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
-        {/* Form */}
         <form onSubmit={(e) => onSubmit(e, currentMode)} className="space-y-4">
           {currentMode === "register" && (
             <input
@@ -232,9 +226,7 @@ function AuthModal({
   );
 }
 
-// Main Component
 export default function HomePage() {
-  // State
   const [lang, setLang] = useState<Language>("pt");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -244,7 +236,6 @@ export default function HomePage() {
   const [authModal, setAuthModal] = useState<AuthModalState>("none");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Letter Creation State
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [letterData, setLetterData] = useState({
     from: "",
@@ -260,16 +251,13 @@ export default function HomePage() {
   const [selectedGif, setSelectedGif] = useState<GifItem | null>(null);
   const [uploadedPhoto] = useState<File | null>(null);
 
-  // Translation helper
   const t = (key: string) => getTranslation(key as keyof typeof import("@/lib/translations-new").translations, lang);
 
-  // Date locale
   const getDateLocale = () => {
     const locales: Record<Language, Locale> = { pt: ptBR, en: enUS, es, hi, ar };
     return locales[lang] || ptBR;
   };
 
-  // Load cards function
   const loadCards = useCallback(async (authToken: string) => {
     try {
       const data = await apiRequest<Card[]>("/api/cards", { method: "GET", token: authToken });
@@ -279,7 +267,6 @@ export default function HomePage() {
     }
   }, []);
 
-  // Effects
   useEffect(() => {
     const savedToken = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
     const savedUser = typeof window !== "undefined" ? sessionStorage.getItem("user") : null;
@@ -305,7 +292,6 @@ export default function HomePage() {
     document.documentElement.dir = isRTL(lang) ? "rtl" : "ltr";
   }, [lang]);
 
-  // Handlers
   const pushNotification = (message: string, type: NotificationKind = "info") => {
     const id = nanoid();
     setNotifications((prev) => [...prev, { id, message, type }]);
@@ -392,7 +378,6 @@ export default function HomePage() {
       setView("dashboard");
       await loadCards(token);
       
-      // Reset form
       setLetterData({ from: "", to: "", message: "", paperStyle: "classic" });
       setSelectedCategory(null);
       setSelectedAnimal(null);
@@ -408,7 +393,6 @@ export default function HomePage() {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 ${isRTL(lang) ? "rtl" : "ltr"}`}>
-      {/* Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {notifications.map((n) => (
           <NotificationToast
@@ -419,7 +403,6 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* Auth Modal */}
       {authModal !== "none" && (
         <AuthModal
           mode={authModal}
@@ -430,11 +413,9 @@ export default function HomePage() {
         />
       )}
 
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-pink-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
             <button onClick={() => setView(currentUser ? "dashboard" : "welcome")} className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-xl shadow-lg">
                 💝
@@ -444,7 +425,6 @@ export default function HomePage() {
               </span>
             </button>
 
-            {/* Nav */}
             <div className="flex items-center gap-4">
               <LanguageSelector lang={lang} onChangeLang={setLang} />
               
@@ -473,12 +453,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main>
-        {/* Welcome View */}
         {view === "welcome" && (
           <>
-            {/* Hero Section */}
             <section className="relative py-20 lg:py-32 overflow-hidden">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center max-w-4xl mx-auto">
@@ -508,7 +485,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Floating decorations */}
                 <div className="absolute top-10 left-10 text-6xl opacity-20 animate-bounce">💕</div>
                 <div className="absolute top-20 right-20 text-5xl opacity-20 animate-pulse">✨</div>
                 <div className="absolute bottom-10 left-1/4 text-4xl opacity-20 animate-bounce">💝</div>
@@ -516,7 +492,6 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* Features Section */}
             <section className="py-20 bg-white">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
@@ -544,7 +519,6 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* CTA Section */}
             <section className="py-20">
               <div className="max-w-4xl mx-auto px-4 text-center">
                 <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-3xl p-12 text-white">
@@ -566,7 +540,6 @@ export default function HomePage() {
           </>
         )}
 
-        {/* Dashboard View */}
         {view === "dashboard" && currentUser && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -619,7 +592,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Create Step 1: Category Selection */}
         {view === "create-step1" && (
           <div className="max-w-5xl mx-auto px-4 py-12">
             <CategorySelector
@@ -641,18 +613,15 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Create Step 2: Letter Content */}
         {view === "create-step2" && (
           <div className="max-w-6xl mx-auto px-4 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Editor Panel */}
               <div className="space-y-8">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("letter.title")}</h2>
                   <p className="text-gray-500">Preencha os detalhes da sua carta</p>
                 </div>
 
-                {/* From/To */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">{t("letter.from")}</label>
@@ -676,7 +645,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Paper Style */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">{t("letter.paperStyle")}</label>
                   <div className="flex flex-wrap gap-2">
@@ -696,7 +664,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Message */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t("letter.message")}</label>
                   <textarea
@@ -732,18 +699,15 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Create Step 3: Personalization */}
         {view === "create-step3" && (
           <div className="max-w-6xl mx-auto px-4 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Personalization Options */}
               <div className="space-y-12">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Personalize sua carta</h2>
                   <p className="text-gray-500">Adicione elementos especiais (opcional)</p>
                 </div>
 
-                {/* Cute Animal Selector */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                   <CuteAnimalSelector
                     selected={selectedAnimal}
@@ -753,7 +717,6 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* Music Selector */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                   <MusicSelector
                     mode={musicMode}
@@ -773,7 +736,6 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* Gift Selector */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                   <GiftSelector
                     gifts={gifts}
@@ -794,7 +756,6 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* GIF Selector */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                   <GifSelector
                     selectedGif={selectedGif}
@@ -823,7 +784,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Preview Panel */}
               <div className="lg:sticky lg:top-24 lg:self-start">
                 <h3 className="text-lg font-medium text-gray-700 mb-4">{t("preview.title")}</h3>
                 <IntimateLetter
@@ -838,7 +798,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Preview View */}
         {view === "preview" && (
           <div className="max-w-4xl mx-auto px-4 py-12">
             <div className="text-center mb-8">
@@ -856,7 +815,6 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Selected extras summary */}
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
               <h3 className="font-bold text-gray-800 mb-4">Extras incluídos:</h3>
               <div className="flex flex-wrap gap-3">
@@ -902,7 +860,6 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -924,7 +881,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* Global Styles */}
       <style jsx global>{`
         @keyframes slideIn {
           from {
