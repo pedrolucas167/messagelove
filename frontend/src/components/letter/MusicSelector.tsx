@@ -28,7 +28,6 @@ interface MusicSelectorProps {
   };
 }
 
-// Simulated search results (in production, this would call YouTube API)
 const mockSearchResults: MusicItem[] = [
   {
     id: "1",
@@ -95,10 +94,8 @@ export function MusicSelector({
 
     setIsSearching(true);
     
-    // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 300));
     
-    // Filter mock results (in production, call YouTube API)
     const filtered = mockSearchResults.filter(
       (item) =>
         item.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -119,7 +116,6 @@ export function MusicSelector({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2">
           <span className="text-2xl">🎵</span>
@@ -128,7 +124,6 @@ export function MusicSelector({
         <p className="text-sm text-gray-500">{t.subtitle}</p>
       </div>
 
-      {/* Mode Toggle */}
       <div className="flex justify-center">
         <div className="inline-flex bg-gray-100 rounded-full p-1">
           <button
@@ -160,10 +155,8 @@ export function MusicSelector({
         </div>
       </div>
 
-      {/* Content based on mode */}
       {mode === "single" ? (
         <div className="space-y-4">
-          {/* Search Input */}
           <div className="relative">
             <input
               type="text"
@@ -201,7 +194,6 @@ export function MusicSelector({
             )}
           </div>
 
-          {/* Search Results */}
           {searchResults.length > 0 && (
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {searchResults.map((music) => (
@@ -236,7 +228,6 @@ export function MusicSelector({
             </div>
           )}
 
-          {/* Selected Music Display */}
           {selectedMusic && !searchResults.length && (
             <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4">
               <div className="flex items-center gap-3">
@@ -259,7 +250,6 @@ export function MusicSelector({
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Playlist URL Input */}
           <div className="relative">
             <input
               type="url"
@@ -287,7 +277,6 @@ export function MusicSelector({
             )}
           </div>
 
-          {/* Platform Icons */}
           <div className="flex justify-center gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <span className="text-xl">📺</span> YouTube
@@ -297,7 +286,6 @@ export function MusicSelector({
             </div>
           </div>
 
-          {/* Playlist Preview */}
           {isValidPlaylist && (
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4">
               <div className="flex items-center gap-3">
@@ -318,7 +306,6 @@ export function MusicSelector({
         </div>
       )}
 
-      {/* Music suggestions */}
       <div className="pt-4 border-t border-gray-100">
         <p className="text-sm text-gray-500 mb-3 text-center">Sugestões populares</p>
         <div className="flex flex-wrap justify-center gap-2">

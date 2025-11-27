@@ -19,7 +19,6 @@ interface GifSelectorProps {
   };
 }
 
-// Categories for GIF suggestions
 const gifCategories = [
   { id: "love", emoji: "💕", label: "Amor" },
   { id: "hug", emoji: "🤗", label: "Abraço" },
@@ -31,7 +30,6 @@ const gifCategories = [
   { id: "cute", emoji: "🥰", label: "Fofo" },
 ];
 
-// Mock GIFs for demonstration (in production, use GIPHY/Tenor API)
 const mockGifs: Record<string, GifItem[]> = {
   love: [
     { id: "l1", url: "https://media.giphy.com/media/placeholder1.gif", preview: "💕", title: "Corações voando" },
@@ -87,11 +85,8 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
 
     setIsSearching(true);
 
-    // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    // In production, call GIPHY/Tenor API here
-    // For now, combine all mock gifs and filter
     const allGifs = Object.values(mockGifs).flat();
     const filtered = allGifs.filter((gif) =>
       gif.title.toLowerCase().includes(query.toLowerCase())
@@ -107,7 +102,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
     setSearchResults(mockGifs[categoryId] || []);
   };
 
-  // Animated emoji grid for visual appeal
   const emojiAnimations = [
     "💕", "💖", "💗", "💝", "💘", "💓", "💞", "💜",
     "🥰", "😍", "🤗", "💫", "✨", "🌟", "⭐", "💐",
@@ -116,7 +110,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2">
           <span className="text-2xl">🎬</span>
@@ -125,7 +118,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         <p className="text-sm text-gray-500">{t.subtitle}</p>
       </div>
 
-      {/* Search Input */}
       <div className="relative">
         <input
           type="text"
@@ -164,7 +156,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         )}
       </div>
 
-      {/* Category Pills */}
       <div className="flex flex-wrap justify-center gap-2">
         {gifCategories.map((cat) => (
           <button
@@ -186,7 +177,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         ))}
       </div>
 
-      {/* Emoji Animation Grid (shown by default) */}
       {showEmojiGrid && !searchQuery && (
         <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl">
           {emojiAnimations.map((emoji, index) => (
@@ -204,7 +194,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         </div>
       )}
 
-      {/* Search Results / Category Results */}
       {searchResults.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {searchResults.map((gif) => (
@@ -230,7 +219,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         </div>
       )}
 
-      {/* No results message */}
       {searchQuery && !isSearching && searchResults.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           <span className="text-4xl mb-2 block">😢</span>
@@ -239,7 +227,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         </div>
       )}
 
-      {/* Selected GIF Display */}
       {selectedGif && (
         <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4">
           <div className="flex items-center gap-4">
@@ -258,7 +245,6 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         </div>
       )}
 
-      {/* Powered by note */}
       <div className="text-center text-xs text-gray-400">
         GIFs powered by GIPHY
       </div>
