@@ -55,11 +55,9 @@ export function IntimateLetter({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Paper shadow effect */}
       <div className="absolute inset-0 bg-black/5 rounded-lg transform rotate-1 translate-x-1 translate-y-1" />
       <div className="absolute inset-0 bg-black/3 rounded-lg transform -rotate-0.5 -translate-x-0.5 translate-y-0.5" />
       
-      {/* Main letter paper */}
       <div
         className={`
           relative
@@ -74,7 +72,6 @@ export function IntimateLetter({
           hover:shadow-2xl hover:-translate-y-1
         `}
       >
-        {/* Decorative corner fold */}
         <div className="absolute top-0 right-0 w-12 h-12 overflow-hidden">
           <div
             className={`
@@ -102,12 +99,10 @@ export function IntimateLetter({
           </div>
         </div>
 
-        {/* Date */}
         <div className="text-right text-sm opacity-60 mb-6 mt-4">
           {formattedDate}
         </div>
 
-        {/* To field */}
         <div className="mb-6">
           <span className="text-gray-600 text-lg">Para: </span>
           <span className="text-xl font-medium border-b border-gray-300 pb-1 inline-block min-w-[200px]">
@@ -115,9 +110,7 @@ export function IntimateLetter({
           </span>
         </div>
 
-        {/* Message body */}
         <div className="relative mb-8">
-          {/* Opening quotes */}
           <span className="absolute -left-4 -top-2 text-5xl opacity-20 select-none">&ldquo;</span>
           
           <div
@@ -136,18 +129,15 @@ export function IntimateLetter({
             )}
           </div>
 
-          {/* Closing quotes */}
           <span className="absolute -right-4 bottom-0 text-5xl opacity-20 select-none">&rdquo;</span>
         </div>
 
-        {/* Cute animal decoration */}
         {selectedAnimal && (
           <div className="absolute bottom-4 right-4 text-4xl opacity-80 animate-bounce">
             {selectedAnimal}
           </div>
         )}
 
-        {/* From field */}
         <div className="text-right mt-8">
           <span className="text-gray-600 text-lg">Com carinho, </span>
           <div className="text-2xl font-medium mt-1">
@@ -155,7 +145,6 @@ export function IntimateLetter({
           </div>
         </div>
 
-        {/* Decorative elements based on style */}
         {paperStyle === "romantic" && (
           <>
             <div className="absolute bottom-2 left-2 text-2xl opacity-30">💕</div>
@@ -171,7 +160,6 @@ export function IntimateLetter({
   );
 }
 
-// Letter Editor Component
 interface LetterEditorProps {
   value: {
     from: string;
@@ -198,7 +186,6 @@ export function LetterEditor({ value, onChange, translations: t }: LetterEditorP
 
   return (
     <div className="space-y-6">
-      {/* From/To fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -226,7 +213,6 @@ export function LetterEditor({ value, onChange, translations: t }: LetterEditorP
         </div>
       </div>
 
-      {/* Paper style selector */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
           {t.paperStyle}
@@ -251,7 +237,6 @@ export function LetterEditor({ value, onChange, translations: t }: LetterEditorP
         </div>
       </div>
 
-      {/* Message textarea */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {t.message}
