@@ -5,6 +5,17 @@ export { MusicSelector } from "./MusicSelector";
 export { GiftSelector, defaultGifts } from "./GiftSelector";
 export { GifSelector } from "./GifSelector";
 export { CategorySelector, CategoryBadges, categories } from "./CategorySelector";
+export { ProgressSteps, MiniProgressSteps } from "./ProgressSteps";
+export {
+  CharacterCounter,
+  TypingIndicator,
+  FloatingLabelInput,
+  EnhancedTextarea,
+  TipCard,
+  ConfettiButton,
+  AnimatedCard,
+} from "./InteractiveElements";
+export { ShareModal, QRCode, CopyLinkButton } from "./ShareModal";
 
 // Types
 export type { CuteAnimal } from "./CuteAnimalSelector";

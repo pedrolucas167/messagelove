@@ -3,6 +3,20 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   
+  // Mark pg as external package for server-side
+  serverExternalPackages: ["pg", "pg-hstore", "sequelize"],
+  
+  // Image optimization config for external images
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.qrserver.com",
+        pathname: "/v1/create-qr-code/**",
+      },
+    ],
+  },
+  
   // Security headers
   async headers() {
     return [
