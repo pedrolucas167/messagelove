@@ -144,12 +144,14 @@ function AuthModal({
   t,
   isSubmitting,
   onSubmit,
+  error,
 }: {
   mode: "login" | "register";
   onClose: () => void;
   t: (key: string) => string;
   isSubmitting: boolean;
   onSubmit: (e: FormEvent<HTMLFormElement>, mode: "login" | "register") => void;
+  error?: string | null;
 }) {
   const [currentMode, setCurrentMode] = useState(mode);
   const [showPassword, setShowPassword] = useState(false);
@@ -210,6 +212,16 @@ function AuthModal({
             <span className="text-sm text-gray-400 font-medium">{t("auth.or")}</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-shake">
+              <span className="text-red-500 text-lg">⚠️</span>
+              <div>
+                <p className="text-sm font-medium text-red-700">{error}</p>
+              </div>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={(e) => onSubmit(e, currentMode)} className="space-y-4">
@@ -351,6 +363,7 @@ export default function HomePage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [authModal, setAuthModal] = useState<AuthModalState>("none");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [letterData, setLetterData] = useState({
@@ -488,6 +501,7 @@ export default function HomePage() {
   const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>, mode: "login" | "register") => {
     event.preventDefault();
     setIsSubmitting(true);
+    setAuthError(null);
     const form = new FormData(event.currentTarget);
     
     try {
@@ -502,13 +516,16 @@ export default function HomePage() {
       });
       
       if (data.success && data.token && data.user) {
+        setAuthError(null);
         handleAuthSuccess({ token: data.token, user: data.user });
         pushNotification(mode === "login" ? "Login realizado com sucesso!" : "Conta criada com sucesso!", "success");
       } else {
         throw new Error("Resposta inválida do servidor");
       }
     } catch (error) {
-      pushNotification(error instanceof Error ? error.message : t("msg.error"), "error");
+      const errorMessage = error instanceof Error ? error.message : t("msg.error");
+      setAuthError(errorMessage);
+      pushNotification(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -594,11 +611,13 @@ export default function HomePage() {
           mode={authModal}
           onClose={() => {
             setAuthModal("none");
+            setAuthError(null);
             setPendingAction(null);
           }}
           t={t}
           isSubmitting={isSubmitting}
           onSubmit={handleAuthSubmit}
+          error={authError}
         />
       )}
 
