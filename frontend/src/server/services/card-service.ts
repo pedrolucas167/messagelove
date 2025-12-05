@@ -1,6 +1,6 @@
 import { ensureDatabaseConnection } from "@/server/db";
 import { getCardModel } from "@/server/db/models/card";
-import { uploadOptimizedPhoto, deletePhoto } from "./s3-service";
+import { uploadOptimizedPhoto, deletePhoto, uploadAudio, deleteAudio } from "./s3-service";
 
 export type CardPayload = {
   userId: string;
@@ -9,6 +9,7 @@ export type CardPayload = {
   mensagem: string;
   youtubeVideoId?: string | null;
   youtubeStartTime?: number | null;
+  audioDuration?: number | null;
 };
 
 export type UploadableFile = {
@@ -26,7 +27,11 @@ export async function listCardsForUser(userId: string) {
   });
 }
 
-export async function createCard(payload: CardPayload, file: UploadableFile) {
+export async function createCard(
+  payload: CardPayload, 
+  photoFile: UploadableFile,
+  audioFile: UploadableFile = null
+) {
   if (!payload.userId) throw new Error("ID do usuário é obrigatório.");
   if (!payload.de || !payload.para || !payload.mensagem) {
     throw new Error("Campos de, para e mensagem são obrigatórios.");
@@ -35,7 +40,9 @@ export async function createCard(payload: CardPayload, file: UploadableFile) {
   await ensureDatabaseConnection();
   const Card = getCardModel();
 
-  const fotoUrl = await uploadOptimizedPhoto(file);
+  const fotoUrl = await uploadOptimizedPhoto(photoFile);
+  const audioUrl = await uploadAudio(audioFile);
+  
   const card = await Card.create({
     userId: payload.userId,
     de: payload.de.trim(),
@@ -44,6 +51,8 @@ export async function createCard(payload: CardPayload, file: UploadableFile) {
     fotoUrl,
     youtubeVideoId: payload.youtubeVideoId || null,
     youtubeStartTime: payload.youtubeStartTime ?? null,
+    audioUrl,
+    audioDuration: payload.audioDuration ?? null,
   });
 
   return card;
@@ -99,6 +108,10 @@ export async function deleteCard(id: string, userId: string) {
 
   if (card.fotoUrl) {
     await deletePhoto(card.fotoUrl);
+  }
+  
+  if (card.audioUrl) {
+    await deleteAudio(card.audioUrl);
   }
 
   await card.destroy();

@@ -12,7 +12,7 @@ import {
 } from "../services/card-service";
 import { logger } from "../config/logger";
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 * 1024 * 1024 } }); // 16MB for audio
 
 const router = Router();
 
@@ -48,16 +48,27 @@ const baseValidators = [
   body("mensagem").trim().notEmpty().withMessage("Mensagem é obrigatória"),
   body("youtubeVideoId").optional({ values: "falsy" }).isLength({ max: 32 }).withMessage("youtubeVideoId inválido"),
   body("youtubeStartTime").optional({ values: "falsy" }).isInt({ min: 0 }).withMessage("youtubeStartTime deve ser inteiro"),
+  body("audioDuration").optional({ values: "falsy" }).isInt({ min: 0, max: 300 }).withMessage("Duração do áudio inválida"),
 ];
+
+// Configure multer for multiple file uploads
+const uploadFields = upload.fields([
+  { name: "foto", maxCount: 1 },
+  { name: "audio", maxCount: 1 },
+]);
 
 router.post(
   "/",
   authenticate,
-  upload.single("foto"),
+  uploadFields,
   baseValidators,
   validateRequest,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const fotoFile = files?.foto?.[0];
+      const audioFile = files?.audio?.[0];
+      
       const card = await createCard(
         {
           userId: req.userId!,
@@ -66,9 +77,13 @@ router.post(
           mensagem: String(req.body.mensagem),
           youtubeVideoId: req.body.youtubeVideoId ? String(req.body.youtubeVideoId) : null,
           youtubeStartTime: req.body.youtubeStartTime ? Number(req.body.youtubeStartTime) : null,
+          audioDuration: req.body.audioDuration ? Number(req.body.audioDuration) : null,
         },
-        req.file
-          ? { buffer: req.file.buffer, mimetype: req.file.mimetype, originalName: req.file.originalname }
+        fotoFile
+          ? { buffer: fotoFile.buffer, mimetype: fotoFile.mimetype, originalName: fotoFile.originalname }
+          : null,
+        audioFile
+          ? { buffer: audioFile.buffer, mimetype: audioFile.mimetype, originalName: audioFile.originalname }
           : null
       );
       logger.info("Cartão criado", { cardId: card.id, userId: req.userId });

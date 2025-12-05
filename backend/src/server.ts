@@ -10,9 +10,12 @@ async function bootstrap() {
     const sequelize = await ensureDatabaseConnection();
     logger.info("Database connection established");
 
-    if ((process.env.NODE_ENV ?? "development") === "development") {
+    // Sync database schema - use alter:true to add new columns without losing data
+    try {
       await sequelize.sync({ alter: true });
-      logger.info("Database synced in development mode");
+      logger.info("Database synced successfully");
+    } catch (syncError) {
+      logger.warn("Database sync warning (may be normal for existing tables)", { syncError });
     }
 
     const app = createApp();

@@ -25,10 +25,13 @@ import {
   ConfettiButton,
   AnimatedCard,
   ShareModal,
+  AudioRecorder,
+  MiniAudioPlayer,
   type Category,
   type MusicItem,
   type GiftSuggestion,
   type GifItem,
+  type AudioMessage,
 } from "@/components/letter";
 
 type User = { id: string; name: string; email: string };
@@ -363,6 +366,7 @@ export default function HomePage() {
   const [gifts, setGifts] = useState<GiftSuggestion[]>(defaultGifts);
   const [selectedGif, setSelectedGif] = useState<GifItem | null>(null);
   const [uploadedPhoto] = useState<File | null>(null);
+  const [audioMessage, setAudioMessage] = useState<AudioMessage | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [savedCardId, setSavedCardId] = useState<string | null>(null);
 
@@ -542,6 +546,10 @@ export default function HomePage() {
       formData.append("mensagem", letterData.message);
       if (selectedMusic) formData.append("youtubeVideoId", selectedMusic.id);
       if (uploadedPhoto) formData.append("foto", uploadedPhoto);
+      if (audioMessage) {
+        formData.append("audio", audioMessage.blob, "voice-message.webm");
+        formData.append("audioDuration", String(audioMessage.duration));
+      }
       
       const response = await apiRequest<{ id: string }>("/api/cards", { method: "POST", body: formData, token });
       setSavedCardId(response.id);
@@ -566,6 +574,7 @@ export default function HomePage() {
     setSelectedMusic(null);
     setGifts(defaultGifts);
     setSelectedGif(null);
+    setAudioMessage(null);
   };
 
   return (
@@ -1013,6 +1022,29 @@ export default function HomePage() {
                   </div>
                 </AnimatedCard>
 
+                <AnimatedCard delay={0.5}>
+                  <div className="bg-white rounded-2xl shadow-lg p-6">
+                    <AudioRecorder
+                      onAudioRecorded={setAudioMessage}
+                      onAudioRemove={() => setAudioMessage(null)}
+                      currentAudio={audioMessage}
+                      maxDuration={60}
+                      translations={{
+                        title: "Mensagem de Voz 🎙️",
+                        subtitle: "Grave uma mensagem pessoal e única",
+                        record: "Gravar",
+                        recording: "Gravando...",
+                        stop: "Parar",
+                        play: "Ouvir",
+                        pause: "Pausar",
+                        delete: "Excluir",
+                        recordingTip: "Clique no microfone para começar",
+                        playbackTip: "Sua mensagem está pronta!",
+                      }}
+                    />
+                  </div>
+                </AnimatedCard>
+
                 <div className="flex gap-4">
                   <button
                     onClick={() => setView("create-step2")}
@@ -1101,7 +1133,10 @@ export default function HomePage() {
                       🎬 GIF incluído
                     </span>
                   )}
-                  {!selectedAnimal && !selectedMusic && gifts.filter(g => g.selected).length === 0 && !selectedGif && (
+                  {audioMessage && (
+                    <MiniAudioPlayer audio={audioMessage} />
+                  )}
+                  {!selectedAnimal && !selectedMusic && gifts.filter(g => g.selected).length === 0 && !selectedGif && !audioMessage && (
                     <span className="text-gray-400 text-sm italic">
                       Nenhum extra adicionado (sua mensagem é o mais importante! 💕)
                     </span>

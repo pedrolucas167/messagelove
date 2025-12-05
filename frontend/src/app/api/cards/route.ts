@@ -27,6 +27,9 @@ export async function POST(request: NextRequest) {
     const mensagem = String(formData.get("mensagem") ?? "");
     const youtubeVideoId = formData.get("youtubeVideoId");
     const youtubeStartTimeRaw = formData.get("youtubeStartTime");
+    const audioDurationRaw = formData.get("audioDuration");
+    
+    // Handle photo upload
     const fileEntry = formData.get("foto");
     let uploadFile = null;
     if (fileEntry && typeof fileEntry === "object" && "arrayBuffer" in fileEntry) {
@@ -35,6 +38,18 @@ export async function POST(request: NextRequest) {
         buffer: Buffer.from(await typedFile.arrayBuffer()),
         mimetype: typedFile.type,
         originalName: typedFile.name,
+      };
+    }
+    
+    // Handle audio upload
+    const audioEntry = formData.get("audio");
+    let audioFile = null;
+    if (audioEntry && typeof audioEntry === "object" && "arrayBuffer" in audioEntry) {
+      const typedAudio = audioEntry as File;
+      audioFile = {
+        buffer: Buffer.from(await typedAudio.arrayBuffer()),
+        mimetype: typedAudio.type,
+        originalName: typedAudio.name,
       };
     }
 
@@ -46,8 +61,10 @@ export async function POST(request: NextRequest) {
         mensagem,
         youtubeVideoId: youtubeVideoId ? String(youtubeVideoId) : null,
         youtubeStartTime: youtubeStartTimeRaw ? Number(youtubeStartTimeRaw) : null,
+        audioDuration: audioDurationRaw ? Number(audioDurationRaw) : null,
       },
-      uploadFile
+      uploadFile,
+      audioFile
     );
 
     return NextResponse.json({ id: card.id, message: "Cartão criado com sucesso!" }, { status: 201 });

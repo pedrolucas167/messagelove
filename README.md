@@ -23,6 +23,7 @@
 - **Cartões 100% Personalizáveis** - Destinatário, mensagem, data do relacionamento
 - **Upload de Fotos** - Imagens armazenadas na **AWS S3** com otimização via `Sharp`
 - **Integração com Músicas** - Adicione trilha sonora às suas memórias
+- **🎙️ Mensagens de Voz** - Grave áudios pessoais de até 60 segundos
 - **GIFs Animados** - Adicione elementos visuais animados
 - **Animais Fofos** - Selecione ilustrações adoráveis
 - **Elementos Interativos** - Corações, confetes, estrelas e mais

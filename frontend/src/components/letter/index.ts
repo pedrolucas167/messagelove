@@ -16,6 +16,7 @@ export {
   AnimatedCard,
 } from "./InteractiveElements";
 export { ShareModal, QRCode, CopyLinkButton } from "./ShareModal";
+export { AudioRecorder, MiniAudioPlayer } from "./AudioRecorder";
 
 // Types
 export type { CuteAnimal } from "./CuteAnimalSelector";
@@ -23,3 +24,4 @@ export type { MusicItem } from "./MusicSelector";
 export type { GiftSuggestion } from "./GiftSelector";
 export type { GifItem } from "./GifSelector";
 export type { Category } from "./CategorySelector";
+export type { AudioMessage } from "./AudioRecorder";

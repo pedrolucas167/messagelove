@@ -19,6 +19,8 @@ export class Card extends Model<InferAttributes<Card>, InferCreationAttributes<C
   declare fotoUrl: string | null;
   declare youtubeVideoId: string | null;
   declare youtubeStartTime: number | null;
+  declare audioUrl: string | null;
+  declare audioDuration: number | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -72,6 +74,18 @@ export function initCardModel() {
         type: DataTypes.INTEGER,
         allowNull: true,
         field: "youtube_start_time",
+        defaultValue: null,
+      },
+      audioUrl: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: "audio_url",
+        defaultValue: null,
+      },
+      audioDuration: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: "audio_duration",
         defaultValue: null,
       },
       createdAt: {

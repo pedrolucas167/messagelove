@@ -85,8 +85,8 @@ export function createApp() {
   });
 
   app.use(compression());
-  app.use(express.json({ limit: "10kb" }));
-  app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+  app.use(express.json({ limit: "16mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "16mb" }));
 
   // Detect suspicious patterns in requests
   app.use(detectSuspiciousActivity);
