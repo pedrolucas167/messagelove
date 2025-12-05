@@ -60,7 +60,7 @@ const uploadFields = upload.fields([
 router.post(
   "/",
   authenticate,
-  uploadFields,
+  uploadFields as any,
   baseValidators,
   validateRequest,
   async (req: Request, res: Response, next: NextFunction) => {
@@ -101,7 +101,7 @@ router.put(
   "/:id",
   authenticate,
   param("id").isUUID().withMessage("ID inválido"),
-  upload.single("foto"),
+  upload.single("foto") as any,
   baseValidators.map((rule) => rule.optional({ values: "falsy" })),
   validateRequest,
   async (req: Request, res: Response, next: NextFunction) => {
