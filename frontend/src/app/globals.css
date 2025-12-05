@@ -139,8 +139,22 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Fix input text color in modals with white background */
-input, select, textarea {
-  color: inherit;
+/* Higher specificity to override Tailwind */
+.bg-white input,
+.bg-white select,
+.bg-white textarea,
+.bg-gray-50 input,
+.bg-gray-50 select,
+.bg-gray-50 textarea,
+div[class*="bg-white"] input,
+div[class*="bg-white"] select,
+div[class*="bg-white"] textarea,
+input.bg-white,
+input.bg-gray-50,
+input[class*="bg-white"],
+input[class*="bg-gray-50"] {
+  color: #111827 !important; /* gray-900 */
+  -webkit-text-fill-color: #111827 !important;
 }
 
 input[type="text"],
@@ -150,12 +164,23 @@ input[type="number"],
 input[type="tel"],
 input[type="url"],
 input[type="search"] {
-  color: #1f2937 !important; /* gray-800 */
+  color: #111827 !important; /* gray-900 */
+  -webkit-text-fill-color: #111827 !important;
 }
 
-input::placeholder {
-  color: #9ca3af !important; /* gray-400 */
-  opacity: 1;
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important; /* gray-500 - more visible */
+  -webkit-text-fill-color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+/* Ensure text is visible in form inputs */
+form input,
+form select,
+form textarea {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
 }
 
 /* Button Hover Effects */
