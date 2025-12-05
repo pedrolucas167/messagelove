@@ -6,6 +6,28 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, email, password } = body ?? {};
 
+    // Validate required fields
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return NextResponse.json(
+        { success: false, error: "Nome é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return NextResponse.json(
+        { success: false, error: "Email inválido" },
+        { status: 400 }
+      );
+    }
+
+    if (!password || typeof password !== "string" || password.length < 6) {
+      return NextResponse.json(
+        { success: false, error: "Senha deve ter pelo menos 6 caracteres" },
+        { status: 400 }
+      );
+    }
+
     const result = await registerUser({ name, email, password });
 
     return NextResponse.json(
