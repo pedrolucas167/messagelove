@@ -19,7 +19,7 @@ services:
       - key: PORT
         value: 10000
       - key: DATABASE_URL
-        value: postgresql://messagelove_user:TbE8PAgBi5EDJkjjPlM7rUqrcOPUkut0@dpg-d3engeumcj7s739fhc2g-a/messagelove
+        value: postgresql://messagelove_user:TbE8PAgBi5EDJkjjPlM7rUqrcOPUkut0@dpg-d3engeumcj7s739fhc2g-a.oregon-postgres.render.com/messagelove
       - key: JWT_SECRET
         value: 4dd0b8c4c65029bf7576c86ee45032da5fb278b6109421ae70958d61c94aeaab
       - key: JWT_EXPIRES_IN

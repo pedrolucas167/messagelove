@@ -32,38 +32,38 @@ const gifCategories = [
 
 const mockGifs: Record<string, GifItem[]> = {
   love: [
-    { id: "l1", url: "https://media.giphy.com/media/placeholder1.gif", preview: "💕", title: "Corações voando" },
-    { id: "l2", url: "https://media.giphy.com/media/placeholder2.gif", preview: "💖", title: "Amor infinito" },
-    { id: "l3", url: "https://media.giphy.com/media/placeholder3.gif", preview: "💗", title: "Coração batendo" },
-    { id: "l4", url: "https://media.giphy.com/media/placeholder4.gif", preview: "💝", title: "Presente de amor" },
+    { id: "l1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDN4OHBrbGN2MmVpMW80Y3BuM2JyNXBraHB0ZDd2Z2RnMjd0Y3VoZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT0xeJpnrWC4XWblEk/giphy.gif", preview: "💕", title: "Corações voando" },
+    { id: "l2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWZ4d2p2NHRqcGxmNXg2OXJ2aWdtbHBxdnVlcW5lZHRiNjI3aWJ2ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYt5jPR6QX5pnqM/giphy.gif", preview: "💖", title: "Amor infinito" },
+    { id: "l3", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHBwOGZlZHNhbThqOXR3d3Nxczl1eHViNHZhNmtwZm5yOWRpcnQ0bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BRv0ThflsHCqDrG/giphy.gif", preview: "💗", title: "Coração batendo" },
+    { id: "l4", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWt6YnR4YTNuaGNkNGZnNmNvYjl6MHF3OGxhZWR6bm4xMTV6ZGN6ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKoWXm3okO1kgHC/giphy.gif", preview: "💝", title: "Presente de amor" },
   ],
   hug: [
-    { id: "h1", url: "https://media.giphy.com/media/placeholder5.gif", preview: "🤗", title: "Abraço apertado" },
-    { id: "h2", url: "https://media.giphy.com/media/placeholder6.gif", preview: "🫂", title: "Abraço carinhoso" },
+    { id: "h1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHlxaWVoMXQxMjRkc3RlZ3NxNmRkbnpnMGl3NnRuaWQ0dWptdGFodyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEdv6sy3ulljPMGdy/giphy.gif", preview: "🤗", title: "Abraço apertado" },
+    { id: "h2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGRvMHk5cTJ0cjdxM25vdHB0d2dwY2Fhdmxka2Fxc3lxbDdnbTRsaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/llmZp6fCVb4ju/giphy.gif", preview: "🫂", title: "Abraço carinhoso" },
   ],
   miss: [
-    { id: "m1", url: "https://media.giphy.com/media/placeholder7.gif", preview: "😢", title: "Sinto sua falta" },
-    { id: "m2", url: "https://media.giphy.com/media/placeholder8.gif", preview: "💭", title: "Pensando em você" },
+    { id: "m1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExODd3cWZ6ZXRldGZ6OWZ5c2NxM3k3dHJiMHFjcWN0am8yZnJjbzh6NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlGQMo9dHNxVc1q/giphy.gif", preview: "😢", title: "Sinto sua falta" },
+    { id: "m2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmZxZHh2aWJlcWRsMmN6bXhxcGl0OWRocTFjaHdmZ2N0MjNjYjRvZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT0GqJfdLcrcpSbZf2/giphy.gif", preview: "💭", title: "Pensando em você" },
   ],
   thank: [
-    { id: "t1", url: "https://media.giphy.com/media/placeholder9.gif", preview: "🙏", title: "Muito obrigado" },
-    { id: "t2", url: "https://media.giphy.com/media/placeholder10.gif", preview: "✨", title: "Gratidão" },
+    { id: "t1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHR5ZXgxNnk1N2p0YnprcXppcWo1ZXV1MnBxMHVxNWxqZHNkZXByOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oz8xIsloV7zOmt81G/giphy.gif", preview: "🙏", title: "Muito obrigado" },
+    { id: "t2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2JpZTBhNXRtMm5sOHBqaWE4bjZ4YTc5bXZwN2s1ZnBibmRqNWo4MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt6KHxJTbXCnSvu/giphy.gif", preview: "✨", title: "Gratidão" },
   ],
   happy: [
-    { id: "ha1", url: "https://media.giphy.com/media/placeholder11.gif", preview: "😊", title: "Super feliz" },
-    { id: "ha2", url: "https://media.giphy.com/media/placeholder12.gif", preview: "🥳", title: "Comemorando" },
+    { id: "ha1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjNtdWZvOXlhNjdsYXFpY2Z5cDQwY2Q2d25ydGJqaG00c3ZyeGM5YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriO0OEd9QIDdllqo/giphy.gif", preview: "😊", title: "Super feliz" },
+    { id: "ha2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWRncWpxZzd4YTJ5OG1xMjFhYmh1YXVhNHN4Y2FsbWF6MHZyYnI1aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/artj92V8o75VPL7AeQ/giphy.gif", preview: "🥳", title: "Comemorando" },
   ],
   congrats: [
-    { id: "c1", url: "https://media.giphy.com/media/placeholder13.gif", preview: "🎉", title: "Parabéns!" },
-    { id: "c2", url: "https://media.giphy.com/media/placeholder14.gif", preview: "🎊", title: "Celebração" },
+    { id: "c1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmFjNnZxcnQ3emZrbXNvYzI5NTRjcXVqcXd5dWpxa3NhYnU1aXM0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g9582DNuQppxC/giphy.gif", preview: "🎉", title: "Parabéns!" },
+    { id: "c2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHV4cjFnNW5wN2J1dWJxNjFoMGNjMWRiZGU2dHQ4NmZ0cWRicWQ5ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26tOZ42Mg6pbTUPHW/giphy.gif", preview: "🎊", title: "Celebração" },
   ],
   heart: [
-    { id: "he1", url: "https://media.giphy.com/media/placeholder15.gif", preview: "❤️", title: "Coração vermelho" },
-    { id: "he2", url: "https://media.giphy.com/media/placeholder16.gif", preview: "💜", title: "Coração roxo" },
+    { id: "he1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExazFscmx4dDk5M2x2ZW9rbWFzdHVhaDJxd2JhaWZlMnF1OXl6anNqOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEjHYibHwRL7mrNyo/giphy.gif", preview: "❤️", title: "Coração vermelho" },
+    { id: "he2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjN3N2xoMDNiZHJhZ3NtYjExMnF4dThsYnFkMzQ1dWxxdmJlY3htaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l4FGjNNXJIq8UMNDq/giphy.gif", preview: "💜", title: "Coração roxo" },
   ],
   cute: [
-    { id: "cu1", url: "https://media.giphy.com/media/placeholder17.gif", preview: "🥰", title: "Tão fofo" },
-    { id: "cu2", url: "https://media.giphy.com/media/placeholder18.gif", preview: "🐱", title: "Gatinho fofo" },
+    { id: "cu1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMG1lZ2hhMThqM2JtcGVibzlhc2h6cWM2OGxhY3V3ajluMjlhOW5oYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif", preview: "🥰", title: "Tão fofo" },
+    { id: "cu2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTRxdnJ4MmNqNnBtd3h4YWt0dDZ2cWk5OW5lZWt4cnVtcGwwN3hqaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSIgIXuZv/giphy.gif", preview: "🐱", title: "Gatinho fofo" },
   ],
 };
 
