@@ -15,7 +15,9 @@ export {
   ConfettiButton,
   AnimatedCard,
 } from "./InteractiveElements";
-export { ShareModal, QRCode, CopyLinkButton } from "./ShareModal";
+export { ShareModal } from "./ShareModal";
+export { default as CopyLinkButton } from "./ShareModal";
+export { default as QRCode } from "./ShareModal";
 export { AudioRecorder, MiniAudioPlayer } from "./AudioRecorder";
 
 // Types
