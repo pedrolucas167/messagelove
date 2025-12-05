@@ -5,6 +5,8 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
+![Jest](https://img.shields.io/badge/Jest-29-C21325?style=for-the-badge&logo=jest)
+![Tests](https://img.shields.io/badge/Tests-68%20passing-success?style=for-the-badge)
 
 > Uma plataforma completa para criar e compartilhar mensagens personalizadas e memoráveis para momentos especiais. 🥰
 
@@ -12,16 +14,37 @@
 
 ## ✨ Funcionalidades
 
-- **Autenticação Segura:** Sistema de registro e login com senhas criptografadas (`bcrypt`) e tokens de sessão (`JWT`).
-- **Dashboard Pessoal:** Painel exclusivo para cada usuário visualizar e gerenciar suas memórias criadas.
-- **Cartões 100% Personalizáveis:** Adicione destinatário, mensagem, data do relacionamento, fotos e músicas personalizadas.
-- **Upload Seguro de Fotos:** Imagens armazenadas na **AWS S3** com processamento via `Sharp` para otimização.
-- **Integração com Músicas:** Adicione trilha sonora às suas memórias.
-- **Contador de Tempo Real:** Mostra há quanto tempo vocês estão juntos (anos, meses, dias).
-- **Preview em Tempo Real:** Visualize o cartão enquanto o cria no formato de celular.
-- **Links Únicos e Compartilháveis:** Cada memória tem um URL único para fácil compartilhamento.
-- **Internacionalização (i18n):** Suporte a 5 idiomas: 🇧🇷 Português, 🇺🇸 English, 🇪🇸 Español, 🇮🇳 हिन्दी, 🇸🇦 العربية (com RTL).
-- **Design Responsivo:** Interface moderna e adaptável a qualquer dispositivo.
+### 🔐 Autenticação
+- **Registro e Login** com senhas criptografadas (`bcrypt`) e tokens de sessão (`JWT`)
+- **Login com Google OAuth 2.0** - Autenticação simplificada via conta Google
+- **Recuperação de Senha** - Sistema completo de reset via email
+
+### 📝 Criação de Cartões
+- **Cartões 100% Personalizáveis** - Destinatário, mensagem, data do relacionamento
+- **Upload de Fotos** - Imagens armazenadas na **AWS S3** com otimização via `Sharp`
+- **Integração com Músicas** - Adicione trilha sonora às suas memórias
+- **GIFs Animados** - Adicione elementos visuais animados
+- **Animais Fofos** - Selecione ilustrações adoráveis
+- **Elementos Interativos** - Corações, confetes, estrelas e mais
+
+### 📱 Experiência do Usuário
+- **Preview em Tempo Real** - Visualize o cartão no formato de celular enquanto cria
+- **Contador de Tempo** - Mostra há quanto tempo vocês estão juntos
+- **Dashboard Pessoal** - Gerencie todas as suas memórias
+
+### 🔗 Compartilhamento
+- **Links Únicos** - Cada memória tem um URL único
+- **QR Code** - Gere QR Codes para compartilhar facilmente
+- **Copiar Link** - Botão de cópia rápida com feedback visual
+
+### 🌍 Internacionalização
+- **5 Idiomas:** 🇧🇷 Português, 🇺🇸 English, 🇪🇸 Español, 🇮🇳 हिन्दी, 🇸🇦 العربية
+- **Suporte RTL** - Layout adaptável para idiomas da direita para esquerda
+
+### 📐 Design
+- **Responsivo** - Interface adaptável a qualquer dispositivo
+- **Tema Escuro/Claro** - Adaptação automática às preferências do sistema
+- **Animações Suaves** - Transições e efeitos visuais elegantes
 
 ---
 
@@ -41,12 +64,22 @@ O projeto utiliza uma arquitetura **monorepo** moderna com separação clara ent
 | **Zod** | 3.23.8 | Validação de schemas |
 | **Sharp** | 0.34.2 | Processamento de imagens |
 
+#### 🧪 Testes
+
+| Tecnologia | Versão | Descrição |
+|------------|--------|-----------|
+| **Jest** | 29.x | Framework de testes JavaScript |
+| **Testing Library** | 16.x | Utilitários de teste para React |
+| **jest-environment-jsdom** | 29.x | Ambiente DOM para testes |
+
 #### Recursos do Frontend
 - ⚡ **Turbopack** para desenvolvimento ultra-rápido
 - 🌍 **Sistema de tradução customizado** com `useSyncExternalStore`
 - 📱 **Preview em tempo real** estilo celular
 - 🎭 **Animações CSS** personalizadas
 - 🔐 **API Routes** para autenticação e gerenciamento de cards
+- 🔑 **Google OAuth 2.0** para login simplificado
+- 📊 **68 testes automatizados** cobrindo traduções, componentes e lógica
 
 ### ⚙️ Backend
 
@@ -108,8 +141,14 @@ messagelove/
 ├── frontend/                 # Next.js 16 App
 │   ├── src/
 │   │   ├── app/             # App Router (pages, layouts, API routes)
+│   │   │   └── api/         # API Routes (auth, cards)
+│   │   ├── components/      # Componentes reutilizáveis
+│   │   │   └── letter/      # Componentes de criação de cartão
 │   │   ├── lib/             # Utilitários (translations, hooks)
-│   │   └── server/          # Server-side (models, services)
+│   │   ├── server/          # Server-side (models, services)
+│   │   └── __tests__/       # Testes Jest
+│   │       ├── utils/       # Testes de utilitários
+│   │       └── components/  # Testes de componentes
 │   └── public/              # Assets estáticos
 │
 ├── backend/                  # Express.js API
@@ -153,6 +192,21 @@ npm install
 npm run dev
 ```
 
+### 🧪 Executar Testes
+
+```bash
+cd frontend
+
+# Rodar todos os testes
+npm test
+
+# Modo watch (re-executa ao salvar)
+npm run test:watch
+
+# Com relatório de cobertura
+npm run test:coverage
+```
+
 ### Variáveis de Ambiente
 
 #### Backend (.env)
@@ -164,6 +218,36 @@ AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 AWS_S3_BUCKET=your-bucket-name
 FRONTEND_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+#### Frontend (.env.local)
+```env
+DATABASE_URL=postgres://user:pass@localhost:5432/messagelove
+JWT_SECRET=your-secret-key-min-32-chars
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+---
+
+## 🧪 Testes
+
+O projeto possui uma suite de testes abrangente com **68 testes automatizados**:
+
+| Categoria | Testes | Descrição |
+|-----------|--------|-----------|
+| **Traduções** | 42 | Sistema de internacionalização completo |
+| **ShareModal** | 6 | Modal de compartilhamento e QR Code |
+| **HomePage** | 10 | Lógica de autenticação e estados |
+| **InteractiveElements** | 10 | Animações e elementos visuais |
+
+```bash
+# Resultado dos testes
+Test Suites: 4 passed, 4 total
+Tests:       68 passed, 68 total
 ```
 
 ---
@@ -177,6 +261,27 @@ FRONTEND_URL=http://localhost:3000
 | Español | `es` | 🇪🇸 |
 | हिन्दी (Hindi) | `hi` | 🇮🇳 |
 | العربية (Arabic) | `ar` | 🇸🇦 |
+
+---
+
+## 🔒 Segurança
+
+Este projeto segue as melhores práticas de segurança:
+
+- **OWASP Top 10** - Proteção contra vulnerabilidades comuns
+- **Rate Limiting** - Proteção contra ataques de força bruta
+- **Helmet** - Headers HTTP seguros
+- **CORS** - Controle de acesso cross-origin configurado
+- **Validação de Entrada** - Sanitização com Zod e express-validator
+- **Senhas Hasheadas** - bcrypt com salt rounds configuráveis
+
+Para reportar vulnerabilidades, veja [SECURITY.md](./SECURITY.md).
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
 
 ---
 
