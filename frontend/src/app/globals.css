@@ -138,6 +138,26 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.5);
 }
 
+/* Fix input text color in modals with white background */
+input, select, textarea {
+  color: inherit;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"] {
+  color: #1f2937 !important; /* gray-800 */
+}
+
+input::placeholder {
+  color: #9ca3af !important; /* gray-400 */
+  opacity: 1;
+}
+
 /* Button Hover Effects */
 .btn-primary {
   background: linear-gradient(135deg, #a855f7, #9333ea);
