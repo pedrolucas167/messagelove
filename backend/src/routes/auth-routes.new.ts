@@ -13,7 +13,7 @@
  * - GET /auth/google/callback - Callback do Google OAuth
  */
 
-import { Router } from 'express';
+import { Router, type CookieOptions } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { authenticate } from '../middlewares/auth.new';
@@ -39,6 +39,25 @@ import {
 } from '../middlewares/security';
 
 const router = Router();
+
+const isProduction = env.NODE_ENV === 'production';
+const AUTH_COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 horas
+
+const authCookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'lax',
+  maxAge: AUTH_COOKIE_MAX_AGE,
+  path: '/',
+};
+
+const userDataCookieOptions: CookieOptions = {
+  httpOnly: false,
+  secure: isProduction,
+  sameSite: 'lax',
+  maxAge: AUTH_COOKIE_MAX_AGE,
+  path: '/',
+};
 
 // Rate limiters
 const authLimiter = rateLimit({
@@ -261,7 +280,8 @@ router.get(
       error?: string;
     };
 
-    const baseUrl = env.FRONTEND_URL || '/';
+    const baseUrl =
+      (env.FRONTEND_URL || `${req.protocol}://${req.get('host') || ''}`).replace(/\/$/, '') || '/';
 
     if (error) {
       logger.warn('Google OAuth error', { error });
@@ -321,8 +341,20 @@ router.get(
         return res.redirect(`${baseUrl}?error=login_failed`);
       }
 
-      // Redirecionar com token
-      return res.redirect(`${baseUrl}${redirectTo}?token=${result.data.token}`);
+      // Define cookies seguras para evitar expor tokens em URLs ou logs
+      res.cookie('auth_token', result.data.token, authCookieOptions);
+      res.cookie(
+        'user_data',
+        JSON.stringify({
+          id: result.data.user.id,
+          email: result.data.user.email,
+          name: result.data.user.name,
+        }),
+        userDataCookieOptions
+      );
+
+      // Redireciona sem token na URL (OWASP A02 - evitar exposição em logs/referers)
+      return res.redirect(`${baseUrl}${redirectTo}`);
     } catch (err) {
       logger.error('Google OAuth callback error', { error: err });
       return res.redirect(`${baseUrl}?error=oauth_failed`);
