@@ -11,7 +11,7 @@ export class EnvValidationError extends Error {
 }
 
 const serverSchema = z.object({
-  DATABASE_URL: z.string().trim().url(),
+  DATABASE_URL: z.string().trim().min(1, "DATABASE_URL é obrigatório"),
   JWT_SECRET: z.string().trim().min(32),
   JWT_EXPIRES_IN: z.string().trim().optional().default("24h"),
   // AWS S3 - suporta ambos os formatos de variável (Render usa AWS_BUCKET_*)
@@ -21,7 +21,7 @@ const serverSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().trim().optional(),
   AWS_BUCKET_NAME: z.string().trim().optional(),
   AWS_S3_BUCKET: z.string().trim().optional(),
-  FRONTEND_URL: z.string().trim().url().optional(),
+  FRONTEND_URL: z.string().trim().optional(),
   GOOGLE_CLIENT_ID: z.string().trim().optional(),
   GOOGLE_CLIENT_SECRET: z.string().trim().optional(),
 });
