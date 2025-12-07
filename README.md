@@ -8,134 +8,134 @@
 ![Jest](https://img.shields.io/badge/Jest-29-C21325?style=for-the-badge&logo=jest)
 ![Tests](https://img.shields.io/badge/Tests-68%20passing-success?style=for-the-badge)
 
-> Uma plataforma completa para criar e compartilhar mensagens personalizadas e memoráveis para momentos especiais. 🥰
+> A complete platform to create and share personalized, memorable messages for special moments. 🥰
 
 ---
 
-## ✨ Funcionalidades
+## ✨ Features
 
-### 🔐 Autenticação
-- **Registro e Login** com senhas criptografadas (`bcrypt`) e tokens de sessão (`JWT`)
-- **Login com Google OAuth 2.0** - Autenticação simplificada via conta Google
-- **Recuperação de Senha** - Sistema completo de reset via email
+### 🔐 Authentication
+- **Registration and Login** with encrypted passwords (`bcrypt`) and session tokens (`JWT`)
+- **Google OAuth 2.0 Login** - Simplified authentication via Google account
+- **Password Recovery** - Complete reset system via email
 
-### 📝 Criação de Cartões
-- **Cartões 100% Personalizáveis** - Destinatário, mensagem, data do relacionamento
-- **Upload de Fotos** - Imagens armazenadas na **AWS S3** com otimização via `Sharp`
-- **Integração com Músicas** - Adicione trilha sonora às suas memórias
-- **🎙️ Mensagens de Voz** - Grave áudios pessoais de até 60 segundos
-- **GIFs Animados** - Adicione elementos visuais animados
-- **Animais Fofos** - Selecione ilustrações adoráveis
-- **Elementos Interativos** - Corações, confetes, estrelas e mais
+### 📝 Card Creation
+- **100% Customizable Cards** - Recipient, message, relationship date
+- **Photo Upload** - Images stored on **AWS S3** with optimization via `Sharp`
+- **Music Integration** - Add a soundtrack to your memories
+- **🎙️ Voice Messages** - Record personal audio up to 60 seconds
+- **Animated GIFs** - Add animated visual elements
+- **Cute Animals** - Select adorable illustrations
+- **Interactive Elements** - Hearts, confetti, stars, and more
 
-### 📱 Experiência do Usuário
-- **Preview em Tempo Real** - Visualize o cartão no formato de celular enquanto cria
-- **Contador de Tempo** - Mostra há quanto tempo vocês estão juntos
-- **Dashboard Pessoal** - Gerencie todas as suas memórias
+### 📱 User Experience
+- **Real-Time Preview** - View the card in phone format while creating
+- **Time Counter** - Shows how long you've been together
+- **Personal Dashboard** - Manage all your memories
 
-### 🔗 Compartilhamento
-- **Links Únicos** - Cada memória tem um URL único
-- **QR Code** - Gere QR Codes para compartilhar facilmente
-- **Copiar Link** - Botão de cópia rápida com feedback visual
+### 🔗 Sharing
+- **Unique Links** - Each memory has a unique URL
+- **QR Code** - Generate QR Codes for easy sharing
+- **Copy Link** - Quick copy button with visual feedback
 
-### 🌍 Internacionalização
-- **5 Idiomas:** 🇧🇷 Português, 🇺🇸 English, 🇪🇸 Español, 🇮🇳 हिन्दी, 🇸🇦 العربية
-- **Suporte RTL** - Layout adaptável para idiomas da direita para esquerda
+### 🌍 Internationalization
+- **5 Languages:** 🇧🇷 Português, 🇺🇸 English, 🇪🇸 Español, 🇮🇳 हिन्दी, 🇸🇦 العربية
+- **RTL Support** - Adaptable layout for right-to-left languages
 
 ### 📐 Design
-- **Responsivo** - Interface adaptável a qualquer dispositivo
-- **Tema Escuro/Claro** - Adaptação automática às preferências do sistema
-- **Animações Suaves** - Transições e efeitos visuais elegantes
+- **Responsive** - Interface adaptable to any device
+- **Dark/Light Theme** - Automatic adaptation to system preferences
+- **Smooth Animations** - Elegant transitions and visual effects
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 🛠️ Tech Stack
 
-O projeto utiliza uma arquitetura **monorepo** moderna com separação clara entre **Frontend** e **Backend**, ambos em **TypeScript**.
+The project uses a modern **monorepo** architecture with clear separation between **Frontend** and **Backend**, both in **TypeScript**.
 
 ### 🎨 Frontend
 
-| Tecnologia | Versão | Descrição |
-|------------|--------|-----------|
-| **Next.js** | 16.0.4 | Framework React com App Router e Turbopack |
-| **React** | 19.2.0 | Biblioteca para interfaces reativas |
-| **TypeScript** | 5.x | Tipagem estática para JavaScript |
-| **Tailwind CSS** | 4.x | Framework CSS utility-first |
-| **date-fns** | 4.1.0 | Manipulação e formatação de datas |
-| **Zod** | 3.23.8 | Validação de schemas |
-| **Sharp** | 0.34.2 | Processamento de imagens |
+| Technology | Version | Description |
+|------------|---------|-------------|
+| **Next.js** | 16.0.4 | React Framework with App Router and Turbopack |
+| **React** | 19.2.0 | Library for reactive interfaces |
+| **TypeScript** | 5.x | Static typing for JavaScript |
+| **Tailwind CSS** | 4.x | Utility-first CSS framework |
+| **date-fns** | 4.1.0 | Date manipulation and formatting |
+| **Zod** | 3.23.8 | Schema validation |
+| **Sharp** | 0.34.2 | Image processing |
 
-#### 🧪 Testes
+#### 🧪 Testing
 
-| Tecnologia | Versão | Descrição |
-|------------|--------|-----------|
-| **Jest** | 29.x | Framework de testes JavaScript |
-| **Testing Library** | 16.x | Utilitários de teste para React |
-| **jest-environment-jsdom** | 29.x | Ambiente DOM para testes |
+| Technology | Version | Description |
+|------------|---------|-------------|
+| **Jest** | 29.x | JavaScript testing framework |
+| **Testing Library** | 16.x | Testing utilities for React |
+| **jest-environment-jsdom** | 29.x | DOM environment for tests |
 
-#### Recursos do Frontend
-- ⚡ **Turbopack** para desenvolvimento ultra-rápido
-- 🌍 **Sistema de tradução customizado** com `useSyncExternalStore`
-- 📱 **Preview em tempo real** estilo celular
-- 🎭 **Animações CSS** personalizadas
-- 🔐 **API Routes** para autenticação e gerenciamento de cards
-- 🔑 **Google OAuth 2.0** para login simplificado
-- 📊 **68 testes automatizados** cobrindo traduções, componentes e lógica
+#### Frontend Features
+- ⚡ **Turbopack** for ultra-fast development
+- 🌍 **Custom translation system** with `useSyncExternalStore`
+- 📱 **Real-time preview** in phone style
+- 🎭 **Custom CSS animations**
+- 🔐 **API Routes** for authentication and card management
+- 🔑 **Google OAuth 2.0** for simplified login
+- 📊 **68 automated tests** covering translations, components, and logic
 
 ### ⚙️ Backend
 
-| Tecnologia | Versão | Descrição |
-|------------|--------|-----------|
-| **Node.js** | 20.x | Runtime JavaScript |
-| **Express.js** | 4.21.2 | Framework web minimalista |
-| **TypeScript** | 5.4.5 | Tipagem estática |
-| **Sequelize** | 6.37.7 | ORM para PostgreSQL |
-| **PostgreSQL** | - | Banco de dados relacional |
+| Technology | Version | Description |
+|------------|---------|-------------|
+| **Node.js** | 20.x | JavaScript runtime |
+| **Express.js** | 4.21.2 | Minimalist web framework |
+| **TypeScript** | 5.4.5 | Static typing |
+| **Sequelize** | 6.37.7 | ORM for PostgreSQL |
+| **PostgreSQL** | - | Relational database |
 
-#### 🔐 Segurança
+#### 🔐 Security
 
-| Pacote | Função |
-|--------|--------|
-| `jsonwebtoken` | Tokens JWT para autenticação |
-| `bcryptjs` | Hash de senhas |
-| `helmet` | Headers HTTP seguros |
-| `cors` | Controle de acesso cross-origin |
-| `express-rate-limit` | Proteção contra brute force |
-| `express-validator` | Validação e sanitização |
-| `zod` | Validação de schemas |
+| Package | Function |
+|---------|----------|
+| `jsonwebtoken` | JWT tokens for authentication |
+| `bcryptjs` | Password hashing |
+| `helmet` | Secure HTTP headers |
+| `cors` | Cross-origin access control |
+| `express-rate-limit` | Brute force protection |
+| `express-validator` | Validation and sanitization |
+| `zod` | Schema validation |
 
-#### 📦 Upload e Storage
+#### 📦 Upload and Storage
 
-| Pacote | Função |
-|--------|--------|
-| `@aws-sdk/client-s3` | Integração com AWS S3 |
-| `multer` | Processamento de uploads |
-| `sharp` | Otimização de imagens |
+| Package | Function |
+|---------|----------|
+| `@aws-sdk/client-s3` | AWS S3 integration |
+| `multer` | Upload processing |
+| `sharp` | Image optimization |
 
-#### 📊 Observabilidade
+#### 📊 Observability
 
-| Pacote | Função |
-|--------|--------|
-| `winston` | Sistema de logging |
-| `compression` | Compressão de respostas |
+| Package | Function |
+|---------|----------|
+| `winston` | Logging system |
+| `compression` | Response compression |
 
-### 🗄️ Banco de Dados
+### 🗄️ Database
 
-- **PostgreSQL** hospedado no Render
-- **Sequelize ORM** para migrations e models
-- **Modelos:** User, Card, PasswordResetToken
+- **PostgreSQL** hosted on Render
+- **Sequelize ORM** for migrations and models
+- **Models:** User, Card, PasswordResetToken
 
-### ☁️ Infraestrutura
+### ☁️ Infrastructure
 
-| Serviço | Uso |
+| Service | Use |
 |---------|-----|
-| **Vercel** | Hospedagem do Frontend |
-| **Render** | Hospedagem do Backend + PostgreSQL |
-| **AWS S3** | Armazenamento de imagens |
+| **Vercel** | Frontend hosting |
+| **Render** | Backend + PostgreSQL hosting |
+| **AWS S3** | Image storage |
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 ```
 messagelove/
@@ -143,72 +143,72 @@ messagelove/
 │   ├── src/
 │   │   ├── app/             # App Router (pages, layouts, API routes)
 │   │   │   └── api/         # API Routes (auth, cards)
-│   │   ├── components/      # Componentes reutilizáveis
-│   │   │   └── letter/      # Componentes de criação de cartão
-│   │   ├── lib/             # Utilitários (translations, hooks)
+│   │   ├── components/      # Reusable components
+│   │   │   └── letter/      # Card creation components
+│   │   ├── lib/             # Utilities (translations, hooks)
 │   │   ├── server/          # Server-side (models, services)
-│   │   └── __tests__/       # Testes Jest
-│   │       ├── utils/       # Testes de utilitários
-│   │       └── components/  # Testes de componentes
-│   └── public/              # Assets estáticos
+│   │   └── __tests__/       # Jest tests
+│   │       ├── utils/       # Utility tests
+│   │       └── components/  # Component tests
+│   └── public/              # Static assets
 │
 ├── backend/                  # Express.js API
 │   ├── src/
-│   │   ├── config/          # Configurações (logger)
+│   │   ├── config/          # Configuration (logger)
 │   │   ├── db/              # Sequelize (models, connection)
 │   │   ├── middlewares/     # Auth, validation, error handling
-│   │   ├── routes/          # Rotas da API
-│   │   ├── services/        # Lógica de negócio
+│   │   ├── routes/          # API routes
+│   │   ├── services/        # Business logic
 │   │   └── types/           # TypeScript definitions
 │   └── migrations/          # Database migrations
 │
-└── public/                   # Landing page estática (legacy)
+└── public/                   # Static landing page (legacy)
 ```
 
 ---
 
-## 🚀 Como Executar
+## 🚀 Getting Started
 
-### Pré-requisitos
+### Prerequisites
 - Node.js 20+
 - PostgreSQL
-- Conta AWS (para S3)
+- AWS account (for S3)
 
-### Instalação
+### Installation
 
 ```bash
-# Clone o repositório
+# Clone the repository
 git clone https://github.com/pedrolucas167/messagelove.git
 cd messagelove
 
 # Backend
 cd backend
 npm install
-cp .env.example .env  # Configure as variáveis
+cp .env.example .env  # Configure variables
 npm run dev
 
-# Frontend (novo terminal)
+# Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-### 🧪 Executar Testes
+### 🧪 Running Tests
 
 ```bash
 cd frontend
 
-# Rodar todos os testes
+# Run all tests
 npm test
 
-# Modo watch (re-executa ao salvar)
+# Watch mode (re-runs on save)
 npm run test:watch
 
-# Com relatório de cobertura
+# With coverage report
 npm run test:coverage
 ```
 
-### Variáveis de Ambiente
+### Environment Variables
 
 #### Backend (.env)
 ```env
@@ -234,60 +234,60 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
 ---
 
-## 🧪 Testes
+## 🧪 Tests
 
-O projeto possui uma suite de testes abrangente com **68 testes automatizados**:
+The project has a comprehensive test suite with **68 automated tests**:
 
-| Categoria | Testes | Descrição |
-|-----------|--------|-----------|
-| **Traduções** | 42 | Sistema de internacionalização completo |
-| **ShareModal** | 6 | Modal de compartilhamento e QR Code |
-| **HomePage** | 10 | Lógica de autenticação e estados |
-| **InteractiveElements** | 10 | Animações e elementos visuais |
+| Category | Tests | Description |
+|----------|-------|-------------|
+| **Translations** | 42 | Complete internationalization system |
+| **ShareModal** | 6 | Sharing modal and QR Code |
+| **HomePage** | 10 | Authentication logic and states |
+| **InteractiveElements** | 10 | Animations and visual elements |
 
 ```bash
-# Resultado dos testes
+# Test results
 Test Suites: 4 passed, 4 total
 Tests:       68 passed, 68 total
 ```
 
 ---
 
-## 🌍 Idiomas Suportados
+## 🌍 Supported Languages
 
-| Idioma | Código | Flag |
-|--------|--------|------|
-| Português (Brasil) | `pt` | 🇧🇷 |
+| Language | Code | Flag |
+|----------|------|------|
+| Portuguese (Brazil) | `pt` | 🇧🇷 |
 | English | `en` | 🇺🇸 |
-| Español | `es` | 🇪🇸 |
-| हिन्दी (Hindi) | `hi` | 🇮🇳 |
-| العربية (Arabic) | `ar` | 🇸🇦 |
+| Spanish | `es` | 🇪🇸 |
+| Hindi | `hi` | 🇮🇳 |
+| Arabic | `ar` | 🇸🇦 |
 
 ---
 
-## 🔒 Segurança
+## 🔒 Security
 
-Este projeto segue as melhores práticas de segurança:
+This project follows security best practices:
 
-- **OWASP Top 10** - Proteção contra vulnerabilidades comuns
-- **Rate Limiting** - Proteção contra ataques de força bruta
-- **Helmet** - Headers HTTP seguros
-- **CORS** - Controle de acesso cross-origin configurado
-- **Validação de Entrada** - Sanitização com Zod e express-validator
-- **Senhas Hasheadas** - bcrypt com salt rounds configuráveis
+- **OWASP Top 10** - Protection against common vulnerabilities
+- **Rate Limiting** - Protection against brute force attacks
+- **Helmet** - Secure HTTP headers
+- **CORS** - Configured cross-origin access control
+- **Input Validation** - Sanitization with Zod and express-validator
+- **Hashed Passwords** - bcrypt with configurable salt rounds
 
-Para reportar vulnerabilidades, veja [SECURITY.md](./SECURITY.md).
+To report vulnerabilities, see [SECURITY.md](./SECURITY.md).
 
 ---
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está sob a licença MIT.
+This project is under the MIT license.
 
 ---
 
 <div align="center">
 
-Feito com 💝 por [**Pedro Marques**](https://pedrolucas167.github.io/portfolio/)
+Made with 💝 by [**Pedro Marques**](https://pedrolucas167.github.io/portfolio/)
 
 </div>

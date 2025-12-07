@@ -1,170 +1,170 @@
-# Segurança - MessageLove
+# Security - MessageLove
 
-## Proteções OWASP Implementadas
+## Implemented OWASP Protections
 
-Este documento descreve as medidas de segurança implementadas seguindo as diretrizes OWASP Top 10 2021.
+This document describes the security measures implemented following OWASP Top 10 2021 guidelines.
 
 ---
 
 ## A01:2021 - Broken Access Control
 
-### ✅ Implementado:
-- **Validação de State OAuth**: Token CSRF gerado e validado em fluxos OAuth
-- **Whitelist de redirects**: Apenas rotas permitidas (`/`, `/dashboard`, `/cards`) são aceitas em redirects OAuth
-- **Autenticação JWT**: Todas as rotas protegidas requerem token válido
-- **Autorização por usuário**: Cards só podem ser acessados/modificados pelo dono
+### ✅ Implemented:
+- **OAuth State Validation**: CSRF token generated and validated in OAuth flows
+- **Redirect Whitelist**: Only allowed routes (`/`, `/dashboard`, `/cards`) are accepted in OAuth redirects
+- **JWT Authentication**: All protected routes require a valid token
+- **Per-User Authorization**: Cards can only be accessed/modified by their owner
 
 ---
 
 ## A02:2021 - Cryptographic Failures
 
-### ✅ Implementado:
-- **HTTPS forçado**: HSTS com 1 ano de duração, incluindo subdomínios
-- **Senhas com bcrypt**: Hash com custo 12
-- **JWT seguro**: Secret de 64 caracteres, expiração em 24h
-- **Tokens de reset seguros**: SHA-256 hash, expiração em 15 minutos
+### ✅ Implemented:
+- **Enforced HTTPS**: HSTS with 1-year duration, including subdomains
+- **Passwords with bcrypt**: Hash with cost 12
+- **Secure JWT**: 64-character secret, 24h expiration
+- **Secure Reset Tokens**: SHA-256 hash, 15-minute expiration
 
 ---
 
 ## A03:2021 - Injection
 
-### ✅ Implementado:
-- **Detecção de padrões suspeitos**: Middleware bloqueia tentativas de XSS/SQL injection
-- **Validação de entrada**: express-validator em todas as rotas
-- **Sanitização de email**: `normalizeEmail()` aplicado
-- **Limite de payload**: 10KB máximo para requisições JSON
-- **Sequelize ORM**: Queries parametrizadas, sem SQL raw
+### ✅ Implemented:
+- **Suspicious Pattern Detection**: Middleware blocks XSS/SQL injection attempts
+- **Input Validation**: express-validator on all routes
+- **Email Sanitization**: `normalizeEmail()` applied
+- **Payload Limit**: 10KB maximum for JSON requests
+- **Sequelize ORM**: Parameterized queries, no raw SQL
 
 ---
 
 ## A04:2021 - Insecure Design
 
-### ✅ Implementado:
-- **Rate limiting agressivo**:
+### ✅ Implemented:
+- **Aggressive Rate Limiting**:
   - Global: 100 req/15min
-  - Login: 5 req/15min (skip em sucesso)
-  - Register: 20 req/hora
-  - Forgot Password: 3 req/hora
-- **Account Lockout**: 5 tentativas falhas = bloqueio de 15 minutos
-- **Logs de segurança**: Todas as tentativas de login são registradas
+  - Login: 5 req/15min (skip on success)
+  - Register: 20 req/hour
+  - Forgot Password: 3 req/hour
+- **Account Lockout**: 5 failed attempts = 15-minute lockout
+- **Security Logs**: All login attempts are recorded
 
 ---
 
 ## A05:2021 - Security Misconfiguration
 
-### ✅ Implementado:
-- **Headers de segurança (Helmet)**:
-  - `Content-Security-Policy`: Política restritiva
+### ✅ Implemented:
+- **Security Headers (Helmet)**:
+  - `Content-Security-Policy`: Restrictive policy
   - `X-Frame-Options: DENY`
   - `X-Content-Type-Options: nosniff`
   - `X-XSS-Protection: 1; mode=block`
   - `Referrer-Policy: strict-origin-when-cross-origin`
-  - `Permissions-Policy`: Camera, mic, geolocation desabilitados
-- **CORS restritivo**: Apenas origens permitidas
-- **X-Powered-By removido**: Não expõe tecnologia
+  - `Permissions-Policy`: Camera, mic, geolocation disabled
+- **Restrictive CORS**: Only allowed origins
+- **X-Powered-By Removed**: Technology not exposed
 
 ---
 
 ## A06:2021 - Vulnerable and Outdated Components
 
-### Recomendações:
-- Executar `npm audit` regularmente
-- Manter dependências atualizadas
-- Usar `npm audit fix` para correções automáticas
+### Recommendations:
+- Run `npm audit` regularly
+- Keep dependencies updated
+- Use `npm audit fix` for automatic fixes
 
 ---
 
 ## A07:2021 - Identification and Authentication Failures
 
-### ✅ Implementado:
-- **Senha forte obrigatória**: Mín. 8 chars, maiúscula, minúscula, número
-- **Account lockout**: Bloqueio após 5 tentativas falhas
-- **Tokens JWT seguros**: Expiração, verificação de assinatura
-- **OAuth seguro**: State validation, email verification required
-- **Password reset seguro**: Token único, expira em 15min, uso único
+### ✅ Implemented:
+- **Strong Password Required**: Min. 8 chars, uppercase, lowercase, number
+- **Account Lockout**: Lockout after 5 failed attempts
+- **Secure JWT Tokens**: Expiration, signature verification
+- **Secure OAuth**: State validation, email verification required
+- **Secure Password Reset**: Unique token, expires in 15min, single use
 
 ---
 
 ## A08:2021 - Software and Data Integrity Failures
 
-### ✅ Implementado:
-- **Validação de state OAuth**: Previne CSRF em fluxos de autenticação
-- **Verificação de email Google**: Só aceita emails verificados
+### ✅ Implemented:
+- **OAuth State Validation**: Prevents CSRF in authentication flows
+- **Google Email Verification**: Only accepts verified emails
 
 ---
 
 ## A09:2021 - Security Logging and Monitoring
 
-### ✅ Implementado:
-- **Winston logger**: Logs estruturados com níveis
-- **Logs de segurança**:
-  - Tentativas de login (sucesso/falha)
+### ✅ Implemented:
+- **Winston Logger**: Structured logs with levels
+- **Security Logs**:
+  - Login attempts (success/failure)
   - Account lockouts
-  - Requisições suspeitas bloqueadas
-  - Erros de autenticação
-  - CORS bloqueados
-- **Request ID**: Rastreabilidade de requisições
+  - Blocked suspicious requests
+  - Authentication errors
+  - Blocked CORS
+- **Request ID**: Request traceability
 
 ---
 
 ## A10:2021 - Server-Side Request Forgery
 
-### ✅ Implementado:
-- **URLs controladas**: Apenas endpoints Google OAuth predefinidos
-- **Validação de redirect**: Whitelist de URLs permitidas
+### ✅ Implemented:
+- **Controlled URLs**: Only predefined Google OAuth endpoints
+- **Redirect Validation**: Whitelist of allowed URLs
 
 ---
 
-## Configuração de Rate Limits
+## Rate Limit Configuration
 
-| Endpoint | Limite | Janela |
-|----------|--------|--------|
+| Endpoint | Limit | Window |
+|----------|-------|--------|
 | Global | 100 | 15 min |
 | Login | 5 | 15 min |
-| Register | 20 | 1 hora |
-| Forgot Password | 3 | 1 hora |
+| Register | 20 | 1 hour |
+| Forgot Password | 3 | 1 hour |
 | Google OAuth | 10 | 15 min |
 
 ---
 
-## Variáveis de Ambiente Sensíveis
+## Sensitive Environment Variables
 
 ```env
-JWT_SECRET=<64+ caracteres aleatórios>
-GOOGLE_CLIENT_SECRET=<secret do Google Cloud>
-AWS_SECRET_ACCESS_KEY=<secret da AWS>
-DATABASE_URL=<string de conexão com senha>
+JWT_SECRET=<64+ random characters>
+GOOGLE_CLIENT_SECRET=<Google Cloud secret>
+AWS_SECRET_ACCESS_KEY=<AWS secret>
+DATABASE_URL=<connection string with password>
 ```
 
-⚠️ **NUNCA** commitar arquivos `.env` com secrets reais!
+⚠️ **NEVER** commit `.env` files with real secrets!
 
 ---
 
-## Checklist de Deploy
+## Deploy Checklist
 
-- [ ] Verificar que `.env` está no `.gitignore`
-- [ ] Usar HTTPS em produção
-- [ ] Configurar variáveis de ambiente no Render/Vercel
-- [ ] Executar `npm audit` antes do deploy
-- [ ] Verificar logs após deploy
-- [ ] Testar rate limiting em produção
-
----
-
-## Monitoramento Recomendado
-
-1. **Alertas para**:
-   - Múltiplos account lockouts do mesmo IP
-   - Picos de requisições 429 (rate limit)
-   - Erros 500 frequentes
-   - Tentativas de login falhas em massa
-
-2. **Métricas a acompanhar**:
-   - Taxa de sucesso de login
-   - Tempo de resposta das APIs
-   - Uso de memória/CPU
-   - Erros por endpoint
+- [ ] Verify that `.env` is in `.gitignore`
+- [ ] Use HTTPS in production
+- [ ] Configure environment variables on Render/Vercel
+- [ ] Run `npm audit` before deploy
+- [ ] Check logs after deploy
+- [ ] Test rate limiting in production
 
 ---
 
-*Última atualização: Novembro 2025*
+## Recommended Monitoring
+
+1. **Alerts for**:
+   - Multiple account lockouts from the same IP
+   - Spikes in 429 requests (rate limit)
+   - Frequent 500 errors
+   - Mass failed login attempts
+
+2. **Metrics to track**:
+   - Login success rate
+   - API response time
+   - Memory/CPU usage
+   - Errors per endpoint
+
+---
+
+*Last updated: December 2025*
