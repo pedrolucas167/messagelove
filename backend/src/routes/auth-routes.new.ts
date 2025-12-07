@@ -1,17 +1,3 @@
-/**
- * Auth Routes - REST Level 2 Maturity
- * 
- * Endpoints:
- * - POST /auth/register - Registra novo usuário
- * - POST /auth/login - Faz login
- * - POST /auth/logout - Faz logout (client-side)
- * - POST /auth/refresh - Renova token
- * - POST /auth/forgot-password - Solicita reset de senha
- * - POST /auth/reset-password - Reseta senha com token
- * - GET /auth/verify - Verifica token atual
- * - GET /auth/google - Inicia OAuth com Google
- * - GET /auth/google/callback - Callback do Google OAuth
- */
 
 import { Router, type CookieOptions } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -59,7 +45,6 @@ const userDataCookieOptions: CookieOptions = {
   path: '/',
 };
 
-// Rate limiters
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -86,12 +71,7 @@ const forgotLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/**
- * POST /auth/register
- * Registra um novo usuário
- * 
- * Response: 201 Created | 400 Bad Request | 409 Conflict
- */
+
 router.post(
   '/register',
   authLimiter,
@@ -148,12 +128,7 @@ router.post(
   })
 );
 
-/**
- * GET /auth/verify
- * Verifica se o token atual é válido
- * 
- * Response: 200 OK | 401 Unauthorized
- */
+
 router.get('/verify', authenticate, (req, res) => {
   return res.status(200).json({
     success: true,
@@ -161,12 +136,7 @@ router.get('/verify', authenticate, (req, res) => {
   });
 });
 
-/**
- * POST /auth/refresh
- * Renova o token de autenticação
- * 
- * Response: 200 OK | 401 Unauthorized
- */
+
 router.post('/refresh', authenticate, (req, res) => {
   const token = authService.generateToken(req.userId!);
   
@@ -176,12 +146,7 @@ router.post('/refresh', authenticate, (req, res) => {
   });
 });
 
-/**
- * POST /auth/forgot-password
- * Solicita reset de senha (envia email)
- * 
- * Response: 200 OK (sempre, por segurança)
- */
+
 router.post(
   '/forgot-password',
   forgotLimiter,
@@ -194,7 +159,7 @@ router.post(
     // Sempre retorna sucesso (não revela se email existe)
     if (result.success && result.data) {
       logger.info('Link de reset gerado', { email: body.email });
-      // TODO: Enviar email com result.data.resetUrl
+    
     }
 
     return res.status(200).json({
@@ -204,12 +169,7 @@ router.post(
   })
 );
 
-/**
- * POST /auth/reset-password
- * Reseta a senha usando token
- * 
- * Response: 200 OK | 400 Bad Request
- */
+
 router.post(
   '/reset-password',
   forgotLimiter,
@@ -232,10 +192,7 @@ router.post(
   })
 );
 
-/**
- * GET /auth/google
- * Inicia fluxo OAuth com Google
- */
+
 router.get('/google', authLimiter, (req, res) => {
   const clientId = env.GOOGLE_CLIENT_ID;
 
