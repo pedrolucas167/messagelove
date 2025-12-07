@@ -9,6 +9,9 @@ export type CardPayload = {
   mensagem: string;
   youtubeVideoId?: string | null;
   youtubeStartTime?: number | null;
+  spotifyUri?: string | null;
+  musicType?: string | null;
+  relationshipDate?: Date | null;
   audioDuration?: number | null;
 };
 
@@ -51,6 +54,9 @@ export async function createCard(
     fotoUrl,
     youtubeVideoId: payload.youtubeVideoId || null,
     youtubeStartTime: payload.youtubeStartTime ?? null,
+    spotifyUri: payload.spotifyUri || null,
+    musicType: payload.musicType || null,
+    relationshipDate: payload.relationshipDate || null,
     audioUrl,
     audioDuration: payload.audioDuration ?? null,
   });

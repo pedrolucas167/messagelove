@@ -19,6 +19,7 @@ export { ShareModal } from "./ShareModal";
 export { default as CopyLinkButton } from "./ShareModal";
 export { default as QRCode } from "./ShareModal";
 export { AudioRecorder, MiniAudioPlayer } from "./AudioRecorder";
+export { RelationshipCounter } from "./RelationshipCounter";
 
 // Types
 export type { CuteAnimal } from "./CuteAnimalSelector";

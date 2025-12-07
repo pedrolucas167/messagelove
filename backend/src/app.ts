@@ -3,10 +3,10 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
-import { authRouter } from "./routes/auth-routes";
-import { cardRouter } from "./routes/card-routes";
+import { authRouter } from "./routes/auth-routes.new";
+import { cardRouter } from "./routes/card-routes.new";
 import { logger } from "./config/logger";
-import { logErrors, globalErrorHandler } from "./middlewares/error-handler";
+import { logErrors, globalErrorHandler, notFoundHandler } from "./middlewares/error-handler.new";
 import { detectSuspiciousActivity, addRequestId } from "./middlewares/security";
 
 export const allowedOrigins = [
@@ -129,18 +129,16 @@ export function createApp() {
       status: "online",
       message: "MessageLove API",
       version: "2.0.0",
+      documentation: "/api/docs",
       // Don't expose environment in production
       ...(process.env.NODE_ENV !== "production" && { environment: process.env.NODE_ENV }),
     });
   });
 
-  app.use((req, res, next) => {
-    if (req.method === "OPTIONS") return next();
-    res.status(404).json({
-      error: "Endpoint não encontrado",
-    });
-  });
+  // 404 handler (REST Level 2)
+  app.use(notFoundHandler);
 
+  // Error handlers
   app.use(logErrors);
   app.use(globalErrorHandler);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 
 export interface GifItem {
   id: string;
@@ -12,232 +12,291 @@ export interface GifItem {
 interface GifSelectorProps {
   selectedGif: GifItem | null;
   onSelect: (gif: GifItem | null) => void;
-  translations: {
-    title: string;
-    subtitle: string;
-    searchPlaceholder: string;
+  translations?: {
+    title?: string;
+    subtitle?: string;
+    searchPlaceholder?: string;
   };
 }
 
-const gifCategories = [
-  { id: "love", emoji: "💕", label: "Amor" },
-  { id: "hug", emoji: "🤗", label: "Abraço" },
-  { id: "miss", emoji: "💭", label: "Saudade" },
-  { id: "thank", emoji: "🙏", label: "Obrigado" },
-  { id: "happy", emoji: "😊", label: "Feliz" },
-  { id: "congrats", emoji: "🎉", label: "Parabéns" },
-  { id: "heart", emoji: "❤️", label: "Coração" },
-  { id: "cute", emoji: "🥰", label: "Fofo" },
+// GIPHY API - use your own key for production
+const GIPHY_API_KEY = process.env.NEXT_PUBLIC_GIPHY_API_KEY || "GlVGYHkr3WSBnllca54iNt0yFbjz7L65";
+
+interface GiphyImage {
+  url: string;
+  width: string;
+  height: string;
+}
+
+interface GiphyGif {
+  id: string;
+  title: string;
+  images: {
+    original: GiphyImage;
+    fixed_height: GiphyImage;
+    fixed_width_small: GiphyImage;
+    downsized: GiphyImage;
+  };
+}
+
+// Categories
+const categories = [
+  { id: "love", emoji: "💕", label: "Amor", query: "love heart romantic" },
+  { id: "kiss", emoji: "💋", label: "Beijo", query: "kiss" },
+  { id: "hug", emoji: "🤗", label: "Abraço", query: "hug" },
+  { id: "miss", emoji: "💭", label: "Saudade", query: "miss you" },
+  { id: "cute", emoji: "🥰", label: "Fofo", query: "cute kawaii" },
+  { id: "happy", emoji: "😊", label: "Feliz", query: "happy excited" },
+  { id: "thanks", emoji: "🙏", label: "Obrigado", query: "thank you" },
+  { id: "congrats", emoji: "🎉", label: "Parabéns", query: "congratulations party" },
+  { id: "sorry", emoji: "😔", label: "Desculpa", query: "sorry apologize" },
+  { id: "flowers", emoji: "🌹", label: "Flores", query: "flowers rose" },
+  { id: "animals", emoji: "🐱", label: "Animais", query: "cute cat dog" },
+  { id: "hearts", emoji: "❤️", label: "Corações", query: "hearts" },
+  { id: "funny", emoji: "😂", label: "Engraçado", query: "funny lol" },
+  { id: "dance", emoji: "💃", label: "Dança", query: "dance dancing" },
+  { id: "reaction", emoji: "😮", label: "Reação", query: "reaction wow omg" },
 ];
 
-const mockGifs: Record<string, GifItem[]> = {
-  love: [
-    { id: "l1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDN4OHBrbGN2MmVpMW80Y3BuM2JyNXBraHB0ZDd2Z2RnMjd0Y3VoZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT0xeJpnrWC4XWblEk/giphy.gif", preview: "💕", title: "Corações voando" },
-    { id: "l2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWZ4d2p2NHRqcGxmNXg2OXJ2aWdtbHBxdnVlcW5lZHRiNjI3aWJ2ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYt5jPR6QX5pnqM/giphy.gif", preview: "💖", title: "Amor infinito" },
-    { id: "l3", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHBwOGZlZHNhbThqOXR3d3Nxczl1eHViNHZhNmtwZm5yOWRpcnQ0bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BRv0ThflsHCqDrG/giphy.gif", preview: "💗", title: "Coração batendo" },
-    { id: "l4", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWt6YnR4YTNuaGNkNGZnNmNvYjl6MHF3OGxhZWR6bm4xMTV6ZGN6ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKoWXm3okO1kgHC/giphy.gif", preview: "💝", title: "Presente de amor" },
-  ],
-  hug: [
-    { id: "h1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHlxaWVoMXQxMjRkc3RlZ3NxNmRkbnpnMGl3NnRuaWQ0dWptdGFodyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEdv6sy3ulljPMGdy/giphy.gif", preview: "🤗", title: "Abraço apertado" },
-    { id: "h2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGRvMHk5cTJ0cjdxM25vdHB0d2dwY2Fhdmxka2Fxc3lxbDdnbTRsaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/llmZp6fCVb4ju/giphy.gif", preview: "🫂", title: "Abraço carinhoso" },
-  ],
-  miss: [
-    { id: "m1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExODd3cWZ6ZXRldGZ6OWZ5c2NxM3k3dHJiMHFjcWN0am8yZnJjbzh6NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlGQMo9dHNxVc1q/giphy.gif", preview: "😢", title: "Sinto sua falta" },
-    { id: "m2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmZxZHh2aWJlcWRsMmN6bXhxcGl0OWRocTFjaHdmZ2N0MjNjYjRvZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT0GqJfdLcrcpSbZf2/giphy.gif", preview: "💭", title: "Pensando em você" },
-  ],
-  thank: [
-    { id: "t1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHR5ZXgxNnk1N2p0YnprcXppcWo1ZXV1MnBxMHVxNWxqZHNkZXByOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oz8xIsloV7zOmt81G/giphy.gif", preview: "🙏", title: "Muito obrigado" },
-    { id: "t2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2JpZTBhNXRtMm5sOHBqaWE4bjZ4YTc5bXZwN2s1ZnBibmRqNWo4MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt6KHxJTbXCnSvu/giphy.gif", preview: "✨", title: "Gratidão" },
-  ],
-  happy: [
-    { id: "ha1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjNtdWZvOXlhNjdsYXFpY2Z5cDQwY2Q2d25ydGJqaG00c3ZyeGM5YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriO0OEd9QIDdllqo/giphy.gif", preview: "😊", title: "Super feliz" },
-    { id: "ha2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWRncWpxZzd4YTJ5OG1xMjFhYmh1YXVhNHN4Y2FsbWF6MHZyYnI1aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/artj92V8o75VPL7AeQ/giphy.gif", preview: "🥳", title: "Comemorando" },
-  ],
-  congrats: [
-    { id: "c1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmFjNnZxcnQ3emZrbXNvYzI5NTRjcXVqcXd5dWpxa3NhYnU1aXM0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g9582DNuQppxC/giphy.gif", preview: "🎉", title: "Parabéns!" },
-    { id: "c2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHV4cjFnNW5wN2J1dWJxNjFoMGNjMWRiZGU2dHQ4NmZ0cWRicWQ5ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26tOZ42Mg6pbTUPHW/giphy.gif", preview: "🎊", title: "Celebração" },
-  ],
-  heart: [
-    { id: "he1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExazFscmx4dDk5M2x2ZW9rbWFzdHVhaDJxd2JhaWZlMnF1OXl6anNqOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEjHYibHwRL7mrNyo/giphy.gif", preview: "❤️", title: "Coração vermelho" },
-    { id: "he2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjN3N2xoMDNiZHJhZ3NtYjExMnF4dThsYnFkMzQ1dWxxdmJlY3htaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l4FGjNNXJIq8UMNDq/giphy.gif", preview: "💜", title: "Coração roxo" },
-  ],
-  cute: [
-    { id: "cu1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMG1lZ2hhMThqM2JtcGVibzlhc2h6cWM2OGxhY3V3ajluMjlhOW5oYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif", preview: "🥰", title: "Tão fofo" },
-    { id: "cu2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTRxdnJ4MmNqNnBtd3h4YWt0dDZ2cWk5OW5lZWt4cnVtcGwwN3hqaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSIgIXuZv/giphy.gif", preview: "🐱", title: "Gatinho fofo" },
-  ],
-};
-
-export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelectorProps) {
+export function GifSelector({ selectedGif, onSelect, translations }: GifSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<GifItem[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showEmojiGrid, setShowEmojiGrid] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string>("love");
+  const [gifs, setGifs] = useState<GifItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleSearch = useCallback(async (query: string) => {
+  // Default translations
+  const t = {
+    title: translations?.title || "🎬 GIFs Animados",
+    subtitle: translations?.subtitle || "Adicione um GIF divertido",
+    searchPlaceholder: translations?.searchPlaceholder || "Buscar GIFs...",
+  };
+
+  // Fetch GIFs from GIPHY API
+  const fetchGifs = useCallback(async (query: string, newOffset = 0) => {
+    console.log("[GifSelector] fetchGifs called with:", query, newOffset);
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        api_key: GIPHY_API_KEY,
+        q: query,
+        limit: "30",
+        offset: newOffset.toString(),
+        rating: "pg-13",
+      });
+
+      const url = `https://api.giphy.com/v1/gifs/search?${params}`;
+      console.log("[GifSelector] Fetching:", url);
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      console.log("[GifSelector] Response status:", response.status, "Data count:", data?.data?.length);
+
+      const newGifs: GifItem[] = (data.data || []).map((gif: GiphyGif) => ({
+        id: gif.id,
+        url: gif.images.downsized?.url || gif.images.original.url,
+        preview: gif.images.fixed_width_small?.url || gif.images.fixed_height.url,
+        title: gif.title || "GIF",
+      }));
+
+      if (newOffset === 0) {
+        setGifs(newGifs);
+      } else {
+        setGifs(prev => [...prev, ...newGifs]);
+      }
+      setOffset(newOffset + 30);
+    } catch (error) {
+      console.error("Error fetching GIFs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Load initial category on mount
+  useEffect(() => {
+    const cat = categories.find(c => c.id === activeCategory);
+    if (cat) {
+      fetchGifs(cat.query, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Debounced search
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    setShowEmojiGrid(false);
+    setOffset(0);
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
     if (query.length < 2) {
-      setSearchResults([]);
+      const cat = categories.find(c => c.id === activeCategory);
+      if (cat) {
+        fetchGifs(cat.query, 0);
+      }
       return;
     }
 
-    setIsSearching(true);
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchGifs(query, 0);
+    }, 300);
+  }, [activeCategory, fetchGifs]);
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    const allGifs = Object.values(mockGifs).flat();
-    const filtered = allGifs.filter((gif) =>
-      gif.title.toLowerCase().includes(query.toLowerCase())
-    );
-
-    setSearchResults(filtered);
-    setIsSearching(false);
-  }, []);
-
+  // Category click
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
-    setShowEmojiGrid(false);
-    setSearchResults(mockGifs[categoryId] || []);
+    setSearchQuery("");
+    setOffset(0);
+    const cat = categories.find(c => c.id === categoryId);
+    if (cat) {
+      fetchGifs(cat.query, 0);
+    }
   };
 
-  const emojiAnimations = [
-    "💕", "💖", "💗", "💝", "💘", "💓", "💞", "💜",
-    "🥰", "😍", "🤗", "💫", "✨", "🌟", "⭐", "💐",
-    "🌸", "🌺", "🌹", "🦋", "🐰", "🐻", "🐱", "🦊",
-  ];
+  // Load more on scroll
+  const handleScroll = useCallback(() => {
+    if (!containerRef.current || isLoading) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    if (scrollTop + clientHeight >= scrollHeight - 100) {
+      const query = searchQuery || categories.find(c => c.id === activeCategory)?.query || "love";
+      fetchGifs(query, offset);
+    }
+  }, [isLoading, searchQuery, activeCategory, offset, fetchGifs]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* Header */}
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2">
-          <span className="text-2xl">🎬</span>
-          {t.title}
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800">{t.title}</h3>
         <p className="text-sm text-gray-500">{t.subtitle}</p>
       </div>
 
+      {/* Search bar */}
       <div className="relative">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
-          onFocus={() => setShowEmojiGrid(false)}
           placeholder={t.searchPlaceholder}
-          className="w-full px-5 py-3 pl-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
+          className="w-full px-5 py-3 pl-12 pr-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all text-gray-700"
         />
-        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-          🔍
-        </span>
-        {isSearching && (
-          <span className="absolute right-4 top-1/2 transform -translate-y-1/2">
-            <svg
-              className="animate-spin h-5 w-5 text-purple-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-          </span>
+        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl">🔍</span>
+        {searchQuery && (
+          <button
+            onClick={() => handleSearch("")}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
         )}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2">
-        {gifCategories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategoryClick(cat.id)}
-            className={`
-              px-4 py-2 rounded-full text-sm font-medium
-              transition-all duration-200
-              flex items-center gap-1.5
-              ${activeCategory === cat.id
-                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }
-            `}
-          >
-            <span>{cat.emoji}</span>
-            <span>{cat.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {showEmojiGrid && !searchQuery && (
-        <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl">
-          {emojiAnimations.map((emoji, index) => (
-            <div
-              key={index}
-              className="aspect-square flex items-center justify-center text-2xl"
-              style={{
-                animation: `bounce ${0.5 + (index % 4) * 0.2}s ease-in-out infinite`,
-                animationDelay: `${index * 0.05}s`,
-              }}
-            >
-              {emoji}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {searchResults.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {searchResults.map((gif) => (
+      {/* Categories */}
+      <div className="overflow-x-auto pb-2 -mx-2 px-2">
+        <div className="flex gap-2 min-w-max">
+          {categories.map((cat) => (
             <button
-              key={gif.id}
-              onClick={() => onSelect(gif)}
+              key={cat.id}
+              onClick={() => handleCategoryClick(cat.id)}
               className={`
-                aspect-square rounded-xl
-                flex items-center justify-center
-                text-4xl
-                transition-all duration-200
-                border-2
-                ${selectedGif?.id === gif.id
-                  ? "border-purple-400 bg-purple-50 shadow-lg scale-105"
-                  : "border-gray-200 bg-white hover:border-purple-200 hover:scale-105"
+                px-3 py-1.5 rounded-full text-sm font-medium
+                transition-all duration-200 whitespace-nowrap
+                flex items-center gap-1.5
+                ${activeCategory === cat.id && !searchQuery
+                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md scale-105"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }
               `}
-              title={gif.title}
             >
-              <span className="group-hover:animate-bounce">{gif.preview}</span>
+              <span>{cat.emoji}</span>
+              <span className="hidden sm:inline">{cat.label}</span>
             </button>
           ))}
         </div>
-      )}
+      </div>
 
-      {searchQuery && !isSearching && searchResults.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <span className="text-4xl mb-2 block">😢</span>
-          <p>Nenhum GIF encontrado para &ldquo;{searchQuery}&rdquo;</p>
-          <p className="text-sm">Tente outras palavras como: amor, abraço, saudade</p>
-        </div>
-      )}
+      {/* GIF Grid */}
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="max-h-[400px] overflow-y-auto rounded-xl bg-gray-50 p-2"
+      >
+        {isLoading && gifs.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin" />
+              <span className="text-sm text-gray-500">Carregando GIFs...</span>
+            </div>
+          </div>
+        ) : gifs.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <span className="text-4xl mb-3 block">😢</span>
+            <p>Nenhum GIF encontrado</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {gifs.map((gif) => (
+              <button
+                key={gif.id}
+                onClick={() => onSelect(gif)}
+                className={`
+                  relative aspect-square rounded-lg overflow-hidden
+                  transition-all duration-200 group
+                  ${selectedGif?.id === gif.id
+                    ? "ring-4 ring-purple-500 scale-95"
+                    : "hover:scale-105 hover:shadow-lg"
+                  }
+                `}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={gif.preview}
+                  alt={gif.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                {selectedGif?.id === gif.id && (
+                  <div className="absolute top-2 right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">✓</span>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
+        {isLoading && gifs.length > 0 && (
+          <div className="flex justify-center py-4">
+            <div className="w-6 h-6 border-3 border-purple-200 border-t-purple-500 rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+
+      {/* Selected GIF preview */}
       {selectedGif && (
         <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4">
           <div className="flex items-center gap-4">
-            <div className="text-5xl">{selectedGif.preview}</div>
-            <div className="flex-1">
-              <div className="font-medium text-gray-800">{selectedGif.title}</div>
-              <div className="text-sm text-gray-500">GIF selecionado</div>
+            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedGif.preview}
+                alt={selectedGif.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-gray-800 truncate">{selectedGif.title}</div>
+              <div className="text-sm text-gray-500">GIF selecionado ✨</div>
             </div>
             <button
               onClick={() => onSelect(null)}
-              className="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all"
+              className="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all flex-shrink-0"
             >
               ✕
             </button>
@@ -245,8 +304,9 @@ export function GifSelector({ selectedGif, onSelect, translations: t }: GifSelec
         </div>
       )}
 
-      <div className="text-center text-xs text-gray-400">
-        GIFs powered by GIPHY
+      {/* Attribution */}
+      <div className="flex items-center justify-center text-xs text-gray-400">
+        <span>Powered by GIPHY</span>
       </div>
     </div>
   );

@@ -4,6 +4,31 @@ import React from "react";
 
 type PaperStyle = "classic" | "romantic" | "vintage" | "modern" | "handwritten";
 
+interface MusicItem {
+  id: string;
+  title: string;
+  artist?: string;
+  thumbnail?: string;
+  url: string;
+  type: "youtube" | "spotify";
+  spotifyUri?: string;
+  startTime?: number;
+  endTime?: number;
+  autoplay?: boolean;
+}
+
+interface GifItem {
+  id: string;
+  url: string;
+  title?: string;
+}
+
+interface AudioMessage {
+  blob: Blob;
+  duration: number;
+  url: string;
+}
+
 interface IntimateLetterProps {
   from: string;
   to: string;
@@ -11,6 +36,10 @@ interface IntimateLetterProps {
   date?: string;
   paperStyle?: PaperStyle;
   selectedAnimal?: string;
+  selectedMusic?: MusicItem | null;
+  selectedGif?: GifItem | null;
+  audioMessage?: AudioMessage | null;
+  relationshipDate?: Date | null;
   className?: string;
 }
 
@@ -45,6 +74,10 @@ export function IntimateLetter({
   date,
   paperStyle = "classic",
   selectedAnimal,
+  selectedMusic,
+  selectedGif,
+  audioMessage,
+  relationshipDate,
   className = "",
 }: IntimateLetterProps) {
   const formattedDate = date || new Date().toLocaleDateString("pt-BR", {
@@ -52,6 +85,27 @@ export function IntimateLetter({
     month: "long",
     year: "numeric",
   });
+
+  // Calculate relationship duration
+  const getRelationshipDuration = () => {
+    if (!relationshipDate) return null;
+    const now = new Date();
+    const start = new Date(relationshipDate);
+    const diff = now.getTime() - start.getTime();
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const years = Math.floor(days / 365);
+    const months = Math.floor((days % 365) / 30);
+    const remainingDays = days % 30;
+    
+    if (years > 0) {
+      return `${years} ano${years > 1 ? 's' : ''}, ${months} mes${months !== 1 ? 'es' : ''} e ${remainingDays} dia${remainingDays !== 1 ? 's' : ''}`;
+    } else if (months > 0) {
+      return `${months} mes${months !== 1 ? 'es' : ''} e ${remainingDays} dia${remainingDays !== 1 ? 's' : ''}`;
+    } else {
+      return `${days} dia${days !== 1 ? 's' : ''}`;
+    }
+  };
 
   return (
     <div className={`relative ${className}`}>
@@ -70,6 +124,7 @@ export function IntimateLetter({
           shadow-xl
           transition-all duration-300
           hover:shadow-2xl hover:-translate-y-1
+          text-gray-800
         `}
       >
         <div className="absolute top-0 right-0 w-12 h-12 overflow-hidden">
@@ -131,6 +186,162 @@ export function IntimateLetter({
 
           <span className="absolute -right-4 bottom-0 text-5xl opacity-20 select-none">&rdquo;</span>
         </div>
+
+        {/* Extras Section - Only show if there are extras */}
+        {(selectedGif || relationshipDate || selectedMusic || audioMessage) && (
+          <div className="mt-6 pt-6 border-t border-gray-200/50 space-y-4">
+            
+            {/* GIF Preview */}
+            {selectedGif && (
+              <div className="flex justify-center">
+                <div className="relative rounded-xl overflow-hidden shadow-md bg-gray-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={selectedGif.url}
+                    alt={selectedGif.title || "GIF"}
+                    className="max-h-40 w-auto rounded-xl"
+                  />
+                  <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
+                    GIF
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Relationship Counter Preview */}
+            {relationshipDate && (
+              <div className="mx-auto max-w-fit">
+                <div className="bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-2xl px-5 py-3">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <span className="text-lg">💑</span>
+                      <span className="text-pink-600 font-semibold">Nosso tempo juntos</span>
+                      <span className="text-lg">💕</span>
+                    </div>
+                    <div className="text-pink-700 font-bold text-lg">
+                      {getRelationshipDuration()}
+                    </div>
+                    <div className="text-pink-400 text-xs mt-1">
+                      Desde {new Date(relationshipDate).toLocaleDateString('pt-BR')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Music Preview - Functional Players */}
+            {selectedMusic && (
+              <div className="mx-auto w-full max-w-md">
+                {selectedMusic.type === "youtube" ? (
+                  // YouTube Player
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-pink-600 justify-center">
+                      <span className="text-lg">🎵</span>
+                      <span className="font-medium text-sm">Nossa música</span>
+                    </div>
+                    <div className="rounded-2xl overflow-hidden shadow-lg ring-2 ring-red-200">
+                      <iframe
+                        key={`youtube-${selectedMusic.id}`}
+                        src={`https://www.youtube.com/embed/${selectedMusic.id}?${selectedMusic.startTime ? `start=${selectedMusic.startTime}&` : ''}${selectedMusic.endTime ? `end=${selectedMusic.endTime}&` : ''}`}
+                        className="w-full aspect-video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    {selectedMusic.title && (
+                      <p className="text-center text-xs text-gray-500">
+                        {selectedMusic.title} {selectedMusic.artist && `• ${selectedMusic.artist}`}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  // Spotify Player  
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-green-600 justify-center">
+                      <span className="text-lg">🎧</span>
+                      <span className="font-medium text-sm">Nossa música no Spotify</span>
+                    </div>
+                    <div className="rounded-xl overflow-hidden shadow-lg bg-[#282828]" style={{ minHeight: '152px' }}>
+                      <iframe
+                        key={`spotify-${selectedMusic.id}`}
+                        src={`https://open.spotify.com/embed/track/${selectedMusic.id}?utm_source=generator`}
+                        width="100%"
+                        height="152"
+                        frameBorder={0}
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="eager"
+                        className="rounded-xl"
+                        style={{ border: 'none' }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Audio Message Preview - Glass Liquid Design */}
+            {audioMessage && (
+              <div className="mx-auto max-w-sm">
+                <div className="relative overflow-hidden rounded-2xl shadow-lg">
+                  {/* Glass Liquid Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/40 via-indigo-500/40 to-violet-600/40" />
+                  <div className="absolute inset-0 backdrop-blur-xl" />
+                  
+                  {/* Animated liquid blobs */}
+                  <div className="absolute -top-8 -right-8 w-24 h-24 bg-purple-400/40 rounded-full blur-2xl animate-pulse" />
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-indigo-400/40 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+                  
+                  {/* Glass overlay */}
+                  <div className="absolute inset-0 bg-white/5" />
+                  
+                  {/* Content */}
+                  <div className="relative p-4">
+                    {/* Header */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-500 to-violet-500 flex items-center justify-center shadow-md">
+                          <span className="text-lg">🎙️</span>
+                        </div>
+                        <div className="absolute inset-0 rounded-xl bg-purple-400/30 animate-ping" style={{ animationDuration: '2s' }} />
+                      </div>
+                      <div className="text-white">
+                        <div className="font-semibold text-sm drop-shadow">Mensagem de Voz</div>
+                        <div className="text-xs text-white/70">
+                          {Math.floor(audioMessage.duration / 60)}:{String(Math.floor(audioMessage.duration % 60)).padStart(2, '0')} de amor 💜
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Waveform */}
+                    <div className="flex items-center gap-0.5 h-6 justify-center mb-3 px-2">
+                      {[35, 55, 25, 70, 45, 80, 30, 65, 50, 75, 40, 85, 35, 60, 45].map((height, i) => (
+                        <div 
+                          key={i}
+                          className="w-1 bg-gradient-to-t from-purple-300/50 to-white/70 rounded-full"
+                          style={{ 
+                            height: `${height}%`,
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                            animationDelay: `${i * 0.08}s`
+                          }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Audio Player */}
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/10">
+                      <audio 
+                        src={audioMessage.url} 
+                        controls 
+                        className="w-full h-8"
+                        style={{ filter: 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {selectedAnimal && (
           <div className="absolute bottom-4 right-4 text-4xl opacity-80 animate-bounce">

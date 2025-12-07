@@ -27,6 +27,9 @@ export async function POST(request: NextRequest) {
     const mensagem = String(formData.get("mensagem") ?? "");
     const youtubeVideoId = formData.get("youtubeVideoId");
     const youtubeStartTimeRaw = formData.get("youtubeStartTime");
+    const spotifyUri = formData.get("spotifyUri");
+    const musicType = formData.get("musicType");
+    const relationshipDateRaw = formData.get("relationshipDate");
     const audioDurationRaw = formData.get("audioDuration");
     
     // Handle photo upload
@@ -61,6 +64,9 @@ export async function POST(request: NextRequest) {
         mensagem,
         youtubeVideoId: youtubeVideoId ? String(youtubeVideoId) : null,
         youtubeStartTime: youtubeStartTimeRaw ? Number(youtubeStartTimeRaw) : null,
+        spotifyUri: spotifyUri ? String(spotifyUri) : null,
+        musicType: musicType ? String(musicType) : null,
+        relationshipDate: relationshipDateRaw ? new Date(String(relationshipDateRaw)) : null,
         audioDuration: audioDurationRaw ? Number(audioDurationRaw) : null,
       },
       uploadFile,

@@ -12,24 +12,16 @@ import {
 } from "@/lib/translations-new";
 import {
   IntimateLetter,
-  CategorySelector,
-  CuteAnimalSelector,
   MusicSelector,
-  GiftSelector,
   GifSelector,
-  defaultGifts,
   ProgressSteps,
   FloatingLabelInput,
   EnhancedTextarea,
-  TipCard,
   ConfettiButton,
-  AnimatedCard,
   ShareModal,
   AudioRecorder,
-  MiniAudioPlayer,
-  type Category,
+  RelationshipCounter,
   type MusicItem,
-  type GiftSuggestion,
   type GifItem,
   type AudioMessage,
 } from "@/components/letter";
@@ -49,7 +41,7 @@ type NotificationKind = "success" | "error" | "info" | "warning";
 type Notification = { id: string; message: string; type: NotificationKind };
 
 type ViewState = "welcome" | "dashboard" | "create-step1" | "create-step2" | "create-step3" | "preview";
-type AuthModalState = "none" | "login" | "register";
+type AuthModalState = "none" | "login" | "register" | "forgot-password";
 type PaperStyle = "classic" | "romantic" | "vintage" | "modern" | "handwritten";
 
 async function apiRequest<T>(path: string, options: RequestInit & { token?: string } = {}): Promise<T> {
@@ -146,19 +138,152 @@ function AuthModal({
   onSubmit,
   error,
 }: {
-  mode: "login" | "register";
+  mode: "login" | "register" | "forgot-password";
   onClose: () => void;
   t: (key: string) => string;
   isSubmitting: boolean;
-  onSubmit: (e: FormEvent<HTMLFormElement>, mode: "login" | "register") => void;
+  onSubmit: (e: FormEvent<HTMLFormElement>, mode: "login" | "register" | "forgot-password") => void;
   error?: string | null;
 }) {
   const [currentMode, setCurrentMode] = useState(mode);
   const [showPassword, setShowPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [resetUrl, setResetUrl] = useState<string | null>(null);
 
   const handleGoogleAuth = () => {
     window.location.href = "/api/auth/google";
   };
+
+  const handleForgotPassword = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setResetEmailSent(true);
+        // In development, show the reset URL directly
+        if (data.resetUrl) {
+          setResetUrl(data.resetUrl);
+        }
+      }
+    } catch {
+      // Still show success to prevent email enumeration
+      setResetEmailSent(true);
+    }
+  };
+
+  // Forgot Password Mode
+  if (currentMode === "forgot-password") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+        <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-scaleIn">
+          <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 h-2" />
+          
+          <button 
+            onClick={onClose} 
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all z-10"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <div className="p-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center shadow-lg">
+                <span className="text-3xl">🔐</span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800">Recuperar Senha</h2>
+              <p className="text-gray-500 text-sm mt-1">
+                {resetEmailSent 
+                  ? "Verifique seu email" 
+                  : "Digite seu email para receber o link de recuperação"}
+              </p>
+            </div>
+
+            {resetEmailSent ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">✅</span>
+                    <div>
+                      <p className="font-medium">Email enviado!</p>
+                      <p className="text-sm mt-1">Se o email existir em nossa base, você receberá um link para redefinir sua senha.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Development: Show reset link directly */}
+                {resetUrl && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-700">
+                    <p className="text-xs font-medium mb-2">🔧 Link de desenvolvimento:</p>
+                    <a 
+                      href={resetUrl} 
+                      className="text-xs break-all underline hover:text-blue-800"
+                    >
+                      {resetUrl}
+                    </a>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setCurrentMode("login")}
+                  className="w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                >
+                  Voltar ao Login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </span>
+                    <input
+                      name="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      required
+                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-100 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-pink-500/25 hover:scale-[1.02] transition-all"
+                >
+                  Enviar Link de Recuperação
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentMode("login")}
+                  className="w-full py-3 text-gray-600 font-medium hover:text-gray-800 transition-colors"
+                >
+                  ← Voltar ao Login
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -310,7 +435,11 @@ function AuthModal({
             {/* Forgot password link (login only) */}
             {currentMode === "login" && (
               <div className="text-right">
-                <button type="button" className="text-sm text-pink-500 hover:text-pink-600 font-medium transition-colors">
+                <button 
+                  type="button" 
+                  onClick={() => setCurrentMode("forgot-password")}
+                  className="text-sm text-pink-500 hover:text-pink-600 font-medium transition-colors"
+                >
                   Esqueceu a senha?
                 </button>
               </div>
@@ -373,13 +502,11 @@ export default function HomePage() {
     paperStyle: "classic" as PaperStyle,
   });
   const [selectedAnimal, setSelectedAnimal] = useState<string | null>(null);
-  const [musicMode, setMusicMode] = useState<"single" | "playlist">("single");
   const [selectedMusic, setSelectedMusic] = useState<MusicItem | null>(null);
-  const [playlistUrl, setPlaylistUrl] = useState("");
-  const [gifts, setGifts] = useState<GiftSuggestion[]>(defaultGifts);
   const [selectedGif, setSelectedGif] = useState<GifItem | null>(null);
   const [uploadedPhoto] = useState<File | null>(null);
   const [audioMessage, setAudioMessage] = useState<AudioMessage | null>(null);
+  const [relationshipDate, setRelationshipDate] = useState<Date | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [savedCardId, setSavedCardId] = useState<string | null>(null);
 
@@ -498,8 +625,14 @@ export default function HomePage() {
     pushNotification(t("msg.saved"), "info");
   };
 
-  const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>, mode: "login" | "register") => {
+  const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>, mode: "login" | "register" | "forgot-password") => {
     event.preventDefault();
+    
+    // Handle forgot-password separately (it's handled inside the modal)
+    if (mode === "forgot-password") {
+      return;
+    }
+    
     setIsSubmitting(true);
     setAuthError(null);
     const form = new FormData(event.currentTarget);
@@ -540,11 +673,6 @@ export default function HomePage() {
     }
   };
 
-  const handleCategorySelect = (category: Category) => {
-    setSelectedCategory(category.id);
-    setView("create-step2");
-  };
-
   const goToStep3 = () => {
     setView("create-step3");
   };
@@ -561,11 +689,27 @@ export default function HomePage() {
       formData.append("de", letterData.from);
       formData.append("para", letterData.to);
       formData.append("mensagem", letterData.message);
-      if (selectedMusic) formData.append("youtubeVideoId", selectedMusic.id);
+      
+      // Music handling - supports both YouTube and Spotify
+      if (selectedMusic) {
+        if (selectedMusic.type === "spotify") {
+          formData.append("spotifyUri", selectedMusic.spotifyUri || selectedMusic.id);
+          formData.append("musicType", "spotify");
+        } else {
+          formData.append("youtubeVideoId", selectedMusic.id);
+          formData.append("musicType", "youtube");
+        }
+      }
+      
       if (uploadedPhoto) formData.append("foto", uploadedPhoto);
       if (audioMessage) {
         formData.append("audio", audioMessage.blob, "voice-message.webm");
         formData.append("audioDuration", String(audioMessage.duration));
+      }
+      
+      // Relationship date
+      if (relationshipDate) {
+        formData.append("relationshipDate", relationshipDate.toISOString());
       }
       
       const response = await apiRequest<{ id: string }>("/api/cards", { method: "POST", body: formData, token });
@@ -589,9 +733,9 @@ export default function HomePage() {
     setSelectedCategory(null);
     setSelectedAnimal(null);
     setSelectedMusic(null);
-    setGifts(defaultGifts);
     setSelectedGif(null);
     setAudioMessage(null);
+    setRelationshipDate(null);
   };
 
   return (
@@ -806,68 +950,59 @@ export default function HomePage() {
         )}
 
         {view === "create-step1" && (
-          <div className="max-w-5xl mx-auto px-4 py-12">
+          <div className="max-w-6xl mx-auto px-4 py-12">
             <ProgressSteps
               currentStep={1}
               steps={[
-                { id: 1, title: "Categoria", icon: "💝", description: "Escolha o tema" },
-                { id: 2, title: "Carta", icon: "✉️", description: "Escreva a mensagem" },
-                { id: 3, title: "Extras", icon: "🎁", description: "Personalize" },
-                { id: 4, title: "Enviar", icon: "🚀", description: "Compartilhe" },
+                { id: 1, title: "Escrever", icon: "✍️", description: "Sua mensagem" },
+                { id: 2, title: "Personalizar", icon: "🎁", description: "Extras" },
+                { id: 3, title: "Enviar", icon: "💌", description: "Compartilhar" },
               ]}
-            />
-            <CategorySelector
-              selected={selectedCategory}
-              onSelect={handleCategorySelect}
-              translations={{
-                title: t("categories.title"),
-                subtitle: t("categories.subtitle"),
-                categories: {
-                  love: { name: t("categories.love"), description: t("categories.loveDesc") },
-                  friendship: { name: t("categories.friendship"), description: t("categories.friendshipDesc") },
-                  family: { name: t("categories.family"), description: t("categories.familyDesc") },
-                  gratitude: { name: t("categories.gratitude"), description: t("categories.gratitudeDesc") },
-                  missing: { name: t("categories.missing"), description: t("categories.missingDesc") },
-                  celebration: { name: t("categories.celebration"), description: t("categories.celebrationDesc") },
-                },
-              }}
-            />
-          </div>
-        )}
-
-        {view === "create-step2" && (
-          <div className="max-w-6xl mx-auto px-4 py-12">
-            <ProgressSteps
-              currentStep={2}
-              steps={[
-                { id: 1, title: "Categoria", icon: "💝", description: "Escolha o tema" },
-                { id: 2, title: "Carta", icon: "✉️", description: "Escreva a mensagem" },
-                { id: 3, title: "Extras", icon: "🎁", description: "Personalize" },
-                { id: 4, title: "Enviar", icon: "🚀", description: "Compartilhe" },
-              ]}
-              onStepClick={(step) => step === 1 && setView("create-step1")}
             />
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+              {/* Left: Form */}
+              <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("letter.title")}</h2>
-                  <p className="text-gray-500">Preencha os detalhes da sua carta</p>
+                  <h2 className="text-2xl font-bold text-gray-900">{t("letter.title")}</h2>
+                  <p className="text-gray-500 mt-1">Escreva sua mensagem especial</p>
                 </div>
 
-                <TipCard
-                  icon="💡"
-                  title="Dica"
-                  tip="Cartas escritas à mão têm um toque especial. Seja autêntico e escreva do coração!"
-                  variant="info"
-                />
+                {/* Category Selection - Compact */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de mensagem</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "love", icon: "❤️", name: "Amor" },
+                      { id: "friendship", icon: "🤝", name: "Amizade" },
+                      { id: "family", icon: "👨‍👩‍👧‍👦", name: "Família" },
+                      { id: "gratitude", icon: "🙏", name: "Gratidão" },
+                      { id: "missing", icon: "💭", name: "Saudade" },
+                      { id: "celebration", icon: "🎉", name: "Celebração" },
+                    ].map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                          selectedCategory === cat.id
+                            ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-md"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        <span>{cat.icon}</span>
+                        <span>{cat.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
+                {/* Names */}
                 <div className="grid grid-cols-2 gap-4">
                   <FloatingLabelInput
                     label={t("letter.from")}
                     value={letterData.from}
                     onChange={(value) => setLetterData({ ...letterData, from: value })}
-                    placeholder={t("letter.fromPlaceholder")}
+                    placeholder="Seu nome"
                     icon="✍️"
                     required
                   />
@@ -875,23 +1010,24 @@ export default function HomePage() {
                     label={t("letter.to")}
                     value={letterData.to}
                     onChange={(value) => setLetterData({ ...letterData, to: value })}
-                    placeholder={t("letter.toPlaceholder")}
+                    placeholder="Nome da pessoa"
                     icon="💌"
                     required
                   />
                 </div>
 
+                {/* Paper Style - Compact */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">{t("letter.paperStyle")}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Estilo do papel</label>
                   <div className="flex flex-wrap gap-2">
                     {(["classic", "romantic", "vintage", "modern", "handwritten"] as PaperStyle[]).map((style) => (
                       <button
                         key={style}
                         onClick={() => setLetterData({ ...letterData, paperStyle: style })}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all transform hover:scale-105 ${
+                        className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                           letterData.paperStyle === style
-                            ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg scale-105"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
                         {t(`paper.${style}`)}
@@ -900,22 +1036,19 @@ export default function HomePage() {
                   </div>
                 </div>
 
+                {/* Message */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    {t("letter.message")}
-                    <span className="text-xs text-gray-400 font-normal">• Seja criativo!</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("letter.message")}</label>
                   <EnhancedTextarea
                     value={letterData.message}
                     onChange={(value) => setLetterData({ ...letterData, message: value })}
                     placeholder={t("letter.messagePlaceholder")}
                     maxLength={2000}
-                    rows={8}
+                    rows={6}
                     suggestions={[
                       "Querido(a)...",
                       "Você é especial porque...",
                       "Lembro do dia em que...",
-                      "Obrigado(a) por...",
                     ]}
                     onSuggestionClick={(suggestion) => 
                       setLetterData({ ...letterData, message: suggestion + " " })
@@ -923,20 +1056,41 @@ export default function HomePage() {
                   />
                 </div>
 
+                {/* Cute Animal - Quick Select */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Adicionar animal fofo (opcional)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["🐱", "🐶", "🐰", "🦊", "🐻", "🐼", "🦋", "🐦"].map((animal) => (
+                      <button
+                        key={animal}
+                        onClick={() => setSelectedAnimal(selectedAnimal === animal ? null : animal)}
+                        className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all ${
+                          selectedAnimal === animal
+                            ? "bg-pink-100 ring-2 ring-pink-500 scale-110"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        {animal}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <ConfettiButton
                   onClick={goToStep3}
                   disabled={!letterData.from || !letterData.to || !letterData.message}
-                  className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
                 >
-                  Continuar para Personalização →
+                  Personalizar com Extras →
                 </ConfettiButton>
               </div>
 
+              {/* Right: Preview */}
               <div className="lg:sticky lg:top-24 lg:self-start">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-700">{t("preview.title")}</h3>
                   <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-                    Atualiza em tempo real ✨
+                    Tempo real ✨
                   </span>
                 </div>
                 <IntimateLetter
@@ -945,6 +1099,10 @@ export default function HomePage() {
                   message={letterData.message}
                   paperStyle={letterData.paperStyle}
                   selectedAnimal={selectedAnimal || undefined}
+                  selectedMusic={selectedMusic}
+                  selectedGif={selectedGif}
+                  audioMessage={audioMessage}
+                  relationshipDate={relationshipDate}
                 />
               </div>
             </div>
@@ -953,120 +1111,95 @@ export default function HomePage() {
 
         {view === "create-step3" && (
           <div className="max-w-6xl mx-auto px-4 py-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="space-y-12">
+            <ProgressSteps
+              currentStep={2}
+              steps={[
+                { id: 1, title: "Escrever", icon: "✍️", description: "Sua mensagem" },
+                { id: 2, title: "Personalizar", icon: "🎁", description: "Extras" },
+                { id: 3, title: "Enviar", icon: "💌", description: "Compartilhar" },
+              ]}
+              onStepClick={(step) => step === 1 && setView("create-step1")}
+            />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+              {/* Left: Extras in accordion style */}
+              <div className="space-y-4">
                 <div>
-                  <ProgressSteps
-                    currentStep={3}
-                    steps={[
-                      { number: 1, title: "Estilo", icon: "🎨" },
-                      { number: 2, title: "Mensagem", icon: "✍️" },
-                      { number: 3, title: "Extras", icon: "🎁" },
-                      { number: 4, title: "Enviar", icon: "💌" },
-                    ]}
+                  <h2 className="text-2xl font-bold text-gray-900">Personalize sua carta</h2>
+                  <p className="text-gray-500 mt-1">Todos os extras são opcionais</p>
+                </div>
+
+                {/* Music - Primary */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <MusicSelector
+                    selectedMusic={selectedMusic}
+                    onSelect={setSelectedMusic}
+                    translations={{
+                      title: t("music.title"),
+                      subtitle: t("music.subtitle"),
+                    }}
                   />
                 </div>
 
-                <TipCard
-                  icon="💡"
-                  title="Dica de personalização"
-                  tip="Adicione músicas, GIFs e presentes para tornar sua carta ainda mais especial! Todos os elementos são opcionais."
-                />
+                {/* GIF Selector */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                  <GifSelector
+                    selectedGif={selectedGif}
+                    onSelect={setSelectedGif}
+                    translations={{
+                      title: t("gifs.title"),
+                      subtitle: t("gifs.subtitle"),
+                      searchPlaceholder: t("gifs.searchPlaceholder"),
+                    }}
+                  />
+                </div>
 
-                <AnimatedCard delay={0.1}>
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <CuteAnimalSelector
-                      selected={selectedAnimal}
-                      onSelect={(animal) => setSelectedAnimal(animal?.emoji || null)}
-                      title={t("animals.title")}
-                      subtitle={t("animals.subtitle")}
-                    />
-                  </div>
-                </AnimatedCard>
+                {/* Relationship Counter */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                  <RelationshipCounter
+                    startDate={relationshipDate}
+                    onDateChange={setRelationshipDate}
+                    translations={{
+                      title: "💑 Tempo Juntos",
+                      subtitle: "Quando começaram?",
+                      placeholder: "Selecione",
+                      years: "anos",
+                      months: "meses", 
+                      days: "dias",
+                      hours: "h",
+                      minutes: "min",
+                      seconds: "seg",
+                      together: "juntos",
+                    }}
+                  />
+                </div>
 
-                <AnimatedCard delay={0.2}>
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <MusicSelector
-                      mode={musicMode}
-                      onModeChange={setMusicMode}
-                      selectedMusic={selectedMusic}
-                      onSelect={setSelectedMusic}
-                      playlistUrl={playlistUrl}
-                      onPlaylistUrlChange={setPlaylistUrl}
-                      translations={{
-                        title: t("music.title"),
-                        subtitle: t("music.subtitle"),
-                        single: t("music.single"),
-                        playlist: t("music.playlist"),
-                        searchPlaceholder: t("music.searchPlaceholder"),
-                        playlistPlaceholder: t("music.playlistPlaceholder"),
-                      }}
-                    />
-                  </div>
-                </AnimatedCard>
+                {/* Audio Recorder */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                  <AudioRecorder
+                    onAudioRecorded={setAudioMessage}
+                    onAudioRemove={() => setAudioMessage(null)}
+                    currentAudio={audioMessage}
+                    maxDuration={60}
+                    translations={{
+                      title: "Mensagem de Voz 🎙️",
+                      subtitle: "Grave uma mensagem especial",
+                      record: "Gravar",
+                      recording: "Gravando...",
+                      stop: "Parar",
+                      play: "Ouvir",
+                      pause: "Pausar",
+                      delete: "Excluir",
+                      recordingTip: "Clique para gravar",
+                      playbackTip: "Pronto!",
+                    }}
+                  />
+                </div>
 
-                <AnimatedCard delay={0.3}>
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <GiftSelector
-                      gifts={gifts}
-                      onGiftsChange={setGifts}
-                      translations={{
-                        title: t("gifts.title"),
-                        subtitle: t("gifts.subtitle"),
-                        chocolate: t("gifts.chocolate"),
-                        chocolateDesc: t("gifts.chocolateDesc"),
-                        book: t("gifts.book"),
-                        bookDesc: t("gifts.bookDesc"),
-                        flowers: t("gifts.flowers"),
-                        flowersDesc: t("gifts.flowersDesc"),
-                        dinner: t("gifts.dinner"),
-                        dinnerDesc: t("gifts.dinnerDesc"),
-                        bookInput: t("gifts.bookInput"),
-                      }}
-                    />
-                  </div>
-                </AnimatedCard>
-
-                <AnimatedCard delay={0.4}>
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <GifSelector
-                      selectedGif={selectedGif}
-                      onSelect={setSelectedGif}
-                      translations={{
-                        title: t("gifs.title"),
-                        subtitle: t("gifs.subtitle"),
-                        searchPlaceholder: t("gifs.searchPlaceholder"),
-                      }}
-                    />
-                  </div>
-                </AnimatedCard>
-
-                <AnimatedCard delay={0.5}>
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <AudioRecorder
-                      onAudioRecorded={setAudioMessage}
-                      onAudioRemove={() => setAudioMessage(null)}
-                      currentAudio={audioMessage}
-                      maxDuration={60}
-                      translations={{
-                        title: "Mensagem de Voz 🎙️",
-                        subtitle: "Grave uma mensagem pessoal e única",
-                        record: "Gravar",
-                        recording: "Gravando...",
-                        stop: "Parar",
-                        play: "Ouvir",
-                        pause: "Pausar",
-                        delete: "Excluir",
-                        recordingTip: "Clique no microfone para começar",
-                        playbackTip: "Sua mensagem está pronta!",
-                      }}
-                    />
-                  </div>
-                </AnimatedCard>
-
-                <div className="flex gap-4">
+                {/* Action Buttons */}
+                <div className="flex gap-4 pt-4">
                   <button
-                    onClick={() => setView("create-step2")}
+                    onClick={() => setView("create-step1")}
                     className="flex-1 py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
                   >
                     ← Voltar
@@ -1080,6 +1213,7 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* Right: Preview */}
               <div className="lg:sticky lg:top-24 lg:self-start">
                 <h3 className="text-lg font-medium text-gray-700 mb-4">{t("preview.title")}</h3>
                 <IntimateLetter
@@ -1088,6 +1222,10 @@ export default function HomePage() {
                   message={letterData.message}
                   paperStyle={letterData.paperStyle}
                   selectedAnimal={selectedAnimal || undefined}
+                  selectedMusic={selectedMusic}
+                  selectedGif={selectedGif}
+                  audioMessage={audioMessage}
+                  relationshipDate={relationshipDate}
                 />
               </div>
             </div>
@@ -1096,74 +1234,74 @@ export default function HomePage() {
 
         {view === "preview" && (
           <div className="max-w-4xl mx-auto px-4 py-12">
-            <div className="mb-12">
-              <ProgressSteps
-                currentStep={4}
-                steps={[
-                  { number: 1, title: "Estilo", icon: "🎨" },
-                  { number: 2, title: "Mensagem", icon: "✍️" },
-                  { number: 3, title: "Extras", icon: "🎁" },
-                  { number: 4, title: "Enviar", icon: "💌" },
-                ]}
-              />
-            </div>
-
-            <TipCard
-              icon="💝"
-              title="Sua carta está linda!"
-              tip="Revise uma última vez antes de enviar. Você pode voltar e editar se necessário."
-              variant="success"
+            <ProgressSteps
+              currentStep={3}
+              steps={[
+                { id: 1, title: "Escrever", icon: "✍️", description: "Sua mensagem" },
+                { id: 2, title: "Personalizar", icon: "🎁", description: "Extras" },
+                { id: 3, title: "Enviar", icon: "💌", description: "Compartilhar" },
+              ]}
+              onStepClick={(step) => {
+                if (step === 1) setView("create-step1");
+                if (step === 2) setView("create-step3");
+              }}
             />
 
-            <AnimatedCard delay={0.1} className="my-8">
+            <div className="mt-8 mb-6 text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Prévia da sua carta 💌</h2>
+              <p className="text-gray-500 mt-1">Revise antes de enviar</p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
               <IntimateLetter
                 from={letterData.from}
                 to={letterData.to}
                 message={letterData.message}
                 paperStyle={letterData.paperStyle}
                 selectedAnimal={selectedAnimal || undefined}
+                selectedMusic={selectedMusic}
+                selectedGif={selectedGif}
+                audioMessage={audioMessage}
+                relationshipDate={relationshipDate}
               />
-            </AnimatedCard>
+            </div>
 
-            <AnimatedCard delay={0.2}>
-              <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span className="text-xl">✨</span>
-                  Extras incluídos:
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {selectedAnimal && (
-                    <span className="inline-flex items-center gap-2 px-3 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium hover:scale-105 transition-transform cursor-default">
-                      {selectedAnimal} Bichinho
-                    </span>
-                  )}
-                  {selectedMusic && (
-                    <span className="inline-flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium hover:scale-105 transition-transform cursor-default">
-                      🎵 {selectedMusic.title}
-                    </span>
-                  )}
-                  {gifts.filter(g => g.selected).map(g => (
-                    <span key={g.id} className="inline-flex items-center gap-2 px-3 py-2 bg-amber-100 text-amber-700 rounded-full text-sm font-medium hover:scale-105 transition-transform cursor-default">
-                      {g.emoji} {g.type === "book" && g.customValue ? g.customValue : g.type}
-                    </span>
-                  ))}
-                  {selectedGif && (
-                    <span className="inline-flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium hover:scale-105 transition-transform cursor-default">
-                      🎬 GIF incluído
-                    </span>
-                  )}
-                  {audioMessage && (
-                    <MiniAudioPlayer audio={audioMessage} />
-                  )}
-                  {!selectedAnimal && !selectedMusic && gifts.filter(g => g.selected).length === 0 && !selectedGif && !audioMessage && (
-                    <span className="text-gray-400 text-sm italic">
-                      Nenhum extra adicionado (sua mensagem é o mais importante! 💕)
-                    </span>
-                  )}
-                </div>
+            {/* Extras Summary */}
+            <div className="bg-gray-50 rounded-2xl p-4 mb-8">
+              <h3 className="font-medium text-gray-700 mb-3 text-sm">Extras incluídos:</h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedAnimal && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-100 text-pink-700 rounded-full text-sm">
+                    {selectedAnimal} Bichinho
+                  </span>
+                )}
+                {selectedMusic && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm">
+                    🎵 {selectedMusic.title.substring(0, 20)}{selectedMusic.title.length > 20 ? "..." : ""}
+                  </span>
+                )}
+                {selectedGif && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    🎬 GIF
+                  </span>
+                )}
+                {relationshipDate && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm">
+                    💑 Contador
+                  </span>
+                )}
+                {audioMessage && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm">
+                    🎙️ Áudio
+                  </span>
+                )}
+                {!selectedAnimal && !selectedMusic && !selectedGif && !relationshipDate && !audioMessage && (
+                  <span className="text-gray-400 text-sm">Nenhum extra adicionado</span>
+                )}
               </div>
-            </AnimatedCard>
+            </div>
 
+            {/* Action Buttons */}
             <div className="flex gap-4">
               <button
                 onClick={() => setView("create-step3")}
@@ -1176,7 +1314,7 @@ export default function HomePage() {
                 disabled={isSubmitting}
                 className="flex-1 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
               >
-                {isSubmitting ? "Salvando..." : "Salvar e Compartilhar ✨"}
+                {isSubmitting ? "Salvando..." : "Enviar Carta 💌"}
               </ConfettiButton>
             </div>
 

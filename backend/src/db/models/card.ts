@@ -19,8 +19,16 @@ export class Card extends Model<InferAttributes<Card>, InferCreationAttributes<C
   declare fotoUrl: string | null;
   declare youtubeVideoId: string | null;
   declare youtubeStartTime: number | null;
+  declare youtubeEndTime: CreationOptional<number | null>;
+  declare youtubeAutoplay: CreationOptional<boolean | null>;
+  declare spotifyUri: CreationOptional<string | null>;
+  declare musicType: CreationOptional<'youtube' | 'spotify' | null>;
   declare audioUrl: string | null;
   declare audioDuration: number | null;
+  declare relationshipDate: CreationOptional<Date | null>;
+  declare selectedAnimal: CreationOptional<string | null>;
+  declare selectedGif: CreationOptional<string | null>;
+  declare selectedEmoji: CreationOptional<string | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -76,6 +84,30 @@ export function initCardModel() {
         field: "youtube_start_time",
         defaultValue: null,
       },
+      youtubeEndTime: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: "youtube_end_time",
+        defaultValue: null,
+      },
+      youtubeAutoplay: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        field: "youtube_autoplay",
+        defaultValue: false,
+      },
+      spotifyUri: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        field: "spotify_uri",
+        defaultValue: null,
+      },
+      musicType: {
+        type: DataTypes.ENUM('youtube', 'spotify'),
+        allowNull: true,
+        field: "music_type",
+        defaultValue: null,
+      },
       audioUrl: {
         type: DataTypes.TEXT,
         allowNull: true,
@@ -86,6 +118,30 @@ export function initCardModel() {
         type: DataTypes.INTEGER,
         allowNull: true,
         field: "audio_duration",
+        defaultValue: null,
+      },
+      relationshipDate: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: "relationship_date",
+        defaultValue: null,
+      },
+      selectedAnimal: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+        field: "selected_animal",
+        defaultValue: null,
+      },
+      selectedGif: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: "selected_gif",
+        defaultValue: null,
+      },
+      selectedEmoji: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+        field: "selected_emoji",
         defaultValue: null,
       },
       createdAt: {
