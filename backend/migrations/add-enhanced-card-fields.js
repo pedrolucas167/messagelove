@@ -1,10 +1,3 @@
-/**
- * Migration: Add new card fields for enhanced features
- * - youtubeEndTime, youtubeAutoplay (music controls)
- * - spotifyUri, musicType (Spotify support)
- * - relationshipDate (time counter)
- * - selectedAnimal, selectedGif, selectedEmoji (personalization)
- */
 
 const { Sequelize, DataTypes } = require('sequelize');
 require('dotenv').config();

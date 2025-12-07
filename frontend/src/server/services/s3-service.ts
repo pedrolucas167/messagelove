@@ -3,12 +3,16 @@ import sharp from "sharp";
 import { nanoid } from "nanoid";
 import { env } from "@/lib/env";
 
+// Suporta ambos os formatos de variável (Render usa AWS_BUCKET_*)
+const AWS_REGION = env.AWS_BUCKET_REGION || env.AWS_REGION || "sa-east-1";
+const AWS_BUCKET = env.AWS_BUCKET_NAME || env.AWS_S3_BUCKET;
+
 const s3Client = new S3Client({
-  region: env.AWS_REGION,
-  credentials: {
+  region: AWS_REGION,
+  credentials: env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY ? {
     accessKeyId: env.AWS_ACCESS_KEY_ID,
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  },
+  } : undefined,
 });
 
 type UploadFile = {
@@ -33,7 +37,7 @@ export async function uploadOptimizedPhoto(file: UploadFile | null): Promise<str
 
   const key = `cards/${nanoid(16)}.webp`;
   const command = new PutObjectCommand({
-    Bucket: env.AWS_S3_BUCKET,
+    Bucket: AWS_BUCKET,
     Key: key,
     Body: optimizedBuffer,
     ContentType: "image/webp",
@@ -41,7 +45,7 @@ export async function uploadOptimizedPhoto(file: UploadFile | null): Promise<str
   });
 
   await s3Client.send(command);
-  return `https://${env.AWS_S3_BUCKET}.s3.${env.AWS_REGION}.amazonaws.com/${key}`;
+  return `https://${AWS_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${key}`;
 }
 
 export async function uploadAudio(file: UploadFile | null): Promise<string | null> {
@@ -62,7 +66,7 @@ export async function uploadAudio(file: UploadFile | null): Promise<string | nul
 
   const key = `cards/audio/${nanoid(16)}.${ext}`;
   const command = new PutObjectCommand({
-    Bucket: env.AWS_S3_BUCKET,
+    Bucket: AWS_BUCKET,
     Key: key,
     Body: file.buffer,
     ContentType: file.mimetype,
@@ -70,7 +74,7 @@ export async function uploadAudio(file: UploadFile | null): Promise<string | nul
   });
 
   await s3Client.send(command);
-  return `https://${env.AWS_S3_BUCKET}.s3.${env.AWS_REGION}.amazonaws.com/${key}`;
+  return `https://${AWS_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${key}`;
 }
 
 export async function deletePhoto(photoUrl: string | null | undefined) {
@@ -79,7 +83,7 @@ export async function deletePhoto(photoUrl: string | null | undefined) {
   if (!key) return;
 
   const command = new DeleteObjectCommand({
-    Bucket: env.AWS_S3_BUCKET,
+    Bucket: AWS_BUCKET,
     Key: key,
   });
 
@@ -92,7 +96,7 @@ export async function deleteAudio(audioUrl: string | null | undefined) {
   if (!key) return;
 
   const command = new DeleteObjectCommand({
-    Bucket: env.AWS_S3_BUCKET,
+    Bucket: AWS_BUCKET,
     Key: key,
   });
 

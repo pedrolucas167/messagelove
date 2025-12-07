@@ -1,16 +1,29 @@
 import { z } from "zod";
 
+export class EnvValidationError extends Error {
+  constructor(
+    message: string,
+    public readonly details?: Record<string, string[]>
+  ) {
+    super(message);
+    this.name = "EnvValidationError";
+  }
+}
+
 const serverSchema = z.object({
-  DATABASE_URL: z.string().url(),
-  JWT_SECRET: z.string().min(32),
-  JWT_EXPIRES_IN: z.string().optional().default("24h"),
-  AWS_REGION: z.string().optional().default("us-east-1"),
-  AWS_ACCESS_KEY_ID: z.string().optional(),
-  AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  AWS_S3_BUCKET: z.string().optional(),
-  FRONTEND_URL: z.string().url().optional(),
-  GOOGLE_CLIENT_ID: z.string().optional(),
-  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  DATABASE_URL: z.string().trim().url(),
+  JWT_SECRET: z.string().trim().min(32),
+  JWT_EXPIRES_IN: z.string().trim().optional().default("24h"),
+  // AWS S3 - suporta ambos os formatos de variável (Render usa AWS_BUCKET_*)
+  AWS_BUCKET_REGION: z.string().trim().optional(),
+  AWS_REGION: z.string().trim().optional(),
+  AWS_ACCESS_KEY_ID: z.string().trim().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().trim().optional(),
+  AWS_BUCKET_NAME: z.string().trim().optional(),
+  AWS_S3_BUCKET: z.string().trim().optional(),
+  FRONTEND_URL: z.string().trim().url().optional(),
+  GOOGLE_CLIENT_ID: z.string().trim().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().trim().optional(),
 });
 
 const clientSchema = z.object({
@@ -36,10 +49,12 @@ function getEnv(): ServerEnv {
       DATABASE_URL: process.env.DATABASE_URL || "postgresql://placeholder",
       JWT_SECRET: process.env.JWT_SECRET || "placeholder-secret-32-characters!",
       JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "24h",
-      AWS_REGION: process.env.AWS_REGION || "us-east-1",
-      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || "placeholder",
-      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || "placeholder",
-      AWS_S3_BUCKET: process.env.AWS_S3_BUCKET || "placeholder",
+      AWS_BUCKET_REGION: process.env.AWS_BUCKET_REGION,
+      AWS_REGION: process.env.AWS_REGION,
+      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+      AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+      AWS_S3_BUCKET: process.env.AWS_S3_BUCKET,
       FRONTEND_URL: process.env.FRONTEND_URL,
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
@@ -50,7 +65,10 @@ function getEnv(): ServerEnv {
     const parsed = serverSchema.safeParse(process.env);
     if (!parsed.success) {
       console.error("Invalid environment variables", parsed.error.flatten().fieldErrors);
-      throw new Error("Invalid environment variables");
+      throw new EnvValidationError(
+        "Invalid environment variables",
+        parsed.error.flatten().fieldErrors
+      );
     }
     global._env = parsed.data;
   }
