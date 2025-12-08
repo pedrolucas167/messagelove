@@ -21,7 +21,8 @@ const serverSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().trim().optional(),
   AWS_BUCKET_NAME: z.string().trim().optional(),
   AWS_S3_BUCKET: z.string().trim().optional(),
-  FRONTEND_URL: z.string().trim().optional(),
+  // Remove trailing slash from URLs
+  FRONTEND_URL: z.string().trim().optional().transform(url => url?.replace(/\/+$/, "")),
   GOOGLE_CLIENT_ID: z.string().trim().optional(),
   GOOGLE_CLIENT_SECRET: z.string().trim().optional(),
 });
