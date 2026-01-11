@@ -160,7 +160,7 @@ export function IntimateLetter({
 
         <div className="mb-6">
           <span className="text-gray-600 text-lg">Para: </span>
-          <span className="text-xl font-medium border-b border-gray-300 pb-1 inline-block min-w-[200px]">
+          <span className="text-xl font-medium border-b border-gray-300 pb-1 inline-block max-w-full break-words min-w-[140px] sm:min-w-[200px]">
             {to || "________________"}
           </span>
         </div>
@@ -199,7 +199,7 @@ export function IntimateLetter({
                   <img
                     src={selectedGif.url}
                     alt={selectedGif.title || "GIF"}
-                    className="max-h-40 w-auto rounded-xl"
+                    className="max-h-40 w-auto max-w-full rounded-xl"
                   />
                   <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
                     GIF

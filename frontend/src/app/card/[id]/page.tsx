@@ -358,7 +358,7 @@ export default function CardPage() {
               <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-400 blur-2xl opacity-50 animate-pulse" />
               
               {/* Envelope */}
-              <div className="relative bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl p-12 shadow-2xl transform hover:rotate-1 transition-transform">
+              <div className="relative bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl p-8 sm:p-12 shadow-2xl transform hover:rotate-1 transition-transform">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-2xl" />
                 
                 {/* Envelope flap */}

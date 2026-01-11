@@ -124,7 +124,7 @@ function NotificationToast({ notification, onClose }: { notification: Notificati
   return (
     <div className={`${colors[notification.type]} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-slideIn`}>
       <span className="font-bold">{icons[notification.type]}</span>
-      <span className="flex-1">{notification.message}</span>
+      <span className="flex-1 min-w-0 break-words">{notification.message}</span>
       <button onClick={onClose} className="hover:opacity-70 transition">✕</button>
     </div>
   );
@@ -813,7 +813,7 @@ export default function HomePage() {
       <main>
         {view === "welcome" && (
           <>
-            <section className="relative py-20 lg:py-32 overflow-hidden">
+            <section className="relative py-16 lg:py-24 overflow-hidden">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center max-w-4xl mx-auto">
                   <span className="inline-block px-4 py-2 bg-pink-100 text-pink-600 rounded-full text-sm font-medium mb-6">
@@ -825,7 +825,7 @@ export default function HomePage() {
                       {t("hero.titleHighlight")}
                     </span>
                   </h1>
-                  <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+                  <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                     {t("hero.subtitle")}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -836,7 +836,10 @@ export default function HomePage() {
                       <span>✨</span>
                       {t("hero.cta")}
                     </button>
-                    <button className="px-8 py-4 bg-white text-gray-700 font-semibold rounded-full border-2 border-gray-200 hover:border-pink-300 hover:text-pink-600 transition-all">
+                    <button
+                      onClick={() => document.getElementById("examples")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                      className="px-8 py-4 bg-white text-gray-700 font-semibold rounded-full border-2 border-gray-200 hover:border-pink-300 hover:text-pink-600 transition-all"
+                    >
                       {t("hero.ctaSecondary")}
                     </button>
                   </div>
@@ -849,7 +852,56 @@ export default function HomePage() {
               </div>
             </section>
 
-            <section className="py-20 bg-white">
+            <section id="examples" className="py-14 bg-gradient-to-b from-white to-pink-50/60 scroll-mt-24">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{t("hero.ctaSecondary")}</h2>
+                  <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
+                    Veja como ficam algumas cartas prontas — cada uma com um estilo diferente.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start justify-items-center">
+                  <IntimateLetter
+                    from="Pedro"
+                    to="Meu Amor"
+                    message={
+                      "Você é a minha pessoa favorita no mundo. Obrigado(a) por existir e por deixar meus dias mais leves.\n\nCom carinho, sempre."
+                    }
+                    paperStyle="romantic"
+                    selectedAnimal="🦋"
+                    relationshipDate={new Date("2022-06-18")}
+                    className="max-w-xl mx-auto"
+                  />
+
+                  <IntimateLetter
+                    from="Ana"
+                    to="Melhor Amigo"
+                    message={
+                      "Hoje eu só queria te lembrar do quanto você é importante pra mim.\n\nMesmo de longe, eu torço por você todos os dias."
+                    }
+                    paperStyle="modern"
+                    selectedAnimal="🐰"
+                    relationshipDate={new Date("2021-03-14")}
+                    className="max-w-xl mx-auto"
+                  />
+
+                  <IntimateLetter
+                    from="Lucas"
+                    to="Família"
+                    message={
+                      "Obrigado por serem meu porto seguro.\n\nQue a gente nunca esqueça de celebrar as pequenas coisas juntos."
+                    }
+                    paperStyle="classic"
+                    selectedAnimal="💝"
+                    relationshipDate={new Date("2019-12-25")}
+                    className="max-w-xl mx-auto"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="py-14 bg-white">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -876,9 +928,9 @@ export default function HomePage() {
               </div>
             </section>
 
-            <section className="py-20">
+            <section className="py-14">
               <div className="max-w-4xl mx-auto px-4 text-center">
-                <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-3xl p-12 text-white">
+                <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-3xl p-10 md:p-12 text-white">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4">
                     Pronto para escrever sua carta?
                   </h2>
