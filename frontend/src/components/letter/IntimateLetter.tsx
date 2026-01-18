@@ -120,14 +120,14 @@ export function IntimateLetter({
           ${fontStyles[paperStyle]}
           border-2
           rounded-lg
-          p-8 md:p-12
+          p-5 sm:p-8 md:p-12
           shadow-xl
           transition-all duration-300
           hover:shadow-2xl hover:-translate-y-1
           text-gray-800
         `}
       >
-        <div className="absolute top-0 right-0 w-12 h-12 overflow-hidden">
+        <div className="absolute top-0 right-0 w-10 h-10 sm:w-12 sm:h-12 overflow-hidden">
           <div
             className={`
               absolute top-0 right-0
@@ -140,66 +140,66 @@ export function IntimateLetter({
         </div>
 
         {/* Wax seal decoration */}
-        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+        <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
           <div
             className={`
-              w-12 h-12 rounded-full
+              w-10 h-10 sm:w-12 sm:h-12 rounded-full
               ${paperStyle === "romantic" ? "bg-gradient-to-br from-pink-400 to-rose-500" : "bg-gradient-to-br from-red-600 to-red-800"}
               shadow-lg
               flex items-center justify-center
-              text-white text-2xl
+              text-white text-xl sm:text-2xl
             `}
           >
             💝
           </div>
         </div>
 
-        <div className="text-right text-sm opacity-60 mb-6 mt-4">
+        <div className="text-right text-xs sm:text-sm opacity-60 mb-4 sm:mb-6 mt-3 sm:mt-4">
           {formattedDate}
         </div>
 
-        <div className="mb-6">
-          <span className="text-gray-600 text-lg">Para: </span>
-          <span className="text-xl font-medium border-b border-gray-300 pb-1 inline-block max-w-full break-words min-w-[140px] sm:min-w-[200px]">
+        <div className="mb-4 sm:mb-6">
+          <span className="text-gray-600 text-base sm:text-lg">Para: </span>
+          <span className="text-lg sm:text-xl font-medium border-b border-gray-300 pb-1 inline-block max-w-full break-words min-w-[100px] sm:min-w-[140px] md:min-w-[200px]">
             {to || "________________"}
           </span>
         </div>
 
-        <div className="relative mb-8">
-          <span className="absolute -left-4 -top-2 text-5xl opacity-20 select-none">&ldquo;</span>
+        <div className="relative mb-6 sm:mb-8">
+          <span className="absolute -left-2 sm:-left-4 -top-1 sm:-top-2 text-3xl sm:text-5xl opacity-20 select-none">&ldquo;</span>
           
           <div
             className={`
-              text-lg md:text-xl leading-relaxed
-              min-h-[200px]
+              text-base sm:text-lg md:text-xl leading-relaxed
+              min-h-[150px] sm:min-h-[200px]
               whitespace-pre-wrap
-              px-4
-              ${paperStyle === "handwritten" ? "leading-7" : ""}
+              px-2 sm:px-4
+              ${paperStyle === "handwritten" ? "leading-6 sm:leading-7" : ""}
             `}
           >
             {message || (
-              <span className="text-gray-400 italic">
+              <span className="text-gray-400 italic text-sm sm:text-base">
                 Escreva aqui sua mensagem do coração...
               </span>
             )}
           </div>
 
-          <span className="absolute -right-4 bottom-0 text-5xl opacity-20 select-none">&rdquo;</span>
+          <span className="absolute -right-2 sm:-right-4 bottom-0 text-3xl sm:text-5xl opacity-20 select-none">&rdquo;</span>
         </div>
 
         {/* Extras Section - Only show if there are extras */}
         {(selectedGif || relationshipDate || selectedMusic || audioMessage) && (
-          <div className="mt-6 pt-6 border-t border-gray-200/50 space-y-4">
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200/50 space-y-3 sm:space-y-4">
             
             {/* GIF Preview */}
             {selectedGif && (
               <div className="flex justify-center">
-                <div className="relative rounded-xl overflow-hidden shadow-md bg-gray-100">
+                <div className="relative rounded-lg sm:rounded-xl overflow-hidden shadow-md bg-gray-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={selectedGif.url}
                     alt={selectedGif.title || "GIF"}
-                    className="max-h-40 w-auto max-w-full rounded-xl"
+                    className="max-h-32 sm:max-h-40 w-auto max-w-full rounded-lg sm:rounded-xl"
                   />
                   <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
                     GIF
@@ -211,14 +211,14 @@ export function IntimateLetter({
             {/* Relationship Counter Preview */}
             {relationshipDate && (
               <div className="mx-auto max-w-fit">
-                <div className="bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-2xl px-5 py-3">
+                <div className="bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-xl sm:rounded-2xl px-3 sm:px-5 py-2 sm:py-3">
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <span className="text-lg">💑</span>
-                      <span className="text-pink-600 font-semibold">Nosso tempo juntos</span>
-                      <span className="text-lg">💕</span>
+                    <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-1">
+                      <span className="text-base sm:text-lg">💑</span>
+                      <span className="text-pink-600 font-semibold text-sm sm:text-base">Nosso tempo juntos</span>
+                      <span className="text-base sm:text-lg">💕</span>
                     </div>
-                    <div className="text-pink-700 font-bold text-lg">
+                    <div className="text-pink-700 font-bold text-base sm:text-lg">
                       {getRelationshipDuration()}
                     </div>
                     <div className="text-pink-400 text-xs mt-1">
@@ -231,15 +231,15 @@ export function IntimateLetter({
 
             {/* Music Preview - Functional Players */}
             {selectedMusic && (
-              <div className="mx-auto w-full max-w-md">
+              <div className="mx-auto w-full max-w-sm sm:max-w-md">
                 {selectedMusic.type === "youtube" ? (
                   // YouTube Player
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-pink-600 justify-center">
-                      <span className="text-lg">🎵</span>
-                      <span className="font-medium text-sm">Nossa música</span>
+                      <span className="text-base sm:text-lg">🎵</span>
+                      <span className="font-medium text-xs sm:text-sm">Nossa música</span>
                     </div>
-                    <div className="rounded-2xl overflow-hidden shadow-lg ring-2 ring-red-200">
+                    <div className="rounded-xl sm:rounded-2xl overflow-hidden shadow-lg ring-2 ring-red-200">
                       <iframe
                         key={`youtube-${selectedMusic.id}`}
                         src={`https://www.youtube.com/embed/${selectedMusic.id}?${selectedMusic.startTime ? `start=${selectedMusic.startTime}&` : ''}${selectedMusic.endTime ? `end=${selectedMusic.endTime}&` : ''}`}
@@ -249,7 +249,7 @@ export function IntimateLetter({
                       />
                     </div>
                     {selectedMusic.title && (
-                      <p className="text-center text-xs text-gray-500">
+                      <p className="text-center text-xs text-gray-500 line-clamp-1 px-2">
                         {selectedMusic.title} {selectedMusic.artist && `• ${selectedMusic.artist}`}
                       </p>
                     )}
@@ -258,10 +258,10 @@ export function IntimateLetter({
                   // Spotify Player  
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-green-600 justify-center">
-                      <span className="text-lg">🎧</span>
-                      <span className="font-medium text-sm">Nossa música no Spotify</span>
+                      <span className="text-base sm:text-lg">🎧</span>
+                      <span className="font-medium text-xs sm:text-sm">Nossa música no Spotify</span>
                     </div>
-                    <div className="rounded-xl overflow-hidden shadow-lg bg-[#282828]" style={{ minHeight: '152px' }}>
+                    <div className="rounded-lg sm:rounded-xl overflow-hidden shadow-lg bg-[#282828]" style={{ minHeight: '152px' }}>
                       <iframe
                         key={`spotify-${selectedMusic.id}`}
                         src={`https://open.spotify.com/embed/track/${selectedMusic.id}?utm_source=generator`}
@@ -270,7 +270,7 @@ export function IntimateLetter({
                         frameBorder={0}
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                         loading="eager"
-                        className="rounded-xl"
+                        className="rounded-lg sm:rounded-xl"
                         style={{ border: 'none' }}
                       />
                     </div>
@@ -281,31 +281,31 @@ export function IntimateLetter({
 
             {/* Audio Message Preview - Glass Liquid Design */}
             {audioMessage && (
-              <div className="mx-auto max-w-sm">
-                <div className="relative overflow-hidden rounded-2xl shadow-lg">
+              <div className="mx-auto max-w-xs sm:max-w-sm">
+                <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-lg">
                   {/* Glass Liquid Background */}
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-600/40 via-indigo-500/40 to-violet-600/40" />
                   <div className="absolute inset-0 backdrop-blur-xl" />
                   
                   {/* Animated liquid blobs */}
-                  <div className="absolute -top-8 -right-8 w-24 h-24 bg-purple-400/40 rounded-full blur-2xl animate-pulse" />
-                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-indigo-400/40 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+                  <div className="absolute -top-6 sm:-top-8 -right-6 sm:-right-8 w-16 sm:w-24 h-16 sm:h-24 bg-purple-400/40 rounded-full blur-2xl animate-pulse" />
+                  <div className="absolute -bottom-6 sm:-bottom-8 -left-6 sm:-left-8 w-16 sm:w-24 h-16 sm:h-24 bg-indigo-400/40 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
                   
                   {/* Glass overlay */}
                   <div className="absolute inset-0 bg-white/5" />
                   
                   {/* Content */}
-                  <div className="relative p-4">
+                  <div className="relative p-3 sm:p-4">
                     {/* Header */}
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-500 to-violet-500 flex items-center justify-center shadow-md">
-                          <span className="text-lg">🎙️</span>
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500 via-indigo-500 to-violet-500 flex items-center justify-center shadow-md">
+                          <span className="text-base sm:text-lg">🎙️</span>
                         </div>
-                        <div className="absolute inset-0 rounded-xl bg-purple-400/30 animate-ping" style={{ animationDuration: '2s' }} />
+                        <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-purple-400/30 animate-ping" style={{ animationDuration: '2s' }} />
                       </div>
                       <div className="text-white">
-                        <div className="font-semibold text-sm drop-shadow">Mensagem de Voz</div>
+                        <div className="font-semibold text-xs sm:text-sm drop-shadow">Mensagem de Voz</div>
                         <div className="text-xs text-white/70">
                           {Math.floor(audioMessage.duration / 60)}:{String(Math.floor(audioMessage.duration % 60)).padStart(2, '0')} de amor 💜
                         </div>
@@ -313,11 +313,11 @@ export function IntimateLetter({
                     </div>
                     
                     {/* Waveform */}
-                    <div className="flex items-center gap-0.5 h-6 justify-center mb-3 px-2">
+                    <div className="flex items-center gap-0.5 h-5 sm:h-6 justify-center mb-2 sm:mb-3 px-1 sm:px-2">
                       {[35, 55, 25, 70, 45, 80, 30, 65, 50, 75, 40, 85, 35, 60, 45].map((height, i) => (
                         <div 
                           key={i}
-                          className="w-1 bg-gradient-to-t from-purple-300/50 to-white/70 rounded-full"
+                          className="w-0.5 sm:w-1 bg-gradient-to-t from-purple-300/50 to-white/70 rounded-full"
                           style={{ 
                             height: `${height}%`,
                             animation: 'pulse 1.5s ease-in-out infinite',
@@ -328,11 +328,11 @@ export function IntimateLetter({
                     </div>
                     
                     {/* Audio Player */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/10">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 border border-white/10">
                       <audio 
                         src={audioMessage.url} 
                         controls 
-                        className="w-full h-8"
+                        className="w-full h-7 sm:h-8"
                         style={{ filter: 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))' }}
                       />
                     </div>
@@ -344,22 +344,22 @@ export function IntimateLetter({
         )}
 
         {selectedAnimal && (
-          <div className="absolute bottom-4 right-4 text-4xl opacity-80 animate-bounce">
+          <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 text-3xl sm:text-4xl opacity-80 animate-bounce">
             {selectedAnimal}
           </div>
         )}
 
-        <div className="text-right mt-8">
-          <span className="text-gray-600 text-lg">Com carinho, </span>
-          <div className="text-2xl font-medium mt-1">
+        <div className="text-right mt-6 sm:mt-8">
+          <span className="text-gray-600 text-base sm:text-lg">Com carinho, </span>
+          <div className="text-xl sm:text-2xl font-medium mt-1">
             {from || "________________"}
           </div>
         </div>
 
         {paperStyle === "romantic" && (
           <>
-            <div className="absolute bottom-2 left-2 text-2xl opacity-30">💕</div>
-            <div className="absolute top-16 right-4 text-xl opacity-20">✨</div>
+            <div className="absolute bottom-2 left-2 text-xl sm:text-2xl opacity-30">💕</div>
+            <div className="absolute top-14 sm:top-16 right-3 sm:right-4 text-lg sm:text-xl opacity-20">✨</div>
           </>
         )}
 

@@ -18,12 +18,12 @@ interface ProgressStepsProps {
 
 export function ProgressSteps({ currentStep, steps, onStepClick }: ProgressStepsProps) {
   return (
-    <div className="w-full mb-8">
-      <div className="flex items-center justify-between relative">
-        <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full" />
+    <div className="w-full mb-6 sm:mb-8">
+      <div className="flex items-center justify-between relative px-2 sm:px-0">
+        <div className="absolute top-4 sm:top-6 left-0 right-0 h-0.5 sm:h-1 bg-gray-200 rounded-full" />
         
         <div 
-          className="absolute top-6 left-0 h-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
+          className="absolute top-4 sm:top-6 left-0 h-0.5 sm:h-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
           style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
         />
 
@@ -39,12 +39,12 @@ export function ProgressSteps({ currentStep, steps, onStepClick }: ProgressSteps
                 onClick={() => isClickable && onStepClick(stepNumber)}
                 disabled={!isClickable}
                 className={`
-                  w-12 h-12 rounded-full flex items-center justify-center text-xl
+                  w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-xl
                   transition-all duration-300 transform
                   ${isCompleted 
                     ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg scale-100 cursor-pointer hover:scale-110" 
                     : isCurrent 
-                      ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-xl scale-110 ring-4 ring-pink-200 animate-pulse" 
+                      ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-xl scale-105 sm:scale-110 ring-2 sm:ring-4 ring-pink-200 animate-pulse" 
                       : "bg-gray-100 text-gray-400 scale-90"
                   }
                 `}
@@ -52,14 +52,14 @@ export function ProgressSteps({ currentStep, steps, onStepClick }: ProgressSteps
                 {isCompleted ? "✓" : step.icon}
               </button>
               
-              <div className="mt-3 text-center">
-                <p className={`text-sm font-medium transition-colors ${
+              <div className="mt-1.5 sm:mt-3 text-center">
+                <p className={`text-xs sm:text-sm font-medium transition-colors ${
                   isCurrent ? "text-pink-600" : isCompleted ? "text-gray-700" : "text-gray-400"
                 }`}>
                   {step.title}
                 </p>
                 {step.description && (
-                  <p className={`text-xs mt-0.5 max-w-[100px] transition-colors ${
+                  <p className={`text-xs mt-0.5 max-w-[60px] sm:max-w-[100px] transition-colors hidden sm:block ${
                     isCurrent ? "text-pink-500" : "text-gray-400"
                   }`}>
                     {step.description}

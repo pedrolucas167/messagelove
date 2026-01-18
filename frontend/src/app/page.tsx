@@ -765,34 +765,36 @@ export default function HomePage() {
         />
       )}
 
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-pink-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button onClick={() => setView(currentUser ? "dashboard" : "welcome")} className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-xl shadow-lg">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-pink-100 safe-area-top">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <button onClick={() => setView(currentUser ? "dashboard" : "welcome")} className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-lg sm:text-xl shadow-lg">
                 💝
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent hidden xs:inline">
                 MessageLove
               </span>
             </button>
 
-            <div className="flex items-center gap-4">
-              <LanguageSelector lang={lang} onChangeLang={setLang} />
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="hidden sm:block">
+                <LanguageSelector lang={lang} onChangeLang={setLang} />
+              </div>
               
               {currentUser ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-pink-50 to-purple-50 rounded-full border border-pink-200">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-pink-50 to-purple-50 rounded-full border border-pink-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold">
                       {currentUser.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium text-gray-700 hidden sm:block">
+                    <span className="text-xs sm:text-sm font-medium text-gray-700 hidden md:block max-w-[100px] truncate">
                       {currentUser.name}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="px-3 py-1.5 text-sm text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                    className="px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
                   >
                     Sair
                   </button>
@@ -800,7 +802,7 @@ export default function HomePage() {
               ) : (
                 <button
                   onClick={() => setAuthModal("login")}
-                  className="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all"
+                  className="px-4 sm:px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs sm:text-sm font-medium rounded-full hover:shadow-lg transition-all"
                 >
                   {t("nav.login")}
                 </button>
@@ -813,55 +815,56 @@ export default function HomePage() {
       <main>
         {view === "welcome" && (
           <>
-            <section className="relative py-16 lg:py-24 overflow-hidden">
+            <section className="relative py-10 sm:py-16 lg:py-24 overflow-hidden">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center max-w-4xl mx-auto">
-                  <span className="inline-block px-4 py-2 bg-pink-100 text-pink-600 rounded-full text-sm font-medium mb-6">
+                  <span className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-pink-100 text-pink-600 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
                     {t("hero.badge")}
                   </span>
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-2">
                     {t("hero.title")}{" "}
-                    <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                    <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 bg-clip-text text-transparent block sm:inline mt-1 sm:mt-0">
                       {t("hero.titleHighlight")}
                     </span>
                   </h1>
-                  <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                  <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
                     {t("hero.subtitle")}
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
                     <button
                       onClick={startCreating}
-                      className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
                       <span>✨</span>
                       {t("hero.cta")}
                     </button>
                     <button
                       onClick={() => document.getElementById("examples")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                      className="px-8 py-4 bg-white text-gray-700 font-semibold rounded-full border-2 border-gray-200 hover:border-pink-300 hover:text-pink-600 transition-all"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-gray-700 font-semibold rounded-full border-2 border-gray-200 hover:border-pink-300 hover:text-pink-600 transition-all text-sm sm:text-base"
                     >
                       {t("hero.ctaSecondary")}
                     </button>
                   </div>
                 </div>
 
-                <div className="absolute top-10 left-10 text-6xl opacity-20 animate-bounce">💕</div>
-                <div className="absolute top-20 right-20 text-5xl opacity-20 animate-pulse">✨</div>
-                <div className="absolute bottom-10 left-1/4 text-4xl opacity-20 animate-bounce">💝</div>
-                <div className="absolute bottom-20 right-1/3 text-5xl opacity-20 animate-pulse">🦋</div>
+                {/* Decorative elements - hidden on mobile for better performance */}
+                <div className="hidden sm:block absolute top-10 left-10 text-6xl opacity-20 animate-bounce">💕</div>
+                <div className="hidden sm:block absolute top-20 right-20 text-5xl opacity-20 animate-pulse">✨</div>
+                <div className="hidden sm:block absolute bottom-10 left-1/4 text-4xl opacity-20 animate-bounce">💝</div>
+                <div className="hidden sm:block absolute bottom-20 right-1/3 text-5xl opacity-20 animate-pulse">🦋</div>
               </div>
             </section>
 
-            <section id="examples" className="py-14 bg-gradient-to-b from-white to-pink-50/60 scroll-mt-24">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{t("hero.ctaSecondary")}</h2>
-                  <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
+            <section id="examples" className="py-10 sm:py-14 bg-gradient-to-b from-white to-pink-50/60 scroll-mt-20 sm:scroll-mt-24">
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <div className="text-center mb-6 sm:mb-8 px-2">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">{t("hero.ctaSecondary")}</h2>
+                  <p className="mt-2 sm:mt-3 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
                     Veja como ficam algumas cartas prontas — cada uma com um estilo diferente.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start justify-items-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-start justify-items-center">
                   <IntimateLetter
                     from="Pedro"
                     to="Meu Amor"
@@ -901,15 +904,15 @@ export default function HomePage() {
               </div>
             </section>
 
-            <section className="py-14 bg-white">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <section className="py-10 sm:py-14 bg-white">
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <div className="text-center mb-8 sm:mb-16">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
                     {t("features.title")}
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                   {[
                     { icon: "✉️", title: t("features.intimate.title"), desc: t("features.intimate.desc") },
                     { icon: "🎵", title: t("features.music.title"), desc: t("features.music.desc") },
@@ -918,28 +921,28 @@ export default function HomePage() {
                     { icon: "🐰", title: t("features.animals.title"), desc: t("features.animals.desc") },
                     { icon: "🔗", title: t("features.share.title"), desc: t("features.share.desc") },
                   ].map((feature, i) => (
-                    <div key={i} className="p-6 rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 hover:shadow-lg transition-all group">
-                      <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{feature.icon}</div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">{feature.title}</h3>
-                      <p className="text-gray-600">{feature.desc}</p>
+                    <div key={i} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 hover:shadow-lg transition-all group">
+                      <div className="text-2xl sm:text-4xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform">{feature.icon}</div>
+                      <h3 className="text-sm sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">{feature.title}</h3>
+                      <p className="text-xs sm:text-base text-gray-600 line-clamp-3 sm:line-clamp-none">{feature.desc}</p>
                     </div>
                   ))}
                 </div>
               </div>
             </section>
 
-            <section className="py-14">
-              <div className="max-w-4xl mx-auto px-4 text-center">
-                <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-3xl p-10 md:p-12 text-white">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <section className="py-10 sm:py-14">
+              <div className="max-w-4xl mx-auto px-3 sm:px-4 text-center">
+                <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-12 text-white">
+                  <h2 className="text-xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
                     Pronto para escrever sua carta?
                   </h2>
-                  <p className="text-lg opacity-90 mb-8">
+                  <p className="text-sm sm:text-lg opacity-90 mb-6 sm:mb-8">
                     Crie uma mensagem especial em menos de 5 minutos
                   </p>
                   <button
                     onClick={startCreating}
-                    className="px-8 py-4 bg-white text-pink-600 font-semibold rounded-full hover:shadow-xl hover:scale-105 transition-all"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-pink-600 font-semibold rounded-full hover:shadow-xl hover:scale-105 transition-all text-sm sm:text-base"
                   >
                     Começar Agora ✨
                   </button>
@@ -950,17 +953,17 @@ export default function HomePage() {
         )}
 
         {view === "dashboard" && currentUser && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12">
+            <div className="flex flex-col gap-4 mb-6 sm:mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
                   Olá, {currentUser.name}! 👋
                 </h1>
-                <p className="text-gray-600 mt-1">{t("nav.myLetters")}</p>
+                <p className="text-sm sm:text-base text-gray-600 mt-1">{t("nav.myLetters")}</p>
               </div>
               <button
                 onClick={startCreating}
-                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-medium rounded-full hover:shadow-lg transition-all flex items-center gap-2"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-medium rounded-full hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 <span>✨</span>
                 {t("nav.create")}
@@ -968,29 +971,29 @@ export default function HomePage() {
             </div>
 
             {cards.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">💌</div>
-                <h3 className="text-xl font-medium text-gray-800 mb-2">Nenhuma carta ainda</h3>
-                <p className="text-gray-500 mb-6">Crie sua primeira carta especial!</p>
+              <div className="text-center py-12 sm:py-20">
+                <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">💌</div>
+                <h3 className="text-lg sm:text-xl font-medium text-gray-800 mb-2">Nenhuma carta ainda</h3>
+                <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">Crie sua primeira carta especial!</p>
                 <button
                   onClick={startCreating}
-                  className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-medium rounded-full hover:shadow-lg transition-all"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-medium rounded-full hover:shadow-lg transition-all text-sm sm:text-base"
                 >
                   Criar Minha Primeira Carta
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {cards.map((card) => (
-                  <div key={card.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all">
-                    <div className="flex items-start justify-between mb-4">
+                  <div key={card.id} className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all">
+                    <div className="flex items-start justify-between mb-3 sm:mb-4">
                       <div>
-                        <p className="text-sm text-gray-500">Para: <span className="font-medium text-gray-800">{card.para}</span></p>
-                        <p className="text-sm text-gray-500">De: <span className="font-medium text-gray-800">{card.de}</span></p>
+                        <p className="text-xs sm:text-sm text-gray-500">Para: <span className="font-medium text-gray-800">{card.para}</span></p>
+                        <p className="text-xs sm:text-sm text-gray-500">De: <span className="font-medium text-gray-800">{card.de}</span></p>
                       </div>
-                      <span className="text-2xl">💌</span>
+                      <span className="text-xl sm:text-2xl">💌</span>
                     </div>
-                    <p className="text-gray-600 line-clamp-3 mb-4">{card.mensagem}</p>
+                    <p className="text-sm sm:text-base text-gray-600 line-clamp-3 mb-3 sm:mb-4">{card.mensagem}</p>
                     <p className="text-xs text-gray-400">
                       {format(new Date(card.createdAt), "dd 'de' MMMM 'de' yyyy", { locale: getDateLocale() })}
                     </p>
@@ -1002,7 +1005,7 @@ export default function HomePage() {
         )}
 
         {view === "create-step1" && (
-          <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-12">
             <ProgressSteps
               currentStep={1}
               steps={[
@@ -1012,18 +1015,18 @@ export default function HomePage() {
               ]}
             />
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mt-6 sm:mt-8">
               {/* Left: Form */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6 order-2 lg:order-1">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{t("letter.title")}</h2>
-                  <p className="text-gray-500 mt-1">Escreva sua mensagem especial</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{t("letter.title")}</h2>
+                  <p className="text-sm sm:text-base text-gray-500 mt-1">Escreva sua mensagem especial</p>
                 </div>
 
                 {/* Category Selection - Compact */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de mensagem</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Tipo de mensagem</label>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {[
                       { id: "love", icon: "❤️", name: "Amor" },
                       { id: "friendship", icon: "🤝", name: "Amizade" },
@@ -1035,8 +1038,7 @@ export default function HomePage() {
                       <button
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${
-                          selectedCategory === cat.id
+                        className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${selectedCategory === cat.id
                             ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-md"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
@@ -1049,7 +1051,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Names */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <FloatingLabelInput
                     label={t("letter.from")}
                     value={letterData.from}
@@ -1070,14 +1072,13 @@ export default function HomePage() {
 
                 {/* Paper Style - Compact */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Estilo do papel</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Estilo do papel</label>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {(["classic", "romantic", "vintage", "modern", "handwritten"] as PaperStyle[]).map((style) => (
                       <button
                         key={style}
                         onClick={() => setLetterData({ ...letterData, paperStyle: style })}
-                        className={`px-3 py-1.5 rounded-full text-sm transition-all ${
-                          letterData.paperStyle === style
+                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm transition-all ${letterData.paperStyle === style
                             ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
@@ -1090,13 +1091,13 @@ export default function HomePage() {
 
                 {/* Message */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("letter.message")}</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">{t("letter.message")}</label>
                   <EnhancedTextarea
                     value={letterData.message}
                     onChange={(value) => setLetterData({ ...letterData, message: value })}
                     placeholder={t("letter.messagePlaceholder")}
                     maxLength={2000}
-                    rows={6}
+                    rows={5}
                     suggestions={[
                       "Querido(a)...",
                       "Você é especial porque...",
@@ -1110,14 +1111,13 @@ export default function HomePage() {
 
                 {/* Cute Animal - Quick Select */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Adicionar animal fofo (opcional)</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Adicionar animal fofo (opcional)</label>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {["🐱", "🐶", "🐰", "🦊", "🐻", "🐼", "🦋", "🐦"].map((animal) => (
                       <button
                         key={animal}
                         onClick={() => setSelectedAnimal(selectedAnimal === animal ? null : animal)}
-                        className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all ${
-                          selectedAnimal === animal
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl text-lg sm:text-xl flex items-center justify-center transition-all ${selectedAnimal === animal
                             ? "bg-pink-100 ring-2 ring-pink-500 scale-110"
                             : "bg-gray-100 hover:bg-gray-200"
                         }`}
@@ -1131,16 +1131,16 @@ export default function HomePage() {
                 <ConfettiButton
                   onClick={goToStep3}
                   disabled={!letterData.from || !letterData.to || !letterData.message}
-                  className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 text-sm sm:text-base"
                 >
                   Personalizar com Extras →
                 </ConfettiButton>
               </div>
 
-              {/* Right: Preview */}
-              <div className="lg:sticky lg:top-24 lg:self-start">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-700">{t("preview.title")}</h3>
+              {/* Right: Preview - Show first on mobile */}
+              <div className="lg:sticky lg:top-24 lg:self-start order-1 lg:order-2">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-medium text-gray-700">{t("preview.title")}</h3>
                   <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
                     Tempo real ✨
                   </span>
@@ -1162,7 +1162,7 @@ export default function HomePage() {
         )}
 
         {view === "create-step3" && (
-          <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-12">
             <ProgressSteps
               currentStep={2}
               steps={[
@@ -1173,16 +1173,16 @@ export default function HomePage() {
               onStepClick={(step) => step === 1 && setView("create-step1")}
             />
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mt-6 sm:mt-8">
               {/* Left: Extras in accordion style */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4 order-2 lg:order-1">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Personalize sua carta</h2>
-                  <p className="text-gray-500 mt-1">Todos os extras são opcionais</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Personalize sua carta</h2>
+                  <p className="text-sm sm:text-base text-gray-500 mt-1">Todos os extras são opcionais</p>
                 </div>
 
                 {/* Music - Primary */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <MusicSelector
                     selectedMusic={selectedMusic}
                     onSelect={setSelectedMusic}
@@ -1194,7 +1194,7 @@ export default function HomePage() {
                 </div>
 
                 {/* GIF Selector */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
                   <GifSelector
                     selectedGif={selectedGif}
                     onSelect={setSelectedGif}
@@ -1207,7 +1207,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Relationship Counter */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
                   <RelationshipCounter
                     startDate={relationshipDate}
                     onDateChange={setRelationshipDate}
@@ -1227,7 +1227,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Audio Recorder */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
                   <AudioRecorder
                     onAudioRecorded={setAudioMessage}
                     onAudioRemove={() => setAudioMessage(null)}
@@ -1249,25 +1249,25 @@ export default function HomePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-4 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4">
                   <button
                     onClick={() => setView("create-step1")}
-                    className="flex-1 py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+                    className="flex-1 py-3 sm:py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all text-sm sm:text-base order-2 sm:order-1"
                   >
                     ← Voltar
                   </button>
                   <ConfettiButton
                     onClick={goToPreview}
-                    className="flex-1 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                    className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm sm:text-base order-1 sm:order-2"
                   >
                     Ver Prévia →
                   </ConfettiButton>
                 </div>
               </div>
 
-              {/* Right: Preview */}
-              <div className="lg:sticky lg:top-24 lg:self-start">
-                <h3 className="text-lg font-medium text-gray-700 mb-4">{t("preview.title")}</h3>
+              {/* Right: Preview - Show first on mobile */}
+              <div className="lg:sticky lg:top-24 lg:self-start order-1 lg:order-2">
+                <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-3 sm:mb-4">{t("preview.title")}</h3>
                 <IntimateLetter
                   from={letterData.from}
                   to={letterData.to}
@@ -1285,7 +1285,7 @@ export default function HomePage() {
         )}
 
         {view === "preview" && (
-          <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-12">
             <ProgressSteps
               currentStep={3}
               steps={[
@@ -1299,12 +1299,12 @@ export default function HomePage() {
               }}
             />
 
-            <div className="mt-8 mb-6 text-center">
-              <h2 className="text-2xl font-bold text-gray-900">Prévia da sua carta 💌</h2>
-              <p className="text-gray-500 mt-1">Revise antes de enviar</p>
+            <div className="mt-6 sm:mt-8 mb-4 sm:mb-6 text-center">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Prévia da sua carta 💌</h2>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">Revise antes de enviar</p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-6 sm:mb-8">
               <IntimateLetter
                 from={letterData.from}
                 to={letterData.to}
@@ -1319,52 +1319,52 @@ export default function HomePage() {
             </div>
 
             {/* Extras Summary */}
-            <div className="bg-gray-50 rounded-2xl p-4 mb-8">
-              <h3 className="font-medium text-gray-700 mb-3 text-sm">Extras incluídos:</h3>
-              <div className="flex flex-wrap gap-2">
+            <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-6 sm:mb-8">
+              <h3 className="font-medium text-gray-700 mb-2 sm:mb-3 text-xs sm:text-sm">Extras incluídos:</h3>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {selectedAnimal && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-100 text-pink-700 rounded-full text-sm">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-pink-100 text-pink-700 rounded-full text-xs sm:text-sm">
                     {selectedAnimal} Bichinho
                   </span>
                 )}
                 {selectedMusic && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm">
-                    🎵 {selectedMusic.title.substring(0, 20)}{selectedMusic.title.length > 20 ? "..." : ""}
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-purple-100 text-purple-700 rounded-full text-xs sm:text-sm">
+                    🎵 {selectedMusic.title.substring(0, 15)}{selectedMusic.title.length > 15 ? "..." : ""}
                   </span>
                 )}
                 {selectedGif && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm">
                     🎬 GIF
                   </span>
                 )}
                 {relationshipDate && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-red-100 text-red-700 rounded-full text-xs sm:text-sm">
                     💑 Contador
                   </span>
                 )}
                 {audioMessage && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-xs sm:text-sm">
                     🎙️ Áudio
                   </span>
                 )}
                 {!selectedAnimal && !selectedMusic && !selectedGif && !relationshipDate && !audioMessage && (
-                  <span className="text-gray-400 text-sm">Nenhum extra adicionado</span>
+                  <span className="text-gray-400 text-xs sm:text-sm">Nenhum extra adicionado</span>
                 )}
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={() => setView("create-step3")}
-                className="flex-1 py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+                className="flex-1 py-3 sm:py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all text-sm sm:text-base order-2 sm:order-1"
               >
                 ← Editar
               </button>
               <ConfettiButton
                 onClick={handleSaveLetter}
                 disabled={isSubmitting}
-                className="flex-1 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 text-sm sm:text-base order-1 sm:order-2"
               >
                 {isSubmitting ? "Salvando..." : "Enviar Carta 💌"}
               </ConfettiButton>
@@ -1383,22 +1383,22 @@ export default function HomePage() {
         )}
       </main>
 
-      <footer className="bg-gray-900 text-white py-12 mt-20">
+      <footer className="bg-gray-900 text-white py-8 sm:py-12 mt-12 sm:mt-20 safe-area-bottom">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-xl">
+          <div className="flex flex-col items-center gap-4 sm:gap-6 text-center md:flex-row md:justify-between md:text-left">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-lg sm:text-xl">
                 💝
               </div>
-              <span className="text-xl font-bold">MessageLove</span>
+              <span className="text-lg sm:text-xl font-bold">MessageLove</span>
             </div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-xs sm:text-sm">
               {t("footer.copyright")}
             </p>
-            <div className="flex gap-6">
-              <a href="#" className="text-gray-400 hover:text-white transition">{t("footer.privacy")}</a>
-              <a href="#" className="text-gray-400 hover:text-white transition">{t("footer.terms")}</a>
-              <a href="#" className="text-gray-400 hover:text-white transition">{t("footer.contact")}</a>
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+              <a href="#" className="text-gray-400 hover:text-white transition text-sm">{t("footer.privacy")}</a>
+              <a href="#" className="text-gray-400 hover:text-white transition text-sm">{t("footer.terms")}</a>
+              <a href="#" className="text-gray-400 hover:text-white transition text-sm">{t("footer.contact")}</a>
             </div>
           </div>
         </div>
